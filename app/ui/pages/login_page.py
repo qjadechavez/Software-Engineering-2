@@ -1,8 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
-# Update path to MainWindow
 from app.ui.main_window import Ui_MainWindow
-# Update path to AuthManager
 from app.utils.auth_manager import AuthManager
 
 class LoginPage(QtWidgets.QWidget):
@@ -44,7 +42,7 @@ class LoginPage(QtWidgets.QWidget):
         pixmap = QtGui.QPixmap("app/resources/images/Miere1.png")
         scaled_pixmap = pixmap.scaled(200, 200, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.logo_label.setPixmap(scaled_pixmap)        
-        
+
         # Brand tagline
         self.tagline_label = QtWidgets.QLabel(self.left_panel)
         self.tagline_label.setGeometry(QtCore.QRect(120, 400, 400, 40))
@@ -52,6 +50,32 @@ class LoginPage(QtWidgets.QWidget):
         self.tagline_label.setFont(QtGui.QFont("Segoe UI", 14))
         self.tagline_label.setText("Inventory Management System")
         self.tagline_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Improved help button with icon
+        self.help_button = QtWidgets.QPushButton(self.left_panel)
+        self.help_button.setGeometry(QtCore.QRect(30, 650, 150, 45))
+        self.help_button.setFont(QtGui.QFont("Segoe UI", 10))
+        self.help_button.setText("  Need Help?")
+        self.help_button.setIcon(QtGui.QIcon("app/resources/images/help_icon.png"))
+        self.help_button.setIconSize(QtCore.QSize(20, 20))
+        self.help_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.help_button.setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(226, 241, 99, 0.15); "
+            "    color: #E2F163; "
+            "    border: 1px solid #E2F163; "
+            "    border-radius: 22px; "
+            "    padding: 8px 15px;"
+            "    text-align: left;"
+            "}"
+            "QPushButton:hover {"
+            "    background-color: rgba(226, 241, 99, 0.25); "
+            "}"
+            "QPushButton:pressed {"
+            "    background-color: rgba(226, 241, 99, 0.35); "
+            "}"
+        )
+        self.help_button.clicked.connect(self.show_help)
         
         self.layout.addWidget(self.left_panel)
         
@@ -175,4 +199,14 @@ class LoginPage(QtWidgets.QWidget):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self.main_window)
         self.main_window.show()
-        self.hide()  # Hide the login window
+        self.hide() 
+
+    def show_help(self):
+        """Show help dialog when help button is clicked"""
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText("Help Information")
+        msg.setInformativeText("For login assistance, please contact your system administrator or IT support team.")
+        msg.setWindowTitle("Help")
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
