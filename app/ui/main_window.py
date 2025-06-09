@@ -59,7 +59,7 @@ class Ui_MainWindow(object):
     def create_sidebar(self):
         # Create the sidebar widget
         self.sidebar = QtWidgets.QWidget()
-        self.sidebar.setFixedWidth(240)
+        self.sidebar.setFixedWidth(240)  # Ensure consistent width
         self.sidebar.setStyleSheet("background-color: #232323;")
         
         # Logo
@@ -69,11 +69,12 @@ class Ui_MainWindow(object):
         
         # Navigation buttons container
         self.nav_container = QtWidgets.QWidget(self.sidebar)
-        self.nav_container.setGeometry(QtCore.QRect(30, 130, 181, 394))
+        self.nav_container.setGeometry(QtCore.QRect(20, 130, 200, 394))  # Adjusted width for better alignment
         
         # Navigation layout
         self.nav_layout = QtWidgets.QVBoxLayout(self.nav_container)
         self.nav_layout.setContentsMargins(0, 0, 0, 0)
+        self.nav_layout.setSpacing(5)  # Add consistent spacing between buttons
         
         # Create navigation buttons
         self.create_nav_button("Dashboard", "app/resources/images/Home.png")
@@ -86,12 +87,13 @@ class Ui_MainWindow(object):
         
         # Bottom buttons container
         self.bottom_container = QtWidgets.QWidget(self.sidebar)
-        self.bottom_container.setGeometry(QtCore.QRect(20, 560, 201, 141))
-        
+        self.bottom_container.setGeometry(QtCore.QRect(20, 560, 200, 141))  # Adjusted width for consistency
+
         # Bottom buttons layout
         self.bottom_layout = QtWidgets.QVBoxLayout(self.bottom_container)
         self.bottom_layout.setContentsMargins(0, 0, 0, 0)
-        
+        self.bottom_layout.setSpacing(5)  # Consistent spacing
+
         # Create bottom buttons
         self.create_bottom_button("Help", "app/resources/images/Settings.png")
         self.create_bottom_button("About", "app/resources/images/Suppliers.png")
@@ -105,37 +107,62 @@ class Ui_MainWindow(object):
         button.setMinimumHeight(50)
         button.setFont(QtGui.QFont("Segoe UI", 10))
         button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        button.setStyleSheet(
-            "color: white; "
-            "text-align: left; "
-            "padding-left: 5px;"
-        )
-        button.setIcon(QtGui.QIcon(icon_path))
         
-        # Store the button reference with its name
-        button_name = f"pushButton{text}"
-        setattr(self, button_name, button)
+        # Improved styling for consistent alignment
+        button.setStyleSheet("""
+            QPushButton {
+                color: white;
+                text-align: left;
+                padding-left: 10px;
+                border: none;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #2d2d2d;
+            }
+        """)
         
+        # Set icon with consistent size
+        icon = QtGui.QIcon(icon_path)
+        button.setIcon(icon)
+        button.setIconSize(QtCore.QSize(20, 20))
+        
+        # Add to layout
         self.nav_layout.addWidget(button)
+        
+        # Store reference to button
+        setattr(self, f"pushButton{text}", button)
         
     def create_bottom_button(self, text, icon_path):
         button = QtWidgets.QPushButton(f" {text}")
         button.setMinimumHeight(40)
         button.setFont(QtGui.QFont("Segoe UI", 8))
         button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        button.setStyleSheet(
-            "color: white; "
-            "text-align: left; "
-            "padding-left: 5px;"
-        )
-        button.setIcon(QtGui.QIcon(icon_path))
+        
+        # Improved styling for consistent alignment
+        button.setStyleSheet("""
+            QPushButton {
+                color: white;
+                text-align: left;
+                padding-left: 10px;
+                border: none;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #2d2d2d;
+            }
+        """)
+        
+        # Set icon with consistent size
+        icon = QtGui.QIcon(icon_path)
+        button.setIcon(icon)
         button.setIconSize(QtCore.QSize(18, 18))
         
-        # Store the button reference with its name
-        button_name = f"pushButton{text}"
-        setattr(self, button_name, button)
-        
+        # Add to layout
         self.bottom_layout.addWidget(button)
+        
+        # Store reference to button
+        setattr(self, f"pushButton{text}", button)
         
     def add_pages(self):
         # Dashboard page
