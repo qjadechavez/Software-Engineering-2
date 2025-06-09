@@ -1,0 +1,13 @@
+<RCC>
+  <qresource prefix="images">
+    <file>images/Group 11.png</file>
+    <file>images/Group 15.png</file>
+    <file>images/Home.png</file>
+    <file>images/Inventory.png</file>
+    <file>images/Miere1.png</file>
+    <file>images/Order.png</file>
+    <file>images/Settings.png</file>
+    <file>images/Suppliers.png</file>
+    <file>images/Vector.png</file>
+  </qresource>
+</RCC>
