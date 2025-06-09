@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtWidgets
-from pages.LoginPage import LoginPage
+from app.ui.pages.login_page import LoginPage
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
