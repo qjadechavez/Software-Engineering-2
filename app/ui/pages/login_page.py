@@ -39,14 +39,14 @@ class LoginPage(QtWidgets.QWidget):
         
         # Logo/Brand image
         self.logo_label = QtWidgets.QLabel(self.left_panel)
-        self.logo_label.setGeometry(QtCore.QRect(195, 200, 250, 250))
-        pixmap = QtGui.QPixmap("app/resources/images/Miere1.png")
-        scaled_pixmap = pixmap.scaled(200, 200, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        self.logo_label.setGeometry(QtCore.QRect(140, 100, 400, 400))
+        pixmap = QtGui.QPixmap("app/resources/images/login-logo.png")
+        scaled_pixmap = pixmap.scaled(350, 350, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.logo_label.setPixmap(scaled_pixmap)        
 
         # Brand tagline
         self.tagline_label = QtWidgets.QLabel(self.left_panel)
-        self.tagline_label.setGeometry(QtCore.QRect(120, 400, 400, 40))
+        self.tagline_label.setGeometry(QtCore.QRect(120, 420, 400, 40))
         self.tagline_label.setStyleSheet("color: #E2F163; font-size: 18px;")
         self.tagline_label.setFont(QtGui.QFont("Segoe UI", 14))
         self.tagline_label.setText("Inventory Management System")
