@@ -14,6 +14,7 @@ class LoginPage(QtWidgets.QWidget):
     def setupUi(self):
         # Set the main window properties
         self.setObjectName("LoginForm")
+        self.setWindowTitle("Login - Inventory Management System")
         self.resize(1280, 720)
         self.setMinimumSize(QtCore.QSize(1280, 720))
         self.setMaximumSize(QtCore.QSize(1280, 720))

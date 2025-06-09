@@ -9,7 +9,6 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-# Update import to use your new structure
 from app.ui.pages import (
     DashboardPage,
     InventoryPage,
@@ -27,9 +26,6 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         # Set up the main window properties
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1280, 720)
-        MainWindow.setMinimumSize(QtCore.QSize(1280, 720))
-        MainWindow.setMaximumSize(QtCore.QSize(1280, 720))
         
         # Create the central widget
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -55,26 +51,49 @@ class Ui_MainWindow(object):
         
         # Set initial page
         self.stackedWidgetMain.setCurrentIndex(0)
+
+        MainWindow.setWindowTitle("Inventory Management System")
+        
+        # Set window to full screen and disable minimize/maximize buttons
+        MainWindow.setWindowFlags(
+            QtCore.Qt.Window |
+            QtCore.Qt.CustomizeWindowHint |
+            QtCore.Qt.WindowTitleHint |
+            QtCore.Qt.WindowCloseButtonHint
+        )
+        
+        # Set window to maximized size
+        MainWindow.showMaximized()
+        
+        # Make the window unresizable
+        MainWindow.setFixedSize(MainWindow.size())
         
     def create_sidebar(self):
-        # Create the sidebar widget
         self.sidebar = QtWidgets.QWidget()
-        self.sidebar.setFixedWidth(240)  # Ensure consistent width
+        self.sidebar.setFixedWidth(240) 
         self.sidebar.setStyleSheet("background-color: #232323;")
         
+        # Create main layout for sidebar
+        self.sidebar_layout = QtWidgets.QVBoxLayout(self.sidebar)
+        self.sidebar_layout.setContentsMargins(20, 20, 20, 20)
+        self.sidebar_layout.setSpacing(0)
+        
         # Logo
-        self.logo_label = QtWidgets.QLabel(self.sidebar)
-        self.logo_label.setGeometry(QtCore.QRect(10, 20, 221, 101))
+        self.logo_label = QtWidgets.QLabel()
         self.logo_label.setPixmap(QtGui.QPixmap("app/resources/images/Miere1.png"))
+        self.logo_label.setFixedHeight(100)
+        self.sidebar_layout.addWidget(self.logo_label)
+        
+        # Add some spacing after the logo
+        self.sidebar_layout.addSpacing(10)
         
         # Navigation buttons container
-        self.nav_container = QtWidgets.QWidget(self.sidebar)
-        self.nav_container.setGeometry(QtCore.QRect(20, 130, 200, 394))  # Adjusted width for better alignment
+        self.nav_container = QtWidgets.QWidget()
         
         # Navigation layout
         self.nav_layout = QtWidgets.QVBoxLayout(self.nav_container)
         self.nav_layout.setContentsMargins(0, 0, 0, 0)
-        self.nav_layout.setSpacing(5)  # Add consistent spacing between buttons
+        self.nav_layout.setSpacing(5)
         
         # Create navigation buttons
         self.create_nav_button("Dashboard", "app/resources/images/Home.png")
@@ -85,19 +104,27 @@ class Ui_MainWindow(object):
         self.create_nav_button("Sales", "app/resources/images/Order.png")
         self.create_nav_button("Maintenance", "app/resources/images/Group 15.png")
         
+        # Add navigation container to sidebar layout
+        self.sidebar_layout.addWidget(self.nav_container)
+        
+        # Add expanding spacer to push bottom buttons to bottom
+        self.sidebar_layout.addStretch(1)
+        
         # Bottom buttons container
-        self.bottom_container = QtWidgets.QWidget(self.sidebar)
-        self.bottom_container.setGeometry(QtCore.QRect(20, 560, 200, 141))  # Adjusted width for consistency
+        self.bottom_container = QtWidgets.QWidget()
 
         # Bottom buttons layout
         self.bottom_layout = QtWidgets.QVBoxLayout(self.bottom_container)
         self.bottom_layout.setContentsMargins(0, 0, 0, 0)
-        self.bottom_layout.setSpacing(5)  # Consistent spacing
+        self.bottom_layout.setSpacing(5)
 
         # Create bottom buttons
         self.create_bottom_button("Help", "app/resources/images/Settings.png")
         self.create_bottom_button("About", "app/resources/images/Suppliers.png")
         self.create_bottom_button("Logout", "app/resources/images/Vector.png")
+        
+        # Add bottom container to sidebar layout
+        self.sidebar_layout.addWidget(self.bottom_container)
         
         # Add sidebar to main layout
         self.main_layout.addWidget(self.sidebar)
@@ -108,7 +135,6 @@ class Ui_MainWindow(object):
         button.setFont(QtGui.QFont("Segoe UI", 10))
         button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
-        # Improved styling for consistent alignment
         button.setStyleSheet("""
             QPushButton {
                 color: white;
@@ -135,11 +161,10 @@ class Ui_MainWindow(object):
         
     def create_bottom_button(self, text, icon_path):
         button = QtWidgets.QPushButton(f" {text}")
-        button.setMinimumHeight(40)
-        button.setFont(QtGui.QFont("Segoe UI", 8))
+        button.setMinimumHeight(50)
+        button.setFont(QtGui.QFont("Segoe UI", 10))
         button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
-        # Improved styling for consistent alignment
         button.setStyleSheet("""
             QPushButton {
                 color: white;
@@ -212,7 +237,6 @@ class Ui_MainWindow(object):
         self.pushButtonMaintenance.clicked.connect(lambda: self.stackedWidgetMain.setCurrentIndex(6))
         self.pushButtonHelp.clicked.connect(lambda: self.stackedWidgetMain.setCurrentIndex(7))
         self.pushButtonAbout.clicked.connect(lambda: self.stackedWidgetMain.setCurrentIndex(8))
-        # Logout button would typically handle logout functionality, not switch pages
 
 
 if __name__ == "__main__":

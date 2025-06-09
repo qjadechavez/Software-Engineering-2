@@ -71,9 +71,6 @@ class DashboardPage(BasePage):
         title_label.setFont(font)
         title_label.setText("Sales Overview")
         
-        # Additional widgets similar to the original UI
-        # ...
-        
         self.scroll_layout.addWidget(sales_widget)
     
     def create_inventory_summary_widget(self):
