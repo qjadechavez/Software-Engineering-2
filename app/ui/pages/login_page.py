@@ -182,7 +182,7 @@ class LoginPage(QtWidgets.QWidget):
         user = self.auth_manager.authenticate(username, password)
         
         if user:
-            self.open_main_window()
+            self.open_main_window(user)
         else:
             self.show_error("Invalid username or password")
             
@@ -194,11 +194,11 @@ class LoginPage(QtWidgets.QWidget):
         # Hide the error message after 3 seconds
         QtCore.QTimer.singleShot(3000, self.error_label.hide)
         
-    def open_main_window(self):
+    def open_main_window(self, user):
         """Open the main application window after successful login"""
-        self.main_window = QtWidgets.QMainWindow()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self.main_window)
+        from app.ui.main_window import MainWindow
+        
+        self.main_window = MainWindow(user_info=user)
         self.main_window.show()
         self.hide() 
 

@@ -43,6 +43,9 @@ class Ui_MainWindow(object):
         self.stackedWidgetMain = QtWidgets.QStackedWidget()
         self.main_layout.addWidget(self.stackedWidgetMain)
         
+        # Store user_info as an instance variable (instead of passing it as parameter)
+        self.user_info = getattr(MainWindow, 'user_info', None)
+        
         # Add all pages to the stacked widget
         self.add_pages()
         
@@ -52,7 +55,7 @@ class Ui_MainWindow(object):
         # Set initial page
         self.stackedWidgetMain.setCurrentIndex(0)
 
-        MainWindow.setWindowTitle("Inventory Management System")
+        MainWindow.setWindowTitle("Miere Beauty Lounge - Sales and Inventory Management System")
         
         # Set window to full screen and disable minimize/maximize buttons
         MainWindow.setWindowFlags(
@@ -190,40 +193,51 @@ class Ui_MainWindow(object):
         setattr(self, f"pushButton{text}", button)
         
     def add_pages(self):
+        # Import page classes
+        from app.ui.pages.dashboard_page import DashboardPage
+        from app.ui.pages.inventory_page import InventoryPage
+        from app.ui.pages.reports_page import ReportsPage
+        from app.ui.pages.customers_page import CustomersPage
+        from app.ui.pages.suppliers_page import SuppliersPage
+        from app.ui.pages.sales_page import SalesPage
+        from app.ui.pages.maintenance_page import MaintenancePage
+        from app.ui.pages.help_page import HelpPage
+        from app.ui.pages.about_page import AboutPage
+        
         # Dashboard page
-        dashboard_page = DashboardPage()
+        dashboard_page = DashboardPage(user_info=self.user_info)
         self.stackedWidgetMain.addWidget(dashboard_page)
         
         # Inventory page
-        inventory_page = InventoryPage()
+        inventory_page = InventoryPage(user_info=self.user_info)
         self.stackedWidgetMain.addWidget(inventory_page)
         
         # Reports page
-        reports_page = ReportsPage()
+        reports_page = ReportsPage(user_info=self.user_info)
         self.stackedWidgetMain.addWidget(reports_page)
         
         # Customers page
-        customers_page = CustomersPage()
+        customers_page = CustomersPage(user_info=self.user_info)
         self.stackedWidgetMain.addWidget(customers_page)
         
         # Suppliers page
-        suppliers_page = SuppliersPage()
+        suppliers_page = SuppliersPage(user_info=self.user_info)
         self.stackedWidgetMain.addWidget(suppliers_page)
         
         # Sales page
-        sales_page = SalesPage()
+        sales_page = SalesPage(user_info=self.user_info)
         self.stackedWidgetMain.addWidget(sales_page)
         
         # Maintenance page
-        maintenance_page = MaintenancePage()
+        maintenance_page = MaintenancePage(user_info=self.user_info)
         self.stackedWidgetMain.addWidget(maintenance_page)
         
         # Help page
-        help_page = HelpPage()
+        help_page = HelpPage(user_info=self.user_info)
         self.stackedWidgetMain.addWidget(help_page)
         
         # About page
-        about_page = AboutPage()
+        about_page = AboutPage(user_info=self.user_info)
         self.stackedWidgetMain.addWidget(about_page)
         
         # Apply consistent styling to all pages
@@ -265,11 +279,39 @@ class Ui_MainWindow(object):
         self.pushButtonAbout.clicked.connect(lambda: self.stackedWidgetMain.setCurrentIndex(8))
 
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self, parent=None, user_info=None):
+        super(MainWindow, self).__init__(parent)
+        self.user_info = user_info  # Store user_info
+        self.ui = Ui_MainWindow()
+        self.setupUi()
+        
+    def setupUi(self):
+        self.ui.setupUi(self)  # Will access self.user_info
+        self.setup_pages_with_user_info()
+        
+    def setup_pages_with_user_info(self):
+        # Replace the existing pages with new ones that have user_info
+        # Remove all widgets from stacked widget first
+        while self.ui.stackedWidgetMain.count() > 0:
+            self.ui.stackedWidgetMain.removeWidget(self.ui.stackedWidgetMain.widget(0))
+            
+        # Add pages with user_info
+        from app.ui.pages import (
+            DashboardPage, InventoryPage, ReportsPage, CustomersPage,
+            SuppliersPage, SalesPage, MaintenancePage, HelpPage, AboutPage
+        )
+        
+        # Add all pages with user_info
+        self.ui.stackedWidgetMain.addWidget(DashboardPage(self, user_info=self.user_info))
+        self.ui.stackedWidgetMain.addWidget(InventoryPage(self, user_info=self.user_info))
+        self.ui.stackedWidgetMain.addWidget(ReportsPage(self, user_info=self.user_info))
+        self.ui.stackedWidgetMain.addWidget(CustomersPage(self, user_info=self.user_info))
+        self.ui.stackedWidgetMain.addWidget(SuppliersPage(self, user_info=self.user_info))
+        self.ui.stackedWidgetMain.addWidget(SalesPage(self, user_info=self.user_info))
+        self.ui.stackedWidgetMain.addWidget(MaintenancePage(self, user_info=self.user_info))
+        self.ui.stackedWidgetMain.addWidget(HelpPage(self, user_info=self.user_info))
+        self.ui.stackedWidgetMain.addWidget(AboutPage(self, user_info=self.user_info))
+        
+        # Reconnect the buttons to the pages
+        self.ui.connect_buttons()

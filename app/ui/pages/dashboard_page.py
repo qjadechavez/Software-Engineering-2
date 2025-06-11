@@ -2,8 +2,8 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from app.ui.pages.base_page import BasePage
 
 class DashboardPage(BasePage):
-    def __init__(self, parent=None):
-        super(DashboardPage, self).__init__(parent, title="Dashboard")
+    def __init__(self, parent=None, user_info=None):
+        super(DashboardPage, self).__init__(parent, title="Dashboard", user_info=user_info)
     
     def createContent(self):
         # Scroll area (keeping the container, but not adding widgets to it)

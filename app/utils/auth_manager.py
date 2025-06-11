@@ -5,12 +5,14 @@ class AuthManager:
         """Initialize the authentication manager"""
         # User accounts
         self._users = {
-            "juan": {
+            "Juan": {
                 "password": "juan123",
+                "full_name": "Juan Perez",
                 "role": "admin"
             },
-            "maria": {
+            "Maria": {
                 "password": "maria123",
+                "full_name": "Maria Lopez",
                 "role": "staff"
             }
         }

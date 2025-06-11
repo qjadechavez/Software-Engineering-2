@@ -2,8 +2,8 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from app.ui.pages.base_page import BasePage
 
 class MaintenancePage(BasePage):
-    def __init__(self, parent=None):
-        super(MaintenancePage, self).__init__(parent, title="Maintenance")
+    def __init__(self, parent=None, user_info=None):
+        super(MaintenancePage, self).__init__(parent, title="Maintenance", user_info=user_info)
     
     def createContent(self):
         # Content area - just an empty widget with a placeholder
