@@ -29,7 +29,7 @@ class BasePage(QtWidgets.QWidget):
         self.widget_header.setFixedHeight(99)
         self.widget_header.setStyleSheet("""
             QWidget#widget_header {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, 
+                background: qlineargradient(x1:0.5, y1:0.5, x2:1.5, y2:0.5, 
                                           stop:0 #232323, stop:1 #3f3f3f);
                 border-bottom: 2px solid #3a3a3a;
             }
