@@ -3,26 +3,21 @@ from app.ui.pages.base_page import BasePage
 
 class SalesPage(BasePage):
     def __init__(self, parent=None):
-        super(SalesPage, self).__init__(parent)
+        super(SalesPage, self).__init__(parent, title="Sales")
+    
+    def createContent(self):
+        # Content area - just an empty widget with a placeholder
+        self.content_area = QtWidgets.QWidget()
+        self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
+        self.content_layout.setContentsMargins(20, 20, 20, 20)
         
-    def setupUi(self):
-        # Main layout
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        # Placeholder message
+        placeholder_label = QtWidgets.QLabel("Sales content")
+        placeholder_label.setAlignment(QtCore.Qt.AlignCenter)
+        placeholder_label.setFont(QtGui.QFont("Segoe UI", 14))
+        placeholder_label.setStyleSheet("color: #888888;")
         
-        # Header widget
-        self.header_widget = QtWidgets.QWidget()
-        self.header_widget.setFixedHeight(99)
-        self.header_widget.setStyleSheet("background-color: rgba(35, 35, 35, 0.95);")
-        self.layout.addWidget(self.header_widget)
+        self.content_layout.addWidget(placeholder_label)
+        self.content_layout.addStretch()
         
-        # Content area
-        self.content_widget = QtWidgets.QWidget()
-        self.content_layout = QtWidgets.QVBoxLayout(self.content_widget)
-        
-        # Add sales content (placeholder for now)
-        label = QtWidgets.QLabel("Sales")
-        label.setAlignment(QtCore.Qt.AlignCenter)
-        self.content_layout.addWidget(label)
-        
-        self.layout.addWidget(self.content_widget)
+        self.layout.addWidget(self.content_area)

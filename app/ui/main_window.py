@@ -226,6 +226,32 @@ class Ui_MainWindow(object):
         about_page = AboutPage()
         self.stackedWidgetMain.addWidget(about_page)
         
+        # Apply consistent styling to all pages
+        self.apply_page_styling()
+
+    def apply_page_styling(self):
+        # Apply consistent header styling to all pages in the stacked widget
+        header_style = "background-color: rgba(35, 35, 35, 0.95);"
+        
+        # Loop through all pages in the stacked widget
+        for i in range(self.stackedWidgetMain.count()):
+            page = self.stackedWidgetMain.widget(i)
+            
+            # Find header widget in each page
+            for child in page.children():
+                if isinstance(child, QtWidgets.QWidget) and hasattr(child, 'objectName'):
+                    if 'header' in child.objectName().lower() or hasattr(child, 'isHeader'):
+                        # Apply consistent style
+                        child.setStyleSheet(header_style)
+                        
+                        # Find title and date labels within the header
+                        for header_child in child.children():
+                            if isinstance(header_child, QtWidgets.QLabel):
+                                if 'title' in header_child.objectName().lower():
+                                    header_child.setStyleSheet("color: white; font-size: 24px;")
+                                elif 'date' in header_child.objectName().lower():
+                                    header_child.setStyleSheet("color: #E2F163; font-size: 14px;")
+
     def connect_buttons(self):
         # Connect main navigation buttons to page switching
         self.pushButtonDashboard.clicked.connect(lambda: self.stackedWidgetMain.setCurrentIndex(0))
