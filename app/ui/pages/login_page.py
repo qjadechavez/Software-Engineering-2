@@ -178,14 +178,18 @@ class LoginPage(QtWidgets.QWidget):
             self.show_error("Please enter both username and password")
             return
             
-        # Authenticate user
-        user = self.auth_manager.authenticate(username, password)
-        
-        if user:
-            self.open_main_window(user)
-        else:
-            self.show_error("Invalid username or password")
+        try:
+            # Authenticate user
+            user = self.auth_manager.authenticate(username, password)
             
+            if user:
+                self.open_main_window(user)
+            else:
+                self.show_error("Invalid username or password")
+        except Exception as e:
+            self.show_error(f"Login error: Database connection failed")
+            print(f"Authentication error: {e}")
+        
     def show_error(self, message):
         """Display error message"""
         self.error_label.setText(message)
@@ -198,6 +202,7 @@ class LoginPage(QtWidgets.QWidget):
         """Open the main application window after successful login"""
         from app.ui.main_window import MainWindow
         
+        # Create and show the main window
         self.main_window = MainWindow(user_info=user)
         self.main_window.show()
         self.hide() 

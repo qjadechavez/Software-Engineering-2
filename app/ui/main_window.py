@@ -290,6 +290,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)  # Will access self.user_info
         self.setup_pages_with_user_info()
         
+        # Connect logout button directly here instead of in a separate method
+        self.ui.pushButtonLogout.clicked.connect(self.handle_logout)
+
     def setup_pages_with_user_info(self):
         # Replace the existing pages with new ones that have user_info
         # Remove all widgets from stacked widget first
@@ -315,3 +318,23 @@ class MainWindow(QtWidgets.QMainWindow):
         
         # Reconnect the buttons to the pages
         self.ui.connect_buttons()
+        
+    def handle_logout(self):
+        """Handle user logout"""
+        from app.utils.auth_manager import AuthManager
+        
+        username = self.user_info.get("username")
+        if not username:
+            print("Error: No username found for logout")
+            return
+            
+        # Record logout in database
+        auth_manager = AuthManager()
+        auth_manager.logout(username)
+        print(f"User [{username}] logged out successfully")
+        
+        # Return to login screen
+        from app.ui.pages.login_page import LoginPage
+        self.login_window = LoginPage()
+        self.login_window.show()
+        self.close()
