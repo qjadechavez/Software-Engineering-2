@@ -478,14 +478,18 @@ class InventoryPage(BasePage):
             # Update the info cards
             for card in self.findChildren(QtWidgets.QFrame):
                 if hasattr(card, 'value_label'):
-                    title_label = card.layout().itemAt(0).widget()
-                    if title_label.text() == "Low Stock Items":
-                        card.value_label.setText(str(low_stock_count))
-                    elif title_label.text() == "Expired Items":
-                        card.value_label.setText(str(expired_count))
-                    elif title_label.text() == "Total Products":
-                        card.value_label.setText(str(total_count))
-            
+                    # Get the text layout which is the second item (index 1) in card layout
+                    text_layout = card.layout().itemAt(1).layout()
+                    if text_layout:
+                        # Get the title label which is the first widget in the text layout
+                        title_label = text_layout.itemAt(0).widget()
+                        if title_label.text() == "Low Stock Items":
+                            card.value_label.setText(str(low_stock_count))
+                        elif title_label.text() == "Expired Items":
+                            card.value_label.setText(str(expired_count))
+                        elif title_label.text() == "Total Products":
+                            card.value_label.setText(str(total_count))
+        
             cursor.close()
             
         except mysql.connector.Error as err:
@@ -623,9 +627,9 @@ class ProductDialog(QtWidgets.QDialog):
             self.expiry_date_input.setDate(default_expiry)
     
     def setup_ui(self):
-        """Set up the dialog UI with improved design - no scrollbar"""
-        # Set dialog size - increased height to fit all content
-        self.resize(550, 700)  # Increased height from 580 to 700
+        """Set up the dialog UI with improved design"""
+        # Set dialog size
+        self.resize(550, 580)
         
         # Main layout
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -692,7 +696,32 @@ class ProductDialog(QtWidgets.QDialog):
         separator.setStyleSheet("background-color: rgba(100, 100, 100, 0.3); margin: 0px 0px 10px 0px;")
         container_layout.addWidget(separator)
         
-        # Form content - directly in container instead of scroll area
+        # Scroll area for form
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
+        scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        scroll_area.setStyleSheet("""
+            QScrollArea {
+                background-color: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background-color: #292929;
+                width: 10px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #555;
+                min-height: 20px;
+                border-radius: 5px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """)
+        
+        # Form content
         form_widget = QtWidgets.QWidget()
         form_widget.setStyleSheet("background: transparent;")
         form_layout = QtWidgets.QFormLayout(form_widget)
@@ -847,11 +876,11 @@ class ProductDialog(QtWidgets.QDialog):
         desc_label = QtWidgets.QLabel("Description:")
         self.description_input = QtWidgets.QTextEdit()
         self.description_input.setPlaceholderText("Enter product description")
-        self.description_input.setMinimumHeight(100)  # Reduced from 120 to save space
+        self.description_input.setMinimumHeight(120)
         form_layout.addRow(desc_label, self.description_input)
         
-        # Add the form widget directly to the container
-        container_layout.addWidget(form_widget, 1)
+        scroll_area.setWidget(form_widget)
+        container_layout.addWidget(scroll_area, 1)
         
         # Add bottom separator
         bottom_separator = QtWidgets.QFrame()
