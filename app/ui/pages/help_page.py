@@ -11,6 +11,9 @@ class HelpPage(BasePage):
         self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
         self.content_layout.setContentsMargins(20, 20, 20, 20)
         
+        # Set background color for the content area
+        self.content_area.setStyleSheet("background-color: red;")
+        
         # Placeholder message
         placeholder_label = QtWidgets.QLabel("Help content")
         placeholder_label.setAlignment(QtCore.Qt.AlignCenter)
