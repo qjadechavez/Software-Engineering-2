@@ -31,7 +31,6 @@ def main():
     
     # Setup database
     if not setup_database():
-        # Show error message if database setup fails
         error_dialog = QtWidgets.QMessageBox()
         error_dialog.setIcon(QtWidgets.QMessageBox.Critical)
         error_dialog.setText("Database Connection Error")
