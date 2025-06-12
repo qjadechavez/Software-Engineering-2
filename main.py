@@ -10,6 +10,7 @@ def setup_database():
         # Use the DBManager to get a connection instead of creating a new one
         conn = DBManager.get_connection()
         print("Connected to MySQL database successfully")
+        
         conn.close()
         return True
         

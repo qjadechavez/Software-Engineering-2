@@ -27,7 +27,7 @@ class AuthManager:
             # Query the database for the user
             # In a real application, passwords should be hashed!
             cursor.execute(
-                """SELECT username, role, full_name, 
+                """SELECT user_id, username, role, full_name, 
                    login_time, logout_time, total_session_time
                    FROM users WHERE username = %s AND password = %s""",
                 (username, password)
@@ -42,8 +42,8 @@ class AuthManager:
                 
                 # Update login_time
                 cursor.execute(
-                    "UPDATE users SET login_time = CURRENT_TIMESTAMP() WHERE username = %s",
-                    (username,)
+                    "UPDATE users SET login_time = CURRENT_TIMESTAMP() WHERE user_id = %s",
+                    (user['user_id'],)
                 )
                 conn.commit()
                 
@@ -52,6 +52,7 @@ class AuthManager:
                 
                 # Return user information
                 return {
+                    "user_id": user["user_id"],
                     "username": user["username"],
                     "role": user["role"], 
                     "full_name": user["full_name"],
