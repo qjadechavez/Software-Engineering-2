@@ -48,6 +48,7 @@ class BasePage(QtWidgets.QWidget):
             font-size: 26px;
             padding-left: 10px;
             border-left: 4px solid #4ecca3;
+            background-color: transparent;
         """)
         self.header_title.setFont(QtGui.QFont("Segoe UI", 20, QtGui.QFont.Bold))
         self.header_title.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -57,6 +58,7 @@ class BasePage(QtWidgets.QWidget):
         self.user_info_container = QtWidgets.QWidget()
         self.user_info_container.setFixedWidth(320)
         self.user_info_container.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.user_info_container.setStyleSheet("background-color: transparent;")
         
         user_info_layout = QtWidgets.QVBoxLayout(self.user_info_container)
         user_info_layout.setContentsMargins(0, 15, 0, 15)
@@ -64,16 +66,18 @@ class BasePage(QtWidgets.QWidget):
         
         # User label (upper part)
         self.user_label = QtWidgets.QLabel("CURRENT USER")
-        self.user_label.setStyleSheet("color: #a0a0a0; font-size: 11px; letter-spacing: 1px;")
+        self.user_label.setStyleSheet("color: #a0a0a0; font-size: 11px; letter-spacing: 1px; background-color: transparent;")
         self.user_label.setAlignment(QtCore.Qt.AlignCenter)
         self.user_label.setFont(QtGui.QFont("Segoe UI", 9))
+        self.user_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         
         # User info label (lower part)
         self.user_info_label = QtWidgets.QLabel()
         self.user_info_label.setObjectName("user_info_label")
-        self.user_info_label.setStyleSheet("color: #ffffff; font-size: 14px;")
+        self.user_info_label.setStyleSheet("color: #ffffff; font-size: 14px; background-color: transparent;")
         self.user_info_label.setFont(QtGui.QFont("Segoe UI", 13, QtGui.QFont.DemiBold))
         self.user_info_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.user_info_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         
         # Add labels to container
         user_info_layout.addWidget(self.user_label)
@@ -82,6 +86,8 @@ class BasePage(QtWidgets.QWidget):
         # Add date/time to header (right side - fixed position)
         self.header_date_container = QtWidgets.QWidget()
         self.header_date_container.setFixedWidth(320)
+        self.header_date_container.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.header_date_container.setStyleSheet("background-color: transparent;")
         
         date_layout = QtWidgets.QVBoxLayout(self.header_date_container)
         date_layout.setContentsMargins(0, 15, 0, 15)
@@ -89,16 +95,18 @@ class BasePage(QtWidgets.QWidget):
         
         # Date label (upper part)
         self.date_label = QtWidgets.QLabel("CURRENT DATE")
-        self.date_label.setStyleSheet("color: #a0a0a0; font-size: 11px; letter-spacing: 1px;")
+        self.date_label.setStyleSheet("color: #a0a0a0; font-size: 11px; letter-spacing: 1px; background-color: transparent;")
         self.date_label.setAlignment(QtCore.Qt.AlignRight)
         self.date_label.setFont(QtGui.QFont("Segoe UI", 9))
+        self.date_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         
         # Date value (lower part)
         self.header_date = QtWidgets.QLabel()
         self.header_date.setObjectName("header_date")
-        self.header_date.setStyleSheet("color: #4ecca3; font-size: 14px;")
+        self.header_date.setStyleSheet("color: #4ecca3; font-size: 14px; background-color: transparent;")
         self.header_date.setFont(QtGui.QFont("Segoe UI", 13))
         self.header_date.setAlignment(QtCore.Qt.AlignRight)
+        self.header_date.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         
         # Add labels to container
         date_layout.addWidget(self.date_label)

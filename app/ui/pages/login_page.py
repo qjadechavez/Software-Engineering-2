@@ -202,7 +202,7 @@ class LoginPage(QtWidgets.QWidget):
         """Open the main application window after successful login"""
         from app.ui.main_window import MainWindow
         
-        # Create and show the main window
+        # Create and show the main window 
         self.main_window = MainWindow(user_info=user)
         self.main_window.show()
         self.hide() 
