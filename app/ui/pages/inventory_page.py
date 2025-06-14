@@ -823,14 +823,14 @@ class InventoryPage(BasePage):
         # Define column headers and their relative widths
         product_columns = [
             ("ID", 0.05),
-            ("Name", 0.15),
+            ("Name", 0.17),
             ("Category", 0.10),
             ("Price", 0.07),
             ("Quantity", 0.07),
             ("Threshold", 0.07),
             ("Expiry Date", 0.11),
             ("Availability", 0.10),
-            ("Description", 0.28)  # Slightly reduced to ensure total is ~1.0
+            ("Description", 0.26)  # Slightly reduced to ensure total is ~1.0
         ]
         
         # Configure the table columns
@@ -936,7 +936,7 @@ class InventoryPage(BasePage):
         self.tabs.addTab(self.inventory_tab, "Inventory Status")
     
     def create_info_card(self, title, value, color, icon_type=None):
-        """Create an info card for the inventory dashboard with icons"""
+        """Create an info card for the inventory dashboard with larger icons"""
         card = QtWidgets.QFrame()
         card.setFrameShape(QtWidgets.QFrame.StyledPanel)
         card.setStyleSheet(f"""
@@ -945,7 +945,7 @@ class InventoryPage(BasePage):
                 border-radius: 10px;
                 border-left: 5px solid {color};
                 padding: 10px;
-                min-height: 100px;
+                min-height: 60px;  /* Increased height for larger icons */
             }}
         """)
         
@@ -957,28 +957,37 @@ class InventoryPage(BasePage):
         icon_path = ""
         
         if icon_type == "warning":
-            icon_path = "app/resources/images/warning.png"
+            icon_path = "app/resources/images/inventory/low-stocks-items.png"
         elif icon_type == "expired":
-            icon_path = "app/resources/images/expired.png"
+            icon_path = "app/resources/images/inventory/expired-items.png"
         elif icon_type == "products":
-            icon_path = "app/resources/images/products.png"
+            icon_path = "app/resources/images/inventory/total-products.png"
         
-        # If icon exists, show it
+        # Create a larger fixed size container for the icon
+        icon_label.setFixedSize(120, 110)  # Increased from 70x70 to 80x80
+        icon_label.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # If icon exists, show it with proper scaling
         if icon_path and QtCore.QFile(icon_path).exists():
-            icon_label.setPixmap(QtGui.QPixmap(icon_path).scaledToHeight(40))
+            pixmap = QtGui.QPixmap(icon_path)
+            # Scale the pixmap to fit the container while maintaining aspect ratio
+            scaled_pixmap = pixmap.scaled(
+                70, 70,  # Scale to slightly smaller than container to avoid clipping
+                QtCore.Qt.KeepAspectRatio,
+                QtCore.Qt.SmoothTransformation  # Use smooth transformation for better quality
+            )
+            icon_label.setPixmap(scaled_pixmap)
         else:
             # Create a colored circle if icon doesn't exist
             icon_label.setText("●")
             icon_label.setStyleSheet(f"""
                 color: {color};
-                font-size: 40px;
+                font-size: 60px;
             """)
-        
-        icon_label.setFixedSize(50, 50)
-        icon_label.setAlignment(QtCore.Qt.AlignCenter)
         
         # Text content
         text_layout = QtWidgets.QVBoxLayout()
+        text_layout.setSpacing(5)  # Reduce spacing for better layout
         
         title_label = QtWidgets.QLabel(title)
         title_label.setStyleSheet("""
@@ -990,7 +999,7 @@ class InventoryPage(BasePage):
         value_label = QtWidgets.QLabel(value)
         value_label.setStyleSheet(f"""
             color: {color};
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
         """)
         

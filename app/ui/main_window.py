@@ -26,20 +26,20 @@ class MainWindow(QtWidgets.QMainWindow):
     
     # Define page classes and their icons for easier maintenance
     PAGE_CONFIG = [
-        {"name": "Dashboard", "icon": "app/resources/images/Home.png", "class": DashboardPage},
-        {"name": "Inventory", "icon": "app/resources/images/Inventory.png", "class": InventoryPage},
-        {"name": "Reports", "icon": "app/resources/images/Group 11.png", "class": ReportsPage},
-        {"name": "Customers", "icon": "app/resources/images/Suppliers.png", "class": CustomersPage},
-        {"name": "Suppliers", "icon": "app/resources/images/Suppliers.png", "class": SuppliersPage},
-        {"name": "Sales", "icon": "app/resources/images/Order.png", "class": SalesPage},
-        {"name": "Maintenance", "icon": "app/resources/images/Group 15.png", "class": MaintenancePage},
+        {"name": "Dashboard", "icon": "app/resources/images/main-window/Home.png", "class": DashboardPage},
+        {"name": "Inventory", "icon": "app/resources/images/main-window/Inventory.png", "class": InventoryPage},
+        {"name": "Reports", "icon": "app/resources/images/main-window/Group 11.png", "class": ReportsPage},
+        {"name": "Customers", "icon": "app/resources/images/main-window/Suppliers.png", "class": CustomersPage},
+        {"name": "Suppliers", "icon": "app/resources/images/main-window/Suppliers.png", "class": SuppliersPage},
+        {"name": "Sales", "icon": "app/resources/images/main-window/Order.png", "class": SalesPage},
+        {"name": "Maintenance", "icon": "app/resources/images/main-window/Group 15.png", "class": MaintenancePage},
     ]
     
     # Bottom navigation items
     BOTTOM_NAV_CONFIG = [
-        {"name": "Help", "icon": "app/resources/images/Settings.png", "class": HelpPage},
-        {"name": "About", "icon": "app/resources/images/Suppliers.png", "class": AboutPage},
-        {"name": "Logout", "icon": "app/resources/images/Vector.png", "action": "handle_logout"},
+        {"name": "Help", "icon": "app/resources/images/main-window/Settings.png", "class": HelpPage},
+        {"name": "About", "icon": "app/resources/images/main-window/Suppliers.png", "class": AboutPage},
+        {"name": "Logout", "icon": "app/resources/images/main-window/Vector.png", "action": "handle_logout"},
     ]
     
     def __init__(self, parent=None, user_info=None):
@@ -114,7 +114,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def setupLogo(self):
         # Logo
         self.logo_label = QtWidgets.QLabel()
-        self.logo_label.setPixmap(QtGui.QPixmap("app/resources/images/Miere1.png"))
+        self.logo_label.setPixmap(QtGui.QPixmap("app/resources/images/logo/Miere1.png"))
         self.logo_label.setFixedHeight(100)
         self.sidebar_layout.addWidget(self.logo_label)
         self.sidebar_layout.addSpacing(10)

@@ -14,7 +14,7 @@ class LoginPage(QtWidgets.QWidget):
     def setupUi(self):
         # Set the main window properties
         self.setObjectName("LoginForm")
-        self.setWindowTitle("Login - Inventory Management System")
+        self.setWindowTitle("Login - Sales and Inventory Management System")
         self.resize(1280, 720)
         self.setMinimumSize(QtCore.QSize(1280, 720))
         self.setMaximumSize(QtCore.QSize(1280, 720))
@@ -40,7 +40,7 @@ class LoginPage(QtWidgets.QWidget):
         # Logo/Brand image
         self.logo_label = QtWidgets.QLabel(self.left_panel)
         self.logo_label.setGeometry(QtCore.QRect(140, 100, 400, 400))
-        pixmap = QtGui.QPixmap("app/resources/images/login-logo.png")
+        pixmap = QtGui.QPixmap("app/resources/images/logo/login-logo.png")
         scaled_pixmap = pixmap.scaled(350, 350, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.logo_label.setPixmap(scaled_pixmap)        
 

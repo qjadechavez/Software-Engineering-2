@@ -50,20 +50,30 @@ class UserSession:
         return session_duration
     
     def get_logout_info(self):
-        """Get information about the logout
+        """Get information about the logout with formatted session duration
         
         Returns:
-            dict: Logout information
+            dict: Logout information with duration in minutes and seconds format
         """
         if not self.logout_time:
             return None
             
         formatted_logout = self.logout_time.strftime("%I:%M %p, %m/%d/%Y")
+        
+        # Calculate session duration in seconds
+        session_seconds = int((self.logout_time - self.login_time).total_seconds())
+        
+        # Format duration as minutes and seconds
+        minutes = session_seconds // 60
+        remaining_seconds = session_seconds % 60
+        formatted_duration = f"{minutes} min {remaining_seconds} sec"
+        
         return {
             "username": self.username,
             "logout_time": self.logout_time,
             "formatted_logout": formatted_logout,
-            "session_duration": int((self.logout_time - self.login_time).total_seconds())
+            "session_duration": session_seconds,  # Keep raw seconds for calculations
+            "formatted_duration": formatted_duration  # Add formatted string
         }
 
 
@@ -150,7 +160,7 @@ class AuthEventLogger:
             username (str): Username
             logout_info (dict): Logout information
         """
-        print(f"User [{username}] logged out after {logout_info['session_duration']} seconds")
+        print(f"User [{username}] logged out after {logout_info['formatted_duration']}")
         print(f"Logout recorded @[{logout_info['formatted_logout']}]")
     
     @staticmethod
