@@ -1,6 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-import sys
-from app.ui.main_window import Ui_MainWindow
+from app.ui.main_window import MainWindow
 from app.utils.auth_manager import AuthManager
 
 class LoginPage(QtWidgets.QWidget):
@@ -200,8 +199,6 @@ class LoginPage(QtWidgets.QWidget):
         
     def open_main_window(self, user):
         """Open the main application window after successful login"""
-        from app.ui.main_window import MainWindow
-        
         # Create and show the main window 
         self.main_window = MainWindow(user_info=user)
         self.main_window.show()
