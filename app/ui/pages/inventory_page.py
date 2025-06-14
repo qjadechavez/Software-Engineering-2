@@ -354,6 +354,9 @@ class InventoryPage(BasePage):
             # Clear existing items
             self.products_table.setRowCount(0)
             
+            # Reset search filter
+            self.search_input.clear()
+            
             # Query for all products
             cursor.execute("SELECT * FROM products ORDER BY product_name")
             products = cursor.fetchall()
@@ -551,6 +554,9 @@ class InventoryPage(BasePage):
                 dialog = ProductDialog(self, product)
                 if dialog.exec_() == QtWidgets.QDialog.Accepted:
                     self.load_products()
+                    
+            for row in range(self.products_table.rowCount()):
+                self.products_table.setRowHidden(row, False)
             
             cursor.close()
             
@@ -566,7 +572,7 @@ class InventoryPage(BasePage):
         confirm = QtWidgets.QMessageBox.question(
             self,
             "Confirm Deletion",
-            f"Are you sure you want to delete product: {product_name}?",
+            f"Are you sure you want to delete product: {product_name}?\n\nThis will also delete all inventory records for this product.",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             QtWidgets.QMessageBox.No
         )
@@ -576,12 +582,24 @@ class InventoryPage(BasePage):
                 conn = DBManager.get_connection()
                 cursor = conn.cursor()
                 
-                # Delete the product
-                cursor.execute("DELETE FROM products WHERE product_id = %s", (product_id,))
-                conn.commit()
+                # First delete inventory records
+                cursor.execute("DELETE FROM inventory WHERE product_id = %s", (product_id,))
                 
+                # Then delete the product
+                cursor.execute("DELETE FROM products WHERE product_id = %s", (product_id,))
+                
+                conn.commit()
                 cursor.close()
+                
+                # Refresh the product list
                 self.load_products()
+                
+                # Show success message
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "Success",
+                    f"Product '{product_name}' has been deleted successfully."
+                )
                 
             except mysql.connector.Error as err:
                 self.show_error_message(f"Database error: {err}")
@@ -629,7 +647,7 @@ class ProductDialog(QtWidgets.QDialog):
     def setup_ui(self):
         """Set up the dialog UI with improved design"""
         # Set dialog size
-        self.resize(550, 580)
+        self.resize(550, 650)
         
         # Main layout
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -663,7 +681,7 @@ class ProductDialog(QtWidgets.QDialog):
         """)
         
         self.close_button = QtWidgets.QPushButton("×")
-        self.close_button.setFixedSize(30, 30)
+        self.close_button.setFixedSize(35, 35)
         self.close_button.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -672,13 +690,18 @@ class ProductDialog(QtWidgets.QDialog):
                 font-weight: bold;
                 border: none;
                 border-radius: 15px;
+                margin: 0px 0px 0px 0px;
+                line-height: 33px;
+                
             }
             QPushButton:hover {
                 background-color: rgba(255, 255, 255, 0.1);
                 color: white;
+                border-radius: 15px;
             }
             QPushButton:pressed {
                 background-color: rgba(255, 255, 255, 0.2);
+                border-radius: 15px;
             }
         """)
         self.close_button.clicked.connect(self.reject)
