@@ -4,21 +4,12 @@ from app.utils.db_manager import DBManager
 import mysql.connector
 from datetime import datetime
 
-class InventoryPage(BasePage):
-    def __init__(self, parent=None, user_info=None):
-        super(InventoryPage, self).__init__(parent, title="Inventory", user_info=user_info)
-        self.load_products()
+class StyleFactory:
+    """Factory class for consistent styling across components"""
     
-    def createContent(self):
-        # Content area with reduced margins for more space
-        self.content_area = QtWidgets.QWidget()
-        self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
-        self.content_layout.setContentsMargins(10, 10, 10, 10)
-        self.content_layout.setSpacing(8)
-        
-        # Create tabs for Products and Inventory with improved styling
-        self.tabs = QtWidgets.QTabWidget()
-        self.tabs.setStyleSheet("""
+    @staticmethod
+    def get_tab_style():
+        return """
             QTabWidget::pane { 
                 border: 1px solid #444; 
                 background-color: #232323;
@@ -27,12 +18,12 @@ class InventoryPage(BasePage):
             QTabBar::tab {
                 background-color: #343434;
                 color: #ffffff;
-                padding: 10px 30px;  /* Increased padding for wider tabs */
+                padding: 10px 30px;
                 border-top-left-radius: 6px;
                 border-top-right-radius: 6px;
                 font-weight: bold;
-                min-width: 120px;  /* Set minimum width for tabs */
-                font-size: 13px;  /* Ensure text is properly sized */
+                min-width: 120px;
+                font-size: 13px;
             }
             QTabBar::tab:selected {
                 background-color: #1a1a1a;
@@ -41,22 +32,11 @@ class InventoryPage(BasePage):
             QTabBar::tab:hover:!selected {
                 background-color: #3a3a3a;
             }
-        """)
-        
-        # Create Products tab
-        self.products_tab = QtWidgets.QWidget()
-        self.products_layout = QtWidgets.QVBoxLayout(self.products_tab)
-        self.products_layout.setContentsMargins(10, 15, 10, 10)
-        self.products_layout.setSpacing(10)
-        
-        # Create search and control area with better spacing
-        control_layout = QtWidgets.QHBoxLayout()
-        control_layout.setSpacing(10)
-        
-        # Search input with improved styling
-        self.search_input = QtWidgets.QLineEdit()
-        self.search_input.setPlaceholderText("Search products...")
-        self.search_input.setStyleSheet("""
+        """
+    
+    @staticmethod
+    def get_search_input_style():
+        return """
             QLineEdit {
                 border: 1px solid #555;
                 border-radius: 18px;
@@ -70,28 +50,13 @@ class InventoryPage(BasePage):
                 border: 1px solid #0078d7;
                 background: #323232;
             }
-        """)
-        self.search_input.textChanged.connect(self.filter_products)
-        
-        # Search icon and label
-        search_layout = QtWidgets.QHBoxLayout()
-        search_layout.setSpacing(5)
-        
-        search_icon = QtWidgets.QLabel()
-        search_icon.setPixmap(QtGui.QPixmap("app/resources/images/search.png").scaledToHeight(16) if QtCore.QFile("app/resources/images/search.png").exists() else QtGui.QPixmap())
-        search_icon.setStyleSheet("color: white; margin-right: 5px;")
-        
-        search_label = QtWidgets.QLabel("Search:")
-        search_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold;")
-        
-        search_layout.addWidget(search_icon)
-        search_layout.addWidget(search_label)
-        
-        # Add product button with improved contrast and styling
-        self.add_product_btn = QtWidgets.QPushButton("+ Add Product")
-        self.add_product_btn.setStyleSheet("""
+        """
+    
+    @staticmethod
+    def get_button_style():
+        return """
             QPushButton {
-                background-color: #007ACC;  /* Brighter blue for better contrast */
+                background-color: #007ACC;
                 color: white;
                 border-radius: 18px;
                 padding: 8px 20px;
@@ -106,19 +71,11 @@ class InventoryPage(BasePage):
             QPushButton:pressed {
                 background-color: #0066BB;
             }
-        """)
-        self.add_product_btn.clicked.connect(self.show_add_product_dialog)
-        
-        # Layout for controls
-        control_layout.addLayout(search_layout)
-        control_layout.addWidget(self.search_input, 1)
-        control_layout.addWidget(self.add_product_btn)
-        
-        self.products_layout.addLayout(control_layout)
-        
-        # Create products table with optimized column widths
-        self.products_table = QtWidgets.QTableWidget()
-        self.products_table.setStyleSheet("""
+        """
+    
+    @staticmethod
+    def get_table_style():
+        return """
             QTableWidget {
                 background-color: #1e1e1e;
                 gridline-color: #444;
@@ -136,7 +93,7 @@ class InventoryPage(BasePage):
             }
             QTableWidget::item {
                 padding: 5px;
-                background-color: #1e1e1e;  /* Force all rows to have same background */
+                background-color: #1e1e1e;
             }
             QTableWidget::item:selected {
                 background-color: #0078d7;
@@ -159,105 +116,677 @@ class InventoryPage(BasePage):
                 border-radius: 5px;
                 min-width: 20px;
             }
+        """
+    
+    @staticmethod
+    def get_dialog_style():
+        return """
+            QLabel {
+                color: #e0e0e0;
+                font-size: 14px;
+                background: transparent;
+            }
+            QLineEdit, QTextEdit, QComboBox, QDateEdit, QSpinBox, QDoubleSpinBox {
+                background-color: #2d2d2d;
+                color: white;
+                border: 1px solid #444;
+                border-radius: 5px;
+                padding: 8px;
+                selection-background-color: #007acc;
+                font-size: 13px;
+            }
+            QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QDateEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
+                border: 1px solid #007acc;
+                background-color: #333;
+            }
+            QCheckBox {
+                color: white;
+                font-size: 14px;
+                background: transparent;
+                spacing: 8px;
+            }
+            QCheckBox::indicator {
+                width: 18px;
+                height: 18px;
+                background: #2d2d2d;
+                border: 1px solid #444;
+                border-radius: 3px;
+            }
+            QCheckBox::indicator:checked {
+                background: #007acc;
+                border: none;
+                image: url(app/resources/images/check.png);
+            }
+            QPushButton {
+                background-color: #007acc;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 10px 25px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #0088e0;
+            }
+            QPushButton:pressed {
+                background-color: #006bb3;
+            }
+            QPushButton#cancelBtn {
+                background-color: #555;
+            }
+            QPushButton#cancelBtn:hover {
+                background-color: #666;
+            }
+            QPushButton#cancelBtn:pressed {
+                background-color: #444;
+            }
+        """
+
+
+class TableFactory:
+    """Factory class for creating consistent tables"""
+    
+    @staticmethod
+    def create_table():
+        """Create a base table with common configuration"""
+        table = QtWidgets.QTableWidget()
+        table.setStyleSheet(StyleFactory.get_table_style())
+        table.setSelectionBehavior(QtWidgets.QTableWidget.SelectRows)
+        table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        table.setAlternatingRowColors(False)
+        table.verticalHeader().setVisible(False)
+        table.setSortingEnabled(True)
+        table.setShowGrid(True)
+        
+        # Make columns and rows not resizable
+        table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
+        table.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
+        table.horizontalHeader().setStretchLastSection(False)
+        
+        return table
+    
+    @staticmethod
+    def configure_table_columns(table, column_data, screen_width):
+        """Configure table columns with headers and widths
+        
+        Args:
+            table: QTableWidget to configure
+            column_data: List of tuples (header, width_percentage)
+            screen_width: Total screen width to calculate from
+        """
+        # Calculate available width (accounting for sidebar and margins)
+        table_width = screen_width - 300
+        
+        # Set column count
+        table.setColumnCount(len(column_data))
+        
+        # Set headers and column widths
+        headers = [col[0] for col in column_data]
+        table.setHorizontalHeaderLabels(headers)
+        
+        # Make the table stretch to fill available space
+        table.horizontalHeader().setStretchLastSection(True)
+        
+        # Set the width for all columns except the last one
+        for idx, (_, width_pct) in enumerate(column_data[:-1]):
+            table.setColumnWidth(idx, int(table_width * width_pct))
+        
+        # Let the last column stretch to fill remaining space
+        # The setStretchLastSection(True) takes care of this
+
+
+class ControlPanelFactory:
+    """Factory class for creating search control panels"""
+    
+    @staticmethod
+    def create_search_control(search_input, add_button_text, add_button_callback, search_callback):
+        """Create a consistent search and control panel
+        
+        Args:
+            search_input: QLineEdit for search input
+            add_button_text: Text for the add button
+            add_button_callback: Callback for the add button
+            search_callback: Callback for search input changes
+        
+        Returns:
+            QHBoxLayout containing the search controls
+        """
+        control_layout = QtWidgets.QHBoxLayout()
+        control_layout.setSpacing(10)
+        
+        # Configure search input
+        search_input.setPlaceholderText("Search...")
+        search_input.setStyleSheet(StyleFactory.get_search_input_style())
+        search_input.textChanged.connect(search_callback)
+        
+        # Search icon and label
+        search_layout = QtWidgets.QHBoxLayout()
+        search_layout.setSpacing(5)
+        
+        search_icon = QtWidgets.QLabel()
+        search_icon.setPixmap(QtGui.QPixmap("app/resources/images/search.png").scaledToHeight(16) 
+                            if QtCore.QFile("app/resources/images/search.png").exists() 
+                            else QtGui.QPixmap())
+        search_icon.setStyleSheet("color: white; margin-right: 5px;")
+        
+        search_label = QtWidgets.QLabel("Search:")
+        search_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold;")
+        
+        search_layout.addWidget(search_icon)
+        search_layout.addWidget(search_label)
+        
+        # Add button
+        add_button = QtWidgets.QPushButton(add_button_text)
+        add_button.setStyleSheet(StyleFactory.get_button_style())
+        add_button.clicked.connect(add_button_callback)
+        
+        # Layout for controls
+        control_layout.addLayout(search_layout)
+        control_layout.addWidget(search_input, 1)
+        control_layout.addWidget(add_button)
+        
+        return control_layout
+
+
+class BaseDialog(QtWidgets.QDialog):
+    """Base dialog class with common functionality for both dialogs"""
+    
+    def __init__(self, parent=None, item=None, title=""):
+        super(BaseDialog, self).__init__(parent)
+        self.item = item
+        self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        
+        # Common attributes that will be set by child classes
+        self.header_label = None
+        self.name_input = None
+        self.category_input = None
+        self.description_input = None
+        self.price_input = None
+        self.availability_checkbox = None
+        
+        # Define old_pos for drag support
+        self.old_pos = None
+    
+    def setup_base_ui(self, dialog_height):
+        """Set up the base dialog UI with common elements
+        
+        Args:
+            dialog_height: Height of the dialog
+        """
+        # Set dialog size
+        self.resize(550, dialog_height)
+        
+        # Main layout
+        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        
+        # Create main container with rounded corners
+        self.container = QtWidgets.QFrame(self)
+        self.container.setObjectName("container")
+        self.container.setStyleSheet("""
+            #container {
+                background-color: rgba(35, 35, 35, 0.95);
+                border-radius: 12px;
+                border: 1px solid rgba(100, 100, 100, 0.3);
+            }
         """)
         
-        # Set up the table columns with optimized widths
-        self.products_table.setColumnCount(9)
-        self.products_table.setHorizontalHeaderLabels([
-            "ID", "Name", "Category", "Price", "Quantity", 
-            "Threshold", "Expiry Date", "Availability", "Description"
-        ])
+        # Container layout
+        container_layout = QtWidgets.QVBoxLayout(self.container)
+        container_layout.setContentsMargins(20, 20, 20, 20)
+        container_layout.setSpacing(15)
         
-        # Set column widths - optimized to use available space
-        screen_width = QtWidgets.QApplication.desktop().screenGeometry().width()
-        table_width = screen_width - 300  # Accounting for sidebar and margins
+        # Header with close button
+        header_layout = QtWidgets.QHBoxLayout()
         
-        # Calculate column widths as percentages of available space
-        self.products_table.setColumnWidth(0, int(table_width * 0.05))  # ID (5%)
-        self.products_table.setColumnWidth(1, int(table_width * 0.18))  # Name (18%)
-        self.products_table.setColumnWidth(2, int(table_width * 0.12))  # Category (12%)
-        self.products_table.setColumnWidth(3, int(table_width * 0.08))  # Price (8%)
-        self.products_table.setColumnWidth(4, int(table_width * 0.08))  # Quantity (8%)
-        self.products_table.setColumnWidth(5, int(table_width * 0.08))  # Threshold (8%)
-        self.products_table.setColumnWidth(6, int(table_width * 0.11))  # Expiry Date (11%)
-        self.products_table.setColumnWidth(7, int(table_width * 0.10))  # Availability (10%)
-        self.products_table.setColumnWidth(8, int(table_width * 0.20))  # Description (20%)
+        self.header_label = QtWidgets.QLabel("Dialog Header")
+        self.header_label.setStyleSheet("""
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        """)
         
-        # Adjust table properties
-        self.products_table.setSelectionBehavior(QtWidgets.QTableWidget.SelectRows)
-        self.products_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.products_table.setAlternatingRowColors(False)  # Change this line
-        self.products_table.verticalHeader().setVisible(False)
-        self.products_table.setSortingEnabled(True)
-        self.products_table.setShowGrid(True)
+        close_button = QtWidgets.QPushButton("×")
+        close_button.setFixedSize(35, 35)
+        close_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #aaa;
+                font-size: 20px;
+                font-weight: bold;
+                border: none;
+                border-radius: 15px;
+                margin: 0px 0px 0px 0px;
+                line-height: 33px;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+                border-radius: 15px;
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 255, 255, 0.2);
+                border-radius: 15px;
+            }
+        """)
+        close_button.clicked.connect(self.reject)
         
-        # Set table to take all available space
-        self.products_table.horizontalHeader().setStretchLastSection(True)
-        self.products_table.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Interactive)
+        header_layout.addWidget(self.header_label)
+        header_layout.addStretch()
+        header_layout.addWidget(close_button)
         
-        # Add context menu to the table
-        self.products_table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.products_table.customContextMenuRequested.connect(self.show_context_menu)
+        container_layout.addLayout(header_layout)
         
-        self.products_layout.addWidget(self.products_table)
+        # Add separator
+        separator = QtWidgets.QFrame()
+        separator.setFrameShape(QtWidgets.QFrame.HLine)
+        separator.setFrameShadow(QtWidgets.QFrame.Sunken)
+        separator.setStyleSheet("background-color: rgba(100, 100, 100, 0.3); margin: 0px 0px 10px 0px;")
+        container_layout.addWidget(separator)
         
-        # Add Products tab to the tab widget
-        self.tabs.addTab(self.products_tab, "Products")
+        # Create a scroll area for the form
+        self.scroll_area = QtWidgets.QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.scroll_area.setStyleSheet("""
+            QScrollArea {
+                background-color: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background-color: #292929;
+                width: 10px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #555;
+                min-height: 20px;
+                border-radius: 5px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """)
         
-        # Create Inventory tab with improved styling
-        self.inventory_tab = QtWidgets.QWidget()
-        self.inventory_layout = QtWidgets.QVBoxLayout(self.inventory_tab)
-        self.inventory_layout.setContentsMargins(10, 15, 10, 10)
-        self.inventory_layout.setSpacing(15)
+        # Form content will be added by child classes
+        self.form_widget = QtWidgets.QWidget()
+        self.form_widget.setStyleSheet("background: transparent;")
+        self.form_layout = QtWidgets.QFormLayout(self.form_widget)
+        self.form_layout.setContentsMargins(5, 5, 5, 5)
+        self.form_layout.setSpacing(15)
+        self.form_layout.setLabelAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.form_layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         
-        # Add inventory analytics section with better spacing
-        analytics_layout = QtWidgets.QHBoxLayout()
-        analytics_layout.setSpacing(15)
+        # Apply global styles
+        self.setStyleSheet(StyleFactory.get_dialog_style())
         
-        # Low stock items card with improved visualization
-        low_stock_card = self.create_info_card("Low Stock Items", "0", "#FF5252", "warning")
-        analytics_layout.addWidget(low_stock_card)
+        self.scroll_area.setWidget(self.form_widget)
+        container_layout.addWidget(self.scroll_area, 1)
         
-        # Expired items card
-        expired_card = self.create_info_card("Expired Items", "0", "#FF9800", "expired")
-        analytics_layout.addWidget(expired_card)
+        # Add bottom separator
+        bottom_separator = QtWidgets.QFrame()
+        bottom_separator.setFrameShape(QtWidgets.QFrame.HLine)
+        bottom_separator.setFrameShadow(QtWidgets.QFrame.Sunken)
+        bottom_separator.setStyleSheet("background-color: rgba(100, 100, 100, 0.3); margin: 10px 0px 10px 0px;")
+        container_layout.addWidget(bottom_separator)
         
-        # Total products card
-        total_card = self.create_info_card("Total Products", "0", "#4CAF50", "products")
-        analytics_layout.addWidget(total_card)
+        # Button area
+        button_layout = QtWidgets.QHBoxLayout()
+        button_layout.setSpacing(10)
         
-        self.inventory_layout.addLayout(analytics_layout)
+        cancel_button = QtWidgets.QPushButton("Cancel")
+        cancel_button.setObjectName("cancelBtn")
+        cancel_button.clicked.connect(self.reject)
         
-        # Add inventory table (simplified version of product table)
-        self.inventory_table = QtWidgets.QTableWidget()
-        self.inventory_table.setStyleSheet(self.products_table.styleSheet())
+        self.save_button = QtWidgets.QPushButton("Save")
         
-        # Set up inventory columns
-        self.inventory_table.setColumnCount(5)
-        self.inventory_table.setHorizontalHeaderLabels([
-            "ID", "Product Name", "Quantity", "Status", "Last Updated"
-        ])
+        # Add spacer to push buttons to the right
+        button_layout.addStretch(1)
+        button_layout.addWidget(cancel_button)
+        button_layout.addWidget(self.save_button)
         
-        # Set column widths - optimized for inventory view
-        self.inventory_table.setColumnWidth(0, int(table_width * 0.08))    # ID
-        self.inventory_table.setColumnWidth(1, int(table_width * 0.32))    # Product Name
-        self.inventory_table.setColumnWidth(2, int(table_width * 0.15))    # Quantity
-        self.inventory_table.setColumnWidth(3, int(table_width * 0.20))    # Status
-        self.inventory_table.setColumnWidth(4, int(table_width * 0.25))    # Last Updated
+        container_layout.addLayout(button_layout)
         
-        # Adjust table properties
-        self.inventory_table.setSelectionBehavior(QtWidgets.QTableWidget.SelectRows)
-        self.inventory_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.inventory_table.setAlternatingRowColors(False)  # Also for inventory table
-        self.inventory_table.verticalHeader().setVisible(False)
-        self.inventory_table.setSortingEnabled(True)
-        self.inventory_table.horizontalHeader().setStretchLastSection(True)
+        # Add container to main layout
+        main_layout.addWidget(self.container)
         
-        self.inventory_layout.addWidget(self.inventory_table)
+        # Enable dragging the dialog
+        self.container.mousePressEvent = self.mousePressEvent
+        self.container.mouseMoveEvent = self.mouseMoveEvent
+        self.container.mouseReleaseEvent = self.mouseReleaseEvent
+    
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            self.old_pos = event.globalPos()
+    
+    def mouseMoveEvent(self, event):
+        if self.old_pos:
+            delta = event.globalPos() - self.old_pos
+            self.move(self.pos() + delta)
+            self.old_pos = event.globalPos()
+    
+    def mouseReleaseEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            self.old_pos = None
+
+
+class ProductDialog(BaseDialog):
+    """Dialog for adding or editing products"""
+    
+    def __init__(self, parent=None, product=None):
+        super(ProductDialog, self).__init__(parent, product, "Product")
+        self.setup_ui()
+        self.populate_data()
+    
+    def setup_ui(self):
+        """Set up the product dialog UI"""
+        self.setup_base_ui(650)  # Products need a taller dialog
         
-        # Add Inventory tab to the tab widget
-        self.tabs.addTab(self.inventory_tab, "Inventory Status")
+        self.save_button.setText("Save Product")
+        self.save_button.clicked.connect(self.save_product)
+        
+        # Name input
+        name_label = QtWidgets.QLabel("Product Name:")
+        self.name_input = QtWidgets.QLineEdit()
+        self.name_input.setPlaceholderText("Enter product name")
+        self.name_input.setMinimumHeight(36)
+        self.form_layout.addRow(name_label, self.name_input)
+        
+        # Category input
+        category_label = QtWidgets.QLabel("Category:")
+        self.category_input = QtWidgets.QLineEdit()
+        self.category_input.setPlaceholderText("Enter product category")
+        self.category_input.setMinimumHeight(36)
+        self.form_layout.addRow(category_label, self.category_input)
+        
+        # Price input
+        price_label = QtWidgets.QLabel("Price:")
+        self.price_input = QtWidgets.QDoubleSpinBox()
+        self.price_input.setRange(0, 100000)
+        self.price_input.setDecimals(2)
+        self.price_input.setSingleStep(0.01)
+        self.price_input.setPrefix("$ ")
+        self.price_input.setMinimumHeight(36)
+        self.form_layout.addRow(price_label, self.price_input)
+        
+        # Quantity input
+        qty_label = QtWidgets.QLabel("Quantity:")
+        self.quantity_input = QtWidgets.QSpinBox()
+        self.quantity_input.setRange(0, 100000)
+        self.quantity_input.setMinimumHeight(36)
+        self.form_layout.addRow(qty_label, self.quantity_input)
+        
+        # Threshold input
+        threshold_label = QtWidgets.QLabel("Threshold Value:")
+        self.threshold_input = QtWidgets.QSpinBox()
+        self.threshold_input.setRange(0, 10000)
+        self.threshold_input.setValue(10)  # Default threshold
+        self.threshold_input.setMinimumHeight(36)
+        self.form_layout.addRow(threshold_label, self.threshold_input)
+        
+        # Expiry date input
+        expiry_label = QtWidgets.QLabel("Expiry Date:")
+        self.expiry_date_input = QtWidgets.QDateEdit()
+        self.expiry_date_input.setCalendarPopup(True)
+        self.expiry_date_input.setDisplayFormat("yyyy-MM-dd")
+        self.expiry_date_input.setMinimumHeight(36)
+        self.form_layout.addRow(expiry_label, self.expiry_date_input)
+        
+        # Availability checkbox
+        availability_label = QtWidgets.QLabel("Availability:")
+        self.availability_checkbox = QtWidgets.QCheckBox("Product is available for sale")
+        self.availability_checkbox.setChecked(True)
+        self.form_layout.addRow(availability_label, self.availability_checkbox)
+        
+        # Description input (multiline)
+        desc_label = QtWidgets.QLabel("Description:")
+        self.description_input = QtWidgets.QTextEdit()
+        self.description_input.setPlaceholderText("Enter product description")
+        self.description_input.setMinimumHeight(120)
+        self.form_layout.addRow(desc_label, self.description_input)
+    
+    def populate_data(self):
+        """Populate dialog with product data if editing"""
+        if self.item:
+            # We're editing an existing product
+            self.header_label.setText("Edit Product")
+            self.name_input.setText(self.item['product_name'])
+            self.category_input.setText(self.item.get('category', ''))
+            self.description_input.setText(self.item.get('description', ''))
+            self.price_input.setValue(float(self.item['price']))
+            self.quantity_input.setValue(self.item['quantity'])
+            self.threshold_input.setValue(self.item.get('threshold_value', 10))
+            
+            # Set expiry date if available
+            if self.item.get('expiry_date'):
+                expiry_date = QtCore.QDate.fromString(str(self.item['expiry_date']), "yyyy-MM-dd")
+                self.expiry_date_input.setDate(expiry_date)
+            
+            # Set availability
+            self.availability_checkbox.setChecked(self.item.get('availability', True))
+        else:
+            # We're adding a new product
+            self.header_label.setText("Add New Product")
+            # Set default expiry date to one year from now
+            default_expiry = QtCore.QDate.currentDate().addYears(1)
+            self.expiry_date_input.setDate(default_expiry)
+    
+    def save_product(self):
+        """Save the product to the database"""
+        # Validate inputs
+        if not self.name_input.text().strip():
+            QtWidgets.QMessageBox.warning(self, "Validation Error", "Product name is required.")
+            return
+        
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor()
+            
+            product_name = self.name_input.text().strip()
+            category = self.category_input.text().strip()
+            description = self.description_input.toPlainText().strip()
+            price = self.price_input.value()
+            quantity = self.quantity_input.value()
+            threshold = self.threshold_input.value()
+            expiry_date = self.expiry_date_input.date().toString("yyyy-MM-dd")
+            availability = self.availability_checkbox.isChecked()
+            
+            if self.item:
+                # Update existing product
+                cursor.execute(
+                    """UPDATE products 
+                       SET product_name = %s, 
+                           category = %s, 
+                           description = %s, 
+                           price = %s, 
+                           quantity = %s, 
+                           threshold_value = %s, 
+                           expiry_date = %s, 
+                           availability = %s 
+                       WHERE product_id = %s""",
+                    (product_name, category, description, price, quantity, 
+                     threshold, expiry_date, availability, self.item['product_id'])
+                )
+                
+                # Update inventory record if it exists
+                cursor.execute(
+                    """INSERT INTO inventory (product_id, quantity, status, last_updated) 
+                       VALUES (%s, %s, %s, NOW())
+                       ON DUPLICATE KEY UPDATE 
+                       quantity = VALUES(quantity),
+                       last_updated = NOW()""",
+                    (self.item['product_id'], quantity, "Updated")
+                )
+            else:
+                # Insert new product
+                cursor.execute(
+                    """INSERT INTO products 
+                       (product_name, category, description, price, quantity, 
+                        threshold_value, expiry_date, availability) 
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (product_name, category, description, price, quantity, 
+                     threshold, expiry_date, availability)
+                )
+                
+                # Get the ID of the new product
+                product_id = cursor.lastrowid
+                
+                # Create initial inventory entry
+                cursor.execute(
+                    "INSERT INTO inventory (product_id, quantity, status) VALUES (%s, %s, %s)",
+                    (product_id, quantity, "New")
+                )
+            
+            conn.commit()
+            cursor.close()
+            
+            self.accept()
+            
+        except mysql.connector.Error as err:
+            QtWidgets.QMessageBox.critical(self, "Database Error", f"Error saving product: {err}")
+
+
+class ServiceDialog(BaseDialog):
+    """Dialog for adding or editing services"""
+    
+    def __init__(self, parent=None, service=None):
+        super(ServiceDialog, self).__init__(parent, service, "Service")
+        self.setup_ui()
+        self.populate_data()
+    
+    def setup_ui(self):
+        """Set up the service dialog UI"""
+        self.setup_base_ui(550)  # Services need a shorter dialog
+        
+        self.save_button.setText("Save Service")
+        self.save_button.clicked.connect(self.save_service)
+        
+        # Name input
+        name_label = QtWidgets.QLabel("Service Name:")
+        self.name_input = QtWidgets.QLineEdit()
+        self.name_input.setPlaceholderText("Enter service name")
+        self.name_input.setMinimumHeight(36)
+        self.form_layout.addRow(name_label, self.name_input)
+        
+        # Category input
+        category_label = QtWidgets.QLabel("Category:")
+        self.category_input = QtWidgets.QLineEdit()
+        self.category_input.setPlaceholderText("Enter service category")
+        self.category_input.setMinimumHeight(36)
+        self.form_layout.addRow(category_label, self.category_input)
+        
+        # Price input
+        price_label = QtWidgets.QLabel("Price:")
+        self.price_input = QtWidgets.QDoubleSpinBox()
+        self.price_input.setRange(0, 100000)
+        self.price_input.setDecimals(2)
+        self.price_input.setSingleStep(0.01)
+        self.price_input.setPrefix("$ ")
+        self.price_input.setMinimumHeight(36)
+        self.form_layout.addRow(price_label, self.price_input)
+        
+        # Availability checkbox
+        availability_label = QtWidgets.QLabel("Availability:")
+        self.availability_checkbox = QtWidgets.QCheckBox("Service is available")
+        self.availability_checkbox.setChecked(True)
+        self.form_layout.addRow(availability_label, self.availability_checkbox)
+        
+        # Description input (multiline)
+        desc_label = QtWidgets.QLabel("Description:")
+        self.description_input = QtWidgets.QTextEdit()
+        self.description_input.setPlaceholderText("Enter service description")
+        self.description_input.setMinimumHeight(120)
+        self.form_layout.addRow(desc_label, self.description_input)
+    
+    def populate_data(self):
+        """Populate dialog with service data if editing"""
+        if self.item:
+            # We're editing an existing service
+            self.header_label.setText("Edit Service")
+            self.name_input.setText(self.item['service_name'])
+            self.category_input.setText(self.item.get('category', ''))
+            self.description_input.setText(self.item.get('description', ''))
+            self.price_input.setValue(float(self.item['price']))
+            
+            # Set availability
+            self.availability_checkbox.setChecked(self.item.get('availability', True))
+        else:
+            # We're adding a new service
+            self.header_label.setText("Add New Service")
+    
+    def save_service(self):
+        """Save the service to the database"""
+        # Validate inputs
+        if not self.name_input.text().strip():
+            QtWidgets.QMessageBox.warning(self, "Validation Error", "Service name is required.")
+            return
+        
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor()
+            
+            service_name = self.name_input.text().strip()
+            category = self.category_input.text().strip()
+            description = self.description_input.toPlainText().strip()
+            price = self.price_input.value()
+            availability = self.availability_checkbox.isChecked()
+            
+            if self.item:
+                # Update existing service
+                cursor.execute(
+                    """UPDATE services 
+                       SET service_name = %s, 
+                           category = %s, 
+                           description = %s, 
+                           price = %s, 
+                           availability = %s 
+                       WHERE service_id = %s""",
+                    (service_name, category, description, price, 
+                     availability, self.item['service_id'])
+                )
+            else:
+                # Insert new service
+                cursor.execute(
+                    """INSERT INTO services 
+                       (service_name, category, description, price, availability) 
+                       VALUES (%s, %s, %s, %s, %s)""",
+                    (service_name, category, description, price, availability)
+                )
+            
+            conn.commit()
+            cursor.close()
+            
+            self.accept()
+            
+        except mysql.connector.Error as err:
+            QtWidgets.QMessageBox.critical(self, "Database Error", f"Error saving service: {err}")
+
+
+class InventoryPage(BasePage):
+    def __init__(self, parent=None, user_info=None):
+        super(InventoryPage, self).__init__(parent, title="Inventory", user_info=user_info)
+        self.load_products()
+        self.load_services()
+    
+    def createContent(self):
+        # Content area with reduced margins for more space
+        self.content_area = QtWidgets.QWidget()
+        self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
+        self.content_layout.setContentsMargins(10, 10, 10, 10)
+        self.content_layout.setSpacing(8)
+        
+        # Create tabs for Products and Inventory with improved styling
+        self.tabs = QtWidgets.QTabWidget()
+        self.tabs.setStyleSheet(StyleFactory.get_tab_style())
+        
+        # Create and configure tabs
+        self.setup_products_tab()
+        self.setup_services_tab()
+        self.setup_inventory_status_tab()
         
         # Add the tab widget to the main layout
         self.content_layout.addWidget(self.tabs)
@@ -267,6 +796,144 @@ class InventoryPage(BasePage):
         
         # Connect the tab change signal
         self.tabs.currentChanged.connect(self.handle_tab_change)
+    
+    def setup_products_tab(self):
+        """Setup the Products tab"""
+        self.products_tab = QtWidgets.QWidget()
+        self.products_layout = QtWidgets.QVBoxLayout(self.products_tab)
+        self.products_layout.setContentsMargins(10, 15, 10, 10)
+        self.products_layout.setSpacing(10)
+        
+        # Create search input
+        self.search_input = QtWidgets.QLineEdit()
+        self.search_input.setPlaceholderText("Search products...")
+        
+        # Create control panel using factory
+        control_layout = ControlPanelFactory.create_search_control(
+            self.search_input, 
+            "+ Add Product", 
+            self.show_add_product_dialog,
+            self.filter_products
+        )
+        self.products_layout.addLayout(control_layout)
+        
+        # Create products table
+        self.products_table = TableFactory.create_table()
+        
+        # Define column headers and their relative widths
+        product_columns = [
+            ("ID", 0.05),
+            ("Name", 0.15),
+            ("Category", 0.10),
+            ("Price", 0.07),
+            ("Quantity", 0.07),
+            ("Threshold", 0.07),
+            ("Expiry Date", 0.11),
+            ("Availability", 0.10),
+            ("Description", 0.28)  # Slightly reduced to ensure total is ~1.0
+        ]
+        
+        # Configure the table columns
+        screen_width = QtWidgets.QApplication.desktop().screenGeometry().width()
+        TableFactory.configure_table_columns(self.products_table, product_columns, screen_width)
+        
+        # Add context menu to the table
+        self.products_table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.products_table.customContextMenuRequested.connect(self.show_context_menu)
+        
+        self.products_layout.addWidget(self.products_table)
+        
+        # Add Products tab to the tab widget
+        self.tabs.addTab(self.products_tab, "Products")
+
+    def setup_services_tab(self):
+        """Setup the Services tab"""
+        self.services_tab = QtWidgets.QWidget()
+        self.services_layout = QtWidgets.QVBoxLayout(self.services_tab)
+        self.services_layout.setContentsMargins(10, 15, 10, 10)
+        self.services_layout.setSpacing(10)
+        
+        # Create search input
+        self.services_search_input = QtWidgets.QLineEdit()
+        self.services_search_input.setPlaceholderText("Search services...")
+        
+        # Create control panel using factory
+        services_control_layout = ControlPanelFactory.create_search_control(
+            self.services_search_input,
+            "+ Add Service",
+            self.show_add_service_dialog,
+            self.filter_services
+        )
+        self.services_layout.addLayout(services_control_layout)
+        
+        # Create services table
+        self.services_table = TableFactory.create_table()
+        
+        # Define column headers and their relative widths
+        service_columns = [
+            ("ID", 0.05),
+            ("Name", 0.20),
+            ("Category", 0.15),
+            ("Price", 0.10),
+            ("Availability", 0.12),
+            ("Description", 0.38)  # Increased to use remaining space
+        ]
+        
+        # Configure the table columns
+        screen_width = QtWidgets.QApplication.desktop().screenGeometry().width()
+        TableFactory.configure_table_columns(self.services_table, service_columns, screen_width)
+        
+        # Add context menu to the services table
+        self.services_table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.services_table.customContextMenuRequested.connect(self.show_service_context_menu)
+        
+        self.services_layout.addWidget(self.services_table)
+        
+        # Add Services tab to the tab widget
+        self.tabs.addTab(self.services_tab, "Services")
+
+    def setup_inventory_status_tab(self):
+        """Setup the Inventory Status tab"""
+        self.inventory_tab = QtWidgets.QWidget()
+        self.inventory_layout = QtWidgets.QVBoxLayout(self.inventory_tab)
+        self.inventory_layout.setContentsMargins(10, 15, 10, 10)
+        self.inventory_layout.setSpacing(15)
+        
+        # Add inventory analytics section
+        analytics_layout = QtWidgets.QHBoxLayout()
+        analytics_layout.setSpacing(15)
+        
+        # Create info cards
+        low_stock_card = self.create_info_card("Low Stock Items", "0", "#FF5252", "warning")
+        expired_card = self.create_info_card("Expired Items", "0", "#FF9800", "expired")
+        total_card = self.create_info_card("Total Products", "0", "#4CAF50", "products")
+        
+        analytics_layout.addWidget(low_stock_card)
+        analytics_layout.addWidget(expired_card)
+        analytics_layout.addWidget(total_card)
+        
+        self.inventory_layout.addLayout(analytics_layout)
+        
+        # Create inventory table
+        self.inventory_table = TableFactory.create_table()
+        
+        # Define column headers and their relative widths
+        inventory_columns = [
+            ("ID", 0.05),
+            ("Product Name", 0.35),  # Increased
+            ("Quantity", 0.15),
+            ("Status", 0.20),
+            ("Last Updated", 0.25)
+        ]
+        
+        # Configure the table columns
+        screen_width = QtWidgets.QApplication.desktop().screenGeometry().width()
+        TableFactory.configure_table_columns(self.inventory_table, inventory_columns, screen_width)
+        
+        self.inventory_layout.addWidget(self.inventory_table)
+        
+        # Add Inventory tab to the tab widget
+        self.tabs.addTab(self.inventory_tab, "Inventory Status")
     
     def create_info_card(self, title, value, color, icon_type=None):
         """Create an info card for the inventory dashboard with icons"""
@@ -341,7 +1008,9 @@ class InventoryPage(BasePage):
     
     def handle_tab_change(self, index):
         """Handle changing between tabs"""
-        if index == 1:  # Inventory Status tab
+        if index == 1:  # Services tab
+            self.load_services()
+        elif index == 2:  # Inventory Status tab
             self.load_inventory()
             self.update_inventory_analytics()
     
@@ -411,6 +1080,60 @@ class InventoryPage(BasePage):
                 # Description
                 self.products_table.setItem(row, 8, QtWidgets.QTableWidgetItem(product.get('description', '')))
             
+            cursor.close()
+            
+        except mysql.connector.Error as err:
+            self.show_error_message(f"Database error: {err}")
+    
+    def load_services(self):
+        """Load services from the database and populate the table"""
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Clear existing items
+            self.services_table.setRowCount(0)
+            
+            # Reset search filter
+            self.services_search_input.clear()
+            
+            # Query for all services
+            cursor.execute("SELECT * FROM services ORDER BY service_name")
+            services = cursor.fetchall()
+            
+            # Populate the table
+            self.services_table.setRowCount(len(services))
+            
+            for row, service in enumerate(services):
+                # Set item with proper alignment
+                id_item = QtWidgets.QTableWidgetItem(str(service['service_id']))
+                id_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                self.services_table.setItem(row, 0, id_item)
+                
+                self.services_table.setItem(row, 1, QtWidgets.QTableWidgetItem(service['service_name']))
+                self.services_table.setItem(row, 2, QtWidgets.QTableWidgetItem(service.get('category', '')))
+                
+                # Price with better formatting and alignment
+                price_item = QtWidgets.QTableWidgetItem(f"${service['price']:.2f}")
+                price_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+                self.services_table.setItem(row, 3, price_item)
+                
+                # Availability
+                availability_status = "Available" if service.get('availability', 0) else "Unavailable"
+                availability_item = QtWidgets.QTableWidgetItem(availability_status)
+                availability_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                
+                # Set color based on availability
+                if service.get('availability', 0):
+                    availability_item.setForeground(QtGui.QColor(0, 170, 0))  # Green for available
+                else:
+                    availability_item.setForeground(QtGui.QColor(200, 0, 0))  # Red for unavailable
+                
+                self.services_table.setItem(row, 4, availability_item)
+                
+                # Description
+                self.services_table.setItem(row, 5, QtWidgets.QTableWidgetItem(service.get('description', '')))
+        
             cursor.close()
             
         except mysql.connector.Error as err:
@@ -498,47 +1221,75 @@ class InventoryPage(BasePage):
         except mysql.connector.Error as err:
             self.show_error_message(f"Database error: {err}")
     
-    def filter_products(self):
-        """Filter products based on search input"""
-        search_text = self.search_input.text().lower()
+    def filter_items(self, table, search_text):
+        """Generic function to filter items in a table based on search text"""
+        search_text = search_text.lower()
         
-        for row in range(self.products_table.rowCount()):
+        for row in range(table.rowCount()):
             match_found = False
             
-            for col in range(self.products_table.columnCount()):
-                item = self.products_table.item(row, col)
+            for col in range(table.columnCount()):
+                item = table.item(row, col)
                 if item and search_text in item.text().lower():
                     match_found = True
                     break
             
             # Show/hide row based on match
-            self.products_table.setRowHidden(row, not match_found)
+            table.setRowHidden(row, not match_found)
+    
+    def filter_products(self):
+        """Filter products based on search input"""
+        self.filter_items(self.products_table, self.search_input.text())
+    
+    def filter_services(self):
+        """Filter services based on search input"""
+        self.filter_items(self.services_table, self.services_search_input.text())
     
     def show_context_menu(self, position):
         """Show context menu for product actions"""
+        self.show_item_context_menu(self.products_table, position, self.edit_product, self.delete_product)
+    
+    def show_service_context_menu(self, position):
+        """Show context menu for service actions"""
+        self.show_item_context_menu(self.services_table, position, self.edit_service, self.delete_service)
+    
+    def show_item_context_menu(self, table, position, edit_callback, delete_callback):
+        """Generic function to show context menu for table actions"""
         context_menu = QtWidgets.QMenu()
         
         # Get the current row
-        current_row = self.products_table.currentRow()
+        current_row = table.currentRow()
         
         if current_row >= 0:
             edit_action = context_menu.addAction("Edit")
             delete_action = context_menu.addAction("Delete")
             
             # Show the context menu
-            action = context_menu.exec_(self.products_table.mapToGlobal(position))
+            action = context_menu.exec_(table.mapToGlobal(position))
             
             if action == edit_action:
-                self.edit_product(current_row)
+                edit_callback(current_row)
             elif action == delete_action:
-                self.delete_product(current_row)
+                delete_callback(current_row)
     
     def show_add_product_dialog(self):
         """Show dialog to add a new product"""
         dialog = ProductDialog(self)
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             self.load_products()
+            # Reset row visibility
+            for row in range(self.products_table.rowCount()):
+                self.products_table.setRowHidden(row, False)
     
+    def show_add_service_dialog(self):
+        """Show dialog to add a new service"""
+        dialog = ServiceDialog(self)
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            self.load_services()
+            # Reset row visibility
+            for row in range(self.services_table.rowCount()):
+                self.services_table.setRowHidden(row, False)
+
     def edit_product(self, row):
         """Edit the selected product"""
         product_id = int(self.products_table.item(row, 0).text())
@@ -555,6 +1306,7 @@ class InventoryPage(BasePage):
                 if dialog.exec_() == QtWidgets.QDialog.Accepted:
                     self.load_products()
                     
+            # Reset row visibility
             for row in range(self.products_table.rowCount()):
                 self.products_table.setRowHidden(row, False)
             
@@ -563,6 +1315,69 @@ class InventoryPage(BasePage):
         except mysql.connector.Error as err:
             self.show_error_message(f"Database error: {err}")
     
+    def edit_service(self, row):
+        """Edit the selected service"""
+        service_id = int(self.services_table.item(row, 0).text())
+        
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            cursor.execute("SELECT * FROM services WHERE service_id = %s", (service_id,))
+            service = cursor.fetchone()
+            
+            if service:
+                dialog = ServiceDialog(self, service)
+                if dialog.exec_() == QtWidgets.QDialog.Accepted:
+                    self.load_services()
+                
+            # Reset row visibility
+            for row in range(self.services_table.rowCount()):
+                self.services_table.setRowHidden(row, False)
+        
+            cursor.close()
+            
+        except mysql.connector.Error as err:
+            self.show_error_message(f"Database error: {err}")
+
+    def delete_item(self, table, row, id_column, name_column, confirm_message, delete_query, success_message, reload_callback):
+        """Generic function to delete an item"""
+        item_id = int(table.item(row, 0).text())
+        item_name = table.item(row, name_column).text()
+        
+        # Confirm deletion
+        confirm = QtWidgets.QMessageBox.question(
+            self,
+            "Confirm Deletion",
+            confirm_message.format(item_name),
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.No
+        )
+        
+        if confirm == QtWidgets.QMessageBox.Yes:
+            try:
+                conn = DBManager.get_connection()
+                cursor = conn.cursor()
+                
+                # Delete the item
+                cursor.execute(delete_query, (item_id,))
+                
+                conn.commit()
+                cursor.close()
+                
+                # Refresh the list
+                reload_callback()
+                
+                # Show success message
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "Success",
+                    success_message.format(item_name)
+                )
+                
+            except mysql.connector.Error as err:
+                self.show_error_message(f"Database error: {err}")
+
     def delete_product(self, row):
         """Delete the selected product"""
         product_id = int(self.products_table.item(row, 0).text())
@@ -604,424 +1419,20 @@ class InventoryPage(BasePage):
             except mysql.connector.Error as err:
                 self.show_error_message(f"Database error: {err}")
     
+    def delete_service(self, row):
+        """Delete the selected service"""
+        # Use the generic delete_item function
+        self.delete_item(
+            table=self.services_table,
+            row=row,
+            id_column=0,
+            name_column=1,
+            confirm_message="Are you sure you want to delete service: {}?",
+            delete_query="DELETE FROM services WHERE service_id = %s",
+            success_message="Service '{}' has been deleted successfully.",
+            reload_callback=self.load_services
+        )
+    
     def show_error_message(self, message):
         """Show error message dialog"""
         QtWidgets.QMessageBox.critical(self, "Error", message)
-
-
-class ProductDialog(QtWidgets.QDialog):
-    """Dialog for adding or editing products"""
-    
-    def __init__(self, parent=None, product=None):
-        super(ProductDialog, self).__init__(parent)
-        
-        self.product = product
-        self.setWindowFlag(QtCore.Qt.FramelessWindowHint)  # Remove window frame
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # Enable translucent background
-        self.setup_ui()
-        
-        if product:
-            # We're editing an existing product
-            self.header_label.setText("Edit Product")
-            self.name_input.setText(product['product_name'])
-            self.category_input.setText(product.get('category', ''))
-            self.description_input.setText(product.get('description', ''))
-            self.price_input.setValue(float(product['price']))
-            self.quantity_input.setValue(product['quantity'])
-            self.threshold_input.setValue(product.get('threshold_value', 10))
-            
-            # Set expiry date if available
-            if product.get('expiry_date'):
-                expiry_date = QtCore.QDate.fromString(str(product['expiry_date']), "yyyy-MM-dd")
-                self.expiry_date_input.setDate(expiry_date)
-            
-            # Set availability
-            self.availability_checkbox.setChecked(product.get('availability', True))
-        else:
-            # We're adding a new product
-            self.header_label.setText("Add New Product")
-            # Set default expiry date to one year from now
-            default_expiry = QtCore.QDate.currentDate().addYears(1)
-            self.expiry_date_input.setDate(default_expiry)
-    
-    def setup_ui(self):
-        """Set up the dialog UI with improved design"""
-        # Set dialog size
-        self.resize(550, 650)
-        
-        # Main layout
-        main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-        
-        # Create main container with rounded corners
-        self.container = QtWidgets.QFrame(self)
-        self.container.setObjectName("container")
-        self.container.setStyleSheet("""
-            #container {
-                background-color: rgba(35, 35, 35, 0.95);
-                border-radius: 12px;
-                border: 1px solid rgba(100, 100, 100, 0.3);
-            }
-        """)
-        
-        # Container layout
-        container_layout = QtWidgets.QVBoxLayout(self.container)
-        container_layout.setContentsMargins(20, 20, 20, 20)
-        container_layout.setSpacing(15)
-        
-        # Header with close button
-        header_layout = QtWidgets.QHBoxLayout()
-        
-        self.header_label = QtWidgets.QLabel("Add Product")
-        self.header_label.setStyleSheet("""
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-        """)
-        
-        self.close_button = QtWidgets.QPushButton("×")
-        self.close_button.setFixedSize(35, 35)
-        self.close_button.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                color: #aaa;
-                font-size: 20px;
-                font-weight: bold;
-                border: none;
-                border-radius: 15px;
-                margin: 0px 0px 0px 0px;
-                line-height: 33px;
-                
-            }
-            QPushButton:hover {
-                background-color: rgba(255, 255, 255, 0.1);
-                color: white;
-                border-radius: 15px;
-            }
-            QPushButton:pressed {
-                background-color: rgba(255, 255, 255, 0.2);
-                border-radius: 15px;
-            }
-        """)
-        self.close_button.clicked.connect(self.reject)
-        
-        header_layout.addWidget(self.header_label)
-        header_layout.addStretch()
-        header_layout.addWidget(self.close_button)
-        
-        container_layout.addLayout(header_layout)
-        
-        # Add separator
-        separator = QtWidgets.QFrame()
-        separator.setFrameShape(QtWidgets.QFrame.HLine)
-        separator.setFrameShadow(QtWidgets.QFrame.Sunken)
-        separator.setStyleSheet("background-color: rgba(100, 100, 100, 0.3); margin: 0px 0px 10px 0px;")
-        container_layout.addWidget(separator)
-        
-        # Scroll area for form
-        scroll_area = QtWidgets.QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        scroll_area.setStyleSheet("""
-            QScrollArea {
-                background-color: transparent;
-                border: none;
-            }
-            QScrollBar:vertical {
-                background-color: #292929;
-                width: 10px;
-                margin: 0px;
-            }
-            QScrollBar::handle:vertical {
-                background-color: #555;
-                min-height: 20px;
-                border-radius: 5px;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-        """)
-        
-        # Form content
-        form_widget = QtWidgets.QWidget()
-        form_widget.setStyleSheet("background: transparent;")
-        form_layout = QtWidgets.QFormLayout(form_widget)
-        form_layout.setContentsMargins(5, 5, 5, 5)
-        form_layout.setSpacing(15)
-        form_layout.setLabelAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        form_layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-        
-        # Apply global styles
-        self.setStyleSheet("""
-            QLabel {
-                color: #e0e0e0;
-                font-size: 14px;
-                background: transparent;
-            }
-            QLineEdit, QTextEdit, QComboBox, QDateEdit, QSpinBox, QDoubleSpinBox {
-                background-color: #2d2d2d;
-                color: white;
-                border: 1px solid #444;
-                border-radius: 5px;
-                padding: 8px;
-                selection-background-color: #007acc;
-                font-size: 13px;
-            }
-            QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QDateEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
-                border: 1px solid #007acc;
-                background-color: #333;
-            }
-            QCheckBox {
-                color: white;
-                font-size: 14px;
-                background: transparent;
-                spacing: 8px;
-            }
-            QCheckBox::indicator {
-                width: 18px;
-                height: 18px;
-                background: #2d2d2d;
-                border: 1px solid #444;
-                border-radius: 3px;
-            }
-            QCheckBox::indicator:checked {
-                background: #007acc;
-                border: none;
-                image: url(app/resources/images/check.png);
-            }
-            QPushButton {
-                background-color: #007acc;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                padding: 10px 25px;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #0088e0;
-            }
-            QPushButton:pressed {
-                background-color: #006bb3;
-            }
-            QPushButton#cancelBtn {
-                background-color: #555;
-            }
-            QPushButton#cancelBtn:hover {
-                background-color: #666;
-            }
-            QPushButton#cancelBtn:pressed {
-                background-color: #444;
-            }
-            QSpinBox::up-button, QDoubleSpinBox::up-button, QDateEdit::up-button {
-                subcontrol-origin: border;
-                subcontrol-position: top right;
-                width: 20px;
-                border-left: 1px solid #444;
-                border-bottom: 1px solid #444;
-                border-top-right-radius: 5px;
-                background: #333;
-            }
-            QSpinBox::down-button, QDoubleSpinBox::down-button, QDateEdit::down-button {
-                subcontrol-origin: border;
-                subcontrol-position: bottom right;
-                width: 20px;
-                border-left: 1px solid #444;
-                border-top: 1px solid #444;
-                border-bottom-right-radius: 5px;
-                background: #333;
-            }
-            QDateEdit::drop-down {
-                subcontrol-origin: border;
-                subcontrol-position: center right;
-                width: 20px;
-                border-left: 1px solid #444;
-                background: #333;
-            }
-        """)
-        
-        # Name input
-        name_label = QtWidgets.QLabel("Product Name:")
-        self.name_input = QtWidgets.QLineEdit()
-        self.name_input.setPlaceholderText("Enter product name")
-        self.name_input.setMinimumHeight(36)
-        form_layout.addRow(name_label, self.name_input)
-        
-        # Category input
-        category_label = QtWidgets.QLabel("Category:")
-        self.category_input = QtWidgets.QLineEdit()
-        self.category_input.setPlaceholderText("Enter product category")
-        self.category_input.setMinimumHeight(36)
-        form_layout.addRow(category_label, self.category_input)
-        
-        # Price input
-        price_label = QtWidgets.QLabel("Price:")
-        self.price_input = QtWidgets.QDoubleSpinBox()
-        self.price_input.setRange(0, 100000)
-        self.price_input.setDecimals(2)
-        self.price_input.setSingleStep(0.01)
-        self.price_input.setPrefix("$ ")
-        self.price_input.setMinimumHeight(36)
-        form_layout.addRow(price_label, self.price_input)
-        
-        # Quantity input
-        qty_label = QtWidgets.QLabel("Quantity:")
-        self.quantity_input = QtWidgets.QSpinBox()
-        self.quantity_input.setRange(0, 100000)
-        self.quantity_input.setMinimumHeight(36)
-        form_layout.addRow(qty_label, self.quantity_input)
-        
-        # Threshold input
-        threshold_label = QtWidgets.QLabel("Threshold Value:")
-        self.threshold_input = QtWidgets.QSpinBox()
-        self.threshold_input.setRange(0, 10000)
-        self.threshold_input.setValue(10)  # Default threshold
-        self.threshold_input.setMinimumHeight(36)
-        form_layout.addRow(threshold_label, self.threshold_input)
-        
-        # Expiry date input
-        expiry_label = QtWidgets.QLabel("Expiry Date:")
-        self.expiry_date_input = QtWidgets.QDateEdit()
-        self.expiry_date_input.setCalendarPopup(True)
-        self.expiry_date_input.setDisplayFormat("yyyy-MM-dd")
-        self.expiry_date_input.setMinimumHeight(36)
-        form_layout.addRow(expiry_label, self.expiry_date_input)
-        
-        # Availability checkbox
-        availability_label = QtWidgets.QLabel("Availability:")
-        self.availability_checkbox = QtWidgets.QCheckBox("Product is available for sale")
-        self.availability_checkbox.setChecked(True)
-        form_layout.addRow(availability_label, self.availability_checkbox)
-        
-        # Description input (multiline)
-        desc_label = QtWidgets.QLabel("Description:")
-        self.description_input = QtWidgets.QTextEdit()
-        self.description_input.setPlaceholderText("Enter product description")
-        self.description_input.setMinimumHeight(120)
-        form_layout.addRow(desc_label, self.description_input)
-        
-        scroll_area.setWidget(form_widget)
-        container_layout.addWidget(scroll_area, 1)
-        
-        # Add bottom separator
-        bottom_separator = QtWidgets.QFrame()
-        bottom_separator.setFrameShape(QtWidgets.QFrame.HLine)
-        bottom_separator.setFrameShadow(QtWidgets.QFrame.Sunken)
-        bottom_separator.setStyleSheet("background-color: rgba(100, 100, 100, 0.3); margin: 10px 0px 10px 0px;")
-        container_layout.addWidget(bottom_separator)
-        
-        # Button area
-        button_layout = QtWidgets.QHBoxLayout()
-        button_layout.setSpacing(10)
-        
-        self.cancel_button = QtWidgets.QPushButton("Cancel")
-        self.cancel_button.setObjectName("cancelBtn")
-        self.cancel_button.clicked.connect(self.reject)
-        
-        self.save_button = QtWidgets.QPushButton("Save Product")
-        self.save_button.clicked.connect(self.save_product)
-        
-        # Add spacer to push buttons to the right
-        button_layout.addStretch(1)
-        button_layout.addWidget(self.cancel_button)
-        button_layout.addWidget(self.save_button)
-        
-        container_layout.addLayout(button_layout)
-        
-        # Add container to main layout
-        main_layout.addWidget(self.container)
-        
-        # Enable dragging the dialog
-        self.old_pos = None
-        self.container.mousePressEvent = self.mousePressEvent
-        self.container.mouseMoveEvent = self.mouseMoveEvent
-    
-    def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self.old_pos = event.globalPos()
-    
-    def mouseMoveEvent(self, event):
-        if self.old_pos:
-            delta = event.globalPos() - self.old_pos
-            self.move(self.pos() + delta)
-            self.old_pos = event.globalPos()
-    
-    def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self.old_pos = None
-    
-    def save_product(self):
-        """Save the product to the database"""
-        # Validate inputs
-        if not self.name_input.text().strip():
-            QtWidgets.QMessageBox.warning(self, "Validation Error", "Product name is required.")
-            return
-        
-        try:
-            conn = DBManager.get_connection()
-            cursor = conn.cursor()
-            
-            product_name = self.name_input.text().strip()
-            category = self.category_input.text().strip()
-            description = self.description_input.toPlainText().strip()
-            price = self.price_input.value()
-            quantity = self.quantity_input.value()
-            threshold = self.threshold_input.value()
-            expiry_date = self.expiry_date_input.date().toString("yyyy-MM-dd")
-            availability = self.availability_checkbox.isChecked()
-            
-            if self.product:
-                # Update existing product
-                cursor.execute(
-                    """UPDATE products 
-                       SET product_name = %s, 
-                           category = %s, 
-                           description = %s, 
-                           price = %s, 
-                           quantity = %s, 
-                           threshold_value = %s, 
-                           expiry_date = %s, 
-                           availability = %s 
-                       WHERE product_id = %s""",
-                    (product_name, category, description, price, quantity, 
-                     threshold, expiry_date, availability, self.product['product_id'])
-                )
-                
-                # Update inventory record if it exists
-                cursor.execute(
-                    """INSERT INTO inventory (product_id, quantity, status, last_updated) 
-                       VALUES (%s, %s, %s, NOW())
-                       ON DUPLICATE KEY UPDATE 
-                       quantity = VALUES(quantity),
-                       last_updated = NOW()""",
-                    (self.product['product_id'], quantity, "Updated")
-                )
-            else:
-                # Insert new product
-                cursor.execute(
-                    """INSERT INTO products 
-                       (product_name, category, description, price, quantity, 
-                        threshold_value, expiry_date, availability) 
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-                    (product_name, category, description, price, quantity, 
-                     threshold, expiry_date, availability)
-                )
-                
-                # Get the ID of the new product
-                product_id = cursor.lastrowid
-                
-                # Create initial inventory entry
-                cursor.execute(
-                    "INSERT INTO inventory (product_id, quantity, status) VALUES (%s, %s, %s)",
-                    (product_id, quantity, "New")
-                )
-            
-            conn.commit()
-            cursor.close()
-            
-            self.accept()
-            
-        except mysql.connector.Error as err:
-            QtWidgets.QMessageBox.critical(self, "Database Error", f"Error saving product: {err}")
