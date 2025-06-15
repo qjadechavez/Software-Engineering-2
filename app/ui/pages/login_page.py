@@ -84,7 +84,7 @@ class LoginPage(QtWidgets.QWidget):
         self.right_panel = QtWidgets.QWidget()
         self.right_panel.setStyleSheet("background-color: white;")
         
-        # Login container - centers the login form
+        # Login container
         self.login_container = QtWidgets.QWidget(self.right_panel)
         self.login_container.setGeometry(QtCore.QRect(120, 150, 400, 420))
         
@@ -194,7 +194,6 @@ class LoginPage(QtWidgets.QWidget):
         self.error_label.setText(message)
         self.error_label.show()
         
-        # Hide the error message after 3 seconds
         QtCore.QTimer.singleShot(3000, self.error_label.hide)
         
     def open_main_window(self, user):

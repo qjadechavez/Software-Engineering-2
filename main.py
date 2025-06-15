@@ -7,7 +7,6 @@ from app.utils.db_manager import DBManager
 def setup_database():
     """Set up the database and check connection"""
     try:
-        # Use the DBManager to get a connection instead of creating a new one
         conn = DBManager.get_connection()
         print("Connected to MySQL database successfully")
         

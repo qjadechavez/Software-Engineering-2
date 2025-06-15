@@ -6,7 +6,7 @@ class MaintenancePage(BasePage):
         super(MaintenancePage, self).__init__(parent, title="Maintenance", user_info=user_info)
     
     def createContent(self):
-        # Content area - just an empty widget with a placeholder
+        # Content area
         self.content_area = QtWidgets.QWidget()
         self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
         self.content_layout.setContentsMargins(20, 20, 20, 20)

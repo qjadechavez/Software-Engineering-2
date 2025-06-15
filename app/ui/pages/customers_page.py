@@ -6,7 +6,7 @@ class CustomersPage(BasePage):
         super(CustomersPage, self).__init__(parent, title="Customers", user_info=user_info)
     
     def createContent(self):
-        # Content area - just an empty widget with a placeholder
+        # Content area
         self.content_area = QtWidgets.QWidget()
         self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
         self.content_layout.setContentsMargins(20, 20, 20, 20)

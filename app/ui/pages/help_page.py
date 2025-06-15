@@ -6,12 +6,11 @@ class HelpPage(BasePage):
         super(HelpPage, self).__init__(parent, title="Help", user_info=user_info)
     
     def createContent(self):
-        # Content area - just an empty widget with a placeholder
+        # Content area
         self.content_area = QtWidgets.QWidget()
         self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
         self.content_layout.setContentsMargins(20, 20, 20, 20)
         
-        # Set background color for the content area
         self.content_area.setStyleSheet("background-color: red;")
         
         # Placeholder message

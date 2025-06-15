@@ -215,7 +215,7 @@ class TableFactory:
             column_data: List of tuples (header, width_percentage)
             screen_width: Total screen width to calculate from
         """
-        # Calculate available width (accounting for sidebar and margins)
+        # Calculate available width
         table_width = screen_width - 300
         
         # Set column count
@@ -228,12 +228,9 @@ class TableFactory:
         # Make the table stretch to fill available space
         table.horizontalHeader().setStretchLastSection(True)
         
-        # Set the width for all columns except the last one
         for idx, (_, width_pct) in enumerate(column_data[:-1]):
             table.setColumnWidth(idx, int(table_width * width_pct))
         
-        # Let the last column stretch to fill remaining space
-        # The setStretchLastSection(True) takes care of this
 
 
 class ControlPanelFactory:
@@ -484,12 +481,12 @@ class ProductDialog(BaseDialog):
     
     def setup_ui(self):
         """Set up the product dialog UI"""
-        self.setup_base_ui(650)  # Products need a taller dialog
+        self.setup_base_ui(650)
         
         self.save_button.setText("Save Product")
         self.save_button.clicked.connect(self.save_product)
         
-        # Name input
+        # Product name input
         name_label = QtWidgets.QLabel("Product Name:")
         self.name_input = QtWidgets.QLineEdit()
         self.name_input.setPlaceholderText("Enter product name")
@@ -524,7 +521,7 @@ class ProductDialog(BaseDialog):
         threshold_label = QtWidgets.QLabel("Threshold Value:")
         self.threshold_input = QtWidgets.QSpinBox()
         self.threshold_input.setRange(0, 10000)
-        self.threshold_input.setValue(10)  # Default threshold
+        self.threshold_input.setValue(10)
         self.threshold_input.setMinimumHeight(36)
         self.form_layout.addRow(threshold_label, self.threshold_input)
         
@@ -569,9 +566,8 @@ class ProductDialog(BaseDialog):
             # Set availability
             self.availability_checkbox.setChecked(self.item.get('availability', True))
         else:
-            # We're adding a new product
+            # Adding a new product
             self.header_label.setText("Add New Product")
-            # Set default expiry date to one year from now
             default_expiry = QtCore.QDate.currentDate().addYears(1)
             self.expiry_date_input.setDate(default_expiry)
     
@@ -660,12 +656,12 @@ class ServiceDialog(BaseDialog):
     
     def setup_ui(self):
         """Set up the service dialog UI"""
-        self.setup_base_ui(550)  # Services need a shorter dialog
+        self.setup_base_ui(550)
         
         self.save_button.setText("Save Service")
         self.save_button.clicked.connect(self.save_service)
         
-        # Name input
+        # Service name input
         name_label = QtWidgets.QLabel("Service Name:")
         self.name_input = QtWidgets.QLineEdit()
         self.name_input.setPlaceholderText("Enter service name")
@@ -705,17 +701,14 @@ class ServiceDialog(BaseDialog):
     def populate_data(self):
         """Populate dialog with service data if editing"""
         if self.item:
-            # We're editing an existing service
             self.header_label.setText("Edit Service")
             self.name_input.setText(self.item['service_name'])
             self.category_input.setText(self.item.get('category', ''))
             self.description_input.setText(self.item.get('description', ''))
             self.price_input.setValue(float(self.item['price']))
             
-            # Set availability
             self.availability_checkbox.setChecked(self.item.get('availability', True))
         else:
-            # We're adding a new service
             self.header_label.setText("Add New Service")
     
     def save_service(self):
@@ -771,17 +764,14 @@ class InventoryPage(BasePage):
         super(InventoryPage, self).__init__(parent, title="Inventory", user_info=user_info)
         self.load_products()
         self.load_services()
-        # Load overall dashboard data
         self.update_overall_dashboard()
 
     def createContent(self):
-        # Content area with reduced margins for more space
         self.content_area = QtWidgets.QWidget()
         self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
         self.content_layout.setContentsMargins(10, 10, 10, 10)
         self.content_layout.setSpacing(8)
         
-        # Create tabs for Products and Inventory with improved styling
         self.tabs = QtWidgets.QTabWidget()
         self.tabs.setStyleSheet(StyleFactory.get_tab_style())
         
@@ -789,7 +779,7 @@ class InventoryPage(BasePage):
         self.setup_products_tab()
         self.setup_services_tab()
         self.setup_inventory_status_tab()
-        self.setup_overall_inventory_tab()  # Add our new tab
+        self.setup_overall_inventory_tab()
         
         # Add the tab widget to the main layout
         self.content_layout.addWidget(self.tabs)
@@ -807,9 +797,9 @@ class InventoryPage(BasePage):
         """Handle changing between tabs"""
         if index == 0:  # Overview tab
             self.update_overall_dashboard()
-        elif index == 2:  # Services tab (index shifted because of new first tab)
+        elif index == 2:  # Services tab 
             self.load_services()
-        elif index == 3:  # Inventory Status tab (index shifted because of new first tab)
+        elif index == 3:  # Inventory Status tab
             self.load_inventory()
             self.update_inventory_analytics()
     
@@ -846,7 +836,7 @@ class InventoryPage(BasePage):
             ("Threshold", 0.07),
             ("Expiry Date", 0.11),
             ("Availability", 0.10),
-            ("Description", 0.26)  # Slightly reduced to ensure total is ~1.0
+            ("Description", 0.26)
         ]
         
         # Configure the table columns
@@ -892,20 +882,18 @@ class InventoryPage(BasePage):
             ("Category", 0.15),
             ("Price", 0.10),
             ("Availability", 0.12),
-            ("Description", 0.38)  # Increased to use remaining space
+            ("Description", 0.38)
         ]
         
         # Configure the table columns
         screen_width = QtWidgets.QApplication.desktop().screenGeometry().width()
         TableFactory.configure_table_columns(self.services_table, service_columns, screen_width)
         
-        # Add context menu to the services table
         self.services_table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.services_table.customContextMenuRequested.connect(self.show_service_context_menu)
         
         self.services_layout.addWidget(self.services_table)
         
-        # Add Services tab to the tab widget
         self.tabs.addTab(self.services_tab, "Services")
 
     def setup_inventory_status_tab(self):
@@ -936,7 +924,7 @@ class InventoryPage(BasePage):
         # Define column headers and their relative widths
         inventory_columns = [
             ("ID", 0.05),
-            ("Product Name", 0.35),  # Increased
+            ("Product Name", 0.35), 
             ("Quantity", 0.15),
             ("Status", 0.20),
             ("Last Updated", 0.25)
@@ -1022,7 +1010,7 @@ class InventoryPage(BasePage):
         # Add a spacer to push everything to the top
         self.overall_layout.addStretch(1)
         
-        # Add Overall tab to the tab widget (make it the first tab)
+        # Add Overall tab to the tab widget
         self.tabs.insertTab(0, self.overall_tab, "Overview")
     
     def create_info_card(self, title, value, color, icon_type=None, subtitle=None):
@@ -1046,7 +1034,7 @@ class InventoryPage(BasePage):
                 border-radius: 10px;
                 border-left: 5px solid {color};
                 padding: 10px;
-                min-height: 60px;  /* Increased height for larger icons */
+                min-height: 60px;
             }}
         """)
         
@@ -1064,26 +1052,21 @@ class InventoryPage(BasePage):
         elif icon_type == "products":
             icon_path = "app/resources/images/inventory/total-products.png"
         elif icon_type == "categories":
-            icon_path = "app/resources/images/inventory/categories.png"
+            icon_path = "app/resources/images/inventory/product-categories.png"
         elif icon_type == "services":
             icon_path = "app/resources/images/inventory/services.png"
         
-        # Create a larger fixed size container for the icon
-        icon_label.setFixedSize(120, 110)
+        icon_label.setFixedSize(200, 200)
         icon_label.setAlignment(QtCore.Qt.AlignCenter)
-        
-        # If icon exists, show it with proper scaling
         if icon_path and QtCore.QFile(icon_path).exists():
             pixmap = QtGui.QPixmap(icon_path)
-            # Scale the pixmap to fit the container while maintaining aspect ratio
             scaled_pixmap = pixmap.scaled(
-                70, 70,
+                150, 150,
                 QtCore.Qt.KeepAspectRatio,
                 QtCore.Qt.SmoothTransformation
             )
             icon_label.setPixmap(scaled_pixmap)
         else:
-            # Create a colored circle if icon doesn't exist
             icon_label.setText("●")
             icon_label.setStyleSheet(f"""
                 color: {color};
@@ -1119,14 +1102,12 @@ class InventoryPage(BasePage):
                 font-size: 12px;
             """)
             text_layout.addWidget(subtitle_label)
-            # Store reference to subtitle label for updates
             card.subtitle_label = subtitle_label
         
         # Add icon and text to card layout
         card_layout.addWidget(icon_label)
         card_layout.addLayout(text_layout, 1)
         
-        # Store the value label to update it later
         card.value_label = value_label
         card.title = title
         
@@ -1136,9 +1117,9 @@ class InventoryPage(BasePage):
         """Handle changing between tabs"""
         if index == 0:  # Overview tab
             self.update_overall_dashboard()
-        elif index == 2:  # Services tab (index shifted because of new first tab)
+        elif index == 2:  # Services tab 
             self.load_services()
-        elif index == 3:  # Inventory Status tab (index shifted because of new first tab)
+        elif index == 3:  # Inventory Status tab 
             self.load_inventory()
             self.update_inventory_analytics()
     
@@ -1170,7 +1151,6 @@ class InventoryPage(BasePage):
                 self.products_table.setItem(row, 1, QtWidgets.QTableWidgetItem(product['product_name']))
                 self.products_table.setItem(row, 2, QtWidgets.QTableWidgetItem(product.get('category', '')))
                 
-                # Price with better formatting and alignment
                 price_item = QtWidgets.QTableWidgetItem(f"${product['price']:.2f}")
                 price_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
                 self.products_table.setItem(row, 3, price_item)
@@ -1199,9 +1179,9 @@ class InventoryPage(BasePage):
                 
                 # Set color based on availability
                 if product.get('availability', True):
-                    availability_item.setForeground(QtGui.QColor("#4CAF50"))  # Green for in stock
+                    availability_item.setForeground(QtGui.QColor("#4CAF50")) 
                 else:
-                    availability_item.setForeground(QtGui.QColor("#FF5252"))  # Red for out of stock
+                    availability_item.setForeground(QtGui.QColor("#FF5252")) 
                     
                 self.products_table.setItem(row, 7, availability_item)
                 
@@ -1332,10 +1312,8 @@ class InventoryPage(BasePage):
             # Update the info cards
             for card in self.findChildren(QtWidgets.QFrame):
                 if hasattr(card, 'value_label'):
-                    # Get the text layout which is the second item (index 1) in card layout
                     text_layout = card.layout().itemAt(1).layout()
                     if text_layout:
-                        # Get the title label which is the first widget in the text layout
                         title_label = text_layout.itemAt(0).widget()
                         if title_label.text() == "Low Stock Items":
                             card.value_label.setText(str(low_stock_count))

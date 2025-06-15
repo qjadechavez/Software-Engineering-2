@@ -54,7 +54,6 @@ class BasePage(QtWidgets.QWidget):
         self.header_title.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.header_title.setFixedWidth(320)
         
-        # Add user info to header (center - fixed position)
         self.user_info_container = QtWidgets.QWidget()
         self.user_info_container.setFixedWidth(320)
         self.user_info_container.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -64,14 +63,12 @@ class BasePage(QtWidgets.QWidget):
         user_info_layout.setContentsMargins(0, 15, 0, 15)
         user_info_layout.setSpacing(3)
         
-        # User label (upper part)
         self.user_label = QtWidgets.QLabel("CURRENT USER")
         self.user_label.setStyleSheet("color: #a0a0a0; font-size: 11px; letter-spacing: 1px; background-color: transparent;")
         self.user_label.setAlignment(QtCore.Qt.AlignCenter)
         self.user_label.setFont(QtGui.QFont("Segoe UI", 9))
         self.user_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         
-        # User info label (lower part)
         self.user_info_label = QtWidgets.QLabel()
         self.user_info_label.setObjectName("user_info_label")
         self.user_info_label.setStyleSheet("color: #ffffff; font-size: 14px; background-color: transparent;")
@@ -79,11 +76,9 @@ class BasePage(QtWidgets.QWidget):
         self.user_info_label.setAlignment(QtCore.Qt.AlignCenter)
         self.user_info_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         
-        # Add labels to container
         user_info_layout.addWidget(self.user_label)
         user_info_layout.addWidget(self.user_info_label)
         
-        # Add date/time to header (right side - fixed position)
         self.header_date_container = QtWidgets.QWidget()
         self.header_date_container.setFixedWidth(320)
         self.header_date_container.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -93,14 +88,12 @@ class BasePage(QtWidgets.QWidget):
         date_layout.setContentsMargins(0, 15, 0, 15)
         date_layout.setSpacing(3)
         
-        # Date label (upper part)
         self.date_label = QtWidgets.QLabel("CURRENT DATE")
         self.date_label.setStyleSheet("color: #a0a0a0; font-size: 11px; letter-spacing: 1px; background-color: transparent;")
         self.date_label.setAlignment(QtCore.Qt.AlignRight)
         self.date_label.setFont(QtGui.QFont("Segoe UI", 9))
         self.date_label.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         
-        # Date value (lower part)
         self.header_date = QtWidgets.QLabel()
         self.header_date.setObjectName("header_date")
         self.header_date.setStyleSheet("color: #4ecca3; font-size: 14px; background-color: transparent;")
@@ -108,11 +101,9 @@ class BasePage(QtWidgets.QWidget):
         self.header_date.setAlignment(QtCore.Qt.AlignRight)
         self.header_date.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         
-        # Add labels to container
         date_layout.addWidget(self.date_label)
         date_layout.addWidget(self.header_date)
         
-        # Add widgets to layout with proper alignment
         header_layout.addWidget(self.header_title, 0, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         header_layout.addStretch(1)  # Flexible space
         header_layout.addWidget(self.user_info_container, 0, QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
@@ -126,7 +117,7 @@ class BasePage(QtWidgets.QWidget):
         # Create timer to update date/time
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update_datetime)
-        self.timer.start(60000)  # Update every minute
+        self.timer.start(60000)
         
         self.layout.addWidget(self.widget_header)
 

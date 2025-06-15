@@ -118,7 +118,7 @@ class SidebarSection:
         # Create buttons for each item
         for item in self.items:
             if item.name == "Logout":
-                button = item.create_button(parent, 18)  # Different icon size for bottom buttons
+                button = item.create_button(parent, 18) 
             else:
                 button = item.create_button(parent)
                 
@@ -265,7 +265,6 @@ class PageManager:
             for child in page.children():
                 if isinstance(child, QtWidgets.QWidget) and hasattr(child, 'objectName'):
                     if 'header' in child.objectName().lower() or hasattr(child, 'isHeader'):
-                        # Apply consistent style
                         child.setStyleSheet(header_style)
                         
                         # Style header labels
@@ -390,7 +389,7 @@ class MainWindow(QtWidgets.QMainWindow):
             
         # Add bottom navigation pages
         for item in self.bottom_items:
-            if item.page_class:  # Skip items without a page class (like Logout)
+            if item.page_class: 
                 self.page_manager.add_page(item, self.user_info)
         
     def connect_buttons(self):

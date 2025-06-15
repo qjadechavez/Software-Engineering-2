@@ -72,8 +72,8 @@ class UserSession:
             "username": self.username,
             "logout_time": self.logout_time,
             "formatted_logout": formatted_logout,
-            "session_duration": session_seconds,  # Keep raw seconds for calculations
-            "formatted_duration": formatted_duration  # Add formatted string
+            "session_duration": session_seconds, 
+            "formatted_duration": formatted_duration
         }
 
 
@@ -114,8 +114,6 @@ class DatabaseAuthStrategy(IAuthStrategy):
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
             
-            # Query the database for the user
-            # In a real application, passwords should be hashed!
             cursor.execute(
                 """SELECT user_id, username, role, full_name, 
                    login_time, logout_time, total_session_time

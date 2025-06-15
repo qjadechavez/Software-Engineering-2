@@ -27,7 +27,7 @@ class DBManager:
             dict: Database configuration
         """
         try:
-            # Try to load config from a file (for easier configuration changes)
+            # Try to load config from a file
             config_path = Path(__file__).parent.parent.parent / "config" / "database.json"
             
             if config_path.exists():
@@ -53,7 +53,7 @@ class DBManager:
             mysql.connector.Error: If connection fails
         """
         try:
-            # Check if we have a valid connection
+            # Check if valid connection
             if cls._connection and cls._connection.is_connected():
                 return cls._connection
             
