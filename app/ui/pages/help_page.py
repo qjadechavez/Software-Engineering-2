@@ -2,27 +2,24 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from app.ui.pages.base_page import BasePage
 
 class HelpPage(BasePage):
-    def __init__(self, parent=None):
-        super(HelpPage, self).__init__(parent)
-        
-    def setupUi(self):
-        # Main layout
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Header widget
-        self.header_widget = QtWidgets.QWidget()
-        self.header_widget.setFixedHeight(99)
-        self.header_widget.setStyleSheet("background-color: rgba(35, 35, 35, 0.95);")
-        self.layout.addWidget(self.header_widget)
-        
+    def __init__(self, parent=None, user_info=None):
+        super(HelpPage, self).__init__(parent, title="Help", user_info=user_info)
+    
+    def createContent(self):
         # Content area
-        self.content_widget = QtWidgets.QWidget()
-        self.content_layout = QtWidgets.QVBoxLayout(self.content_widget)
+        self.content_area = QtWidgets.QWidget()
+        self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
+        self.content_layout.setContentsMargins(20, 20, 20, 20)
         
-        # Add help content (placeholder for now)
-        label = QtWidgets.QLabel("Help")
-        label.setAlignment(QtCore.Qt.AlignCenter)
-        self.content_layout.addWidget(label)
+        self.content_area.setStyleSheet("background-color: red;")
         
-        self.layout.addWidget(self.content_widget)
+        # Placeholder message
+        placeholder_label = QtWidgets.QLabel("Help content")
+        placeholder_label.setAlignment(QtCore.Qt.AlignCenter)
+        placeholder_label.setFont(QtGui.QFont("Segoe UI", 14))
+        placeholder_label.setStyleSheet("color: #888888;")
+        
+        self.content_layout.addWidget(placeholder_label)
+        self.content_layout.addStretch()
+        
+        self.layout.addWidget(self.content_area)

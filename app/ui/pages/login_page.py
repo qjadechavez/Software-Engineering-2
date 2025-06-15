@@ -1,6 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-import sys
-from app.ui.main_window import Ui_MainWindow
+from app.ui.main_window import MainWindow
 from app.utils.auth_manager import AuthManager
 
 class LoginPage(QtWidgets.QWidget):
@@ -14,7 +13,7 @@ class LoginPage(QtWidgets.QWidget):
     def setupUi(self):
         # Set the main window properties
         self.setObjectName("LoginForm")
-        self.setWindowTitle("Login - Inventory Management System")
+        self.setWindowTitle("Login - Sales and Inventory Management System")
         self.resize(1280, 720)
         self.setMinimumSize(QtCore.QSize(1280, 720))
         self.setMaximumSize(QtCore.QSize(1280, 720))
@@ -40,7 +39,7 @@ class LoginPage(QtWidgets.QWidget):
         # Logo/Brand image
         self.logo_label = QtWidgets.QLabel(self.left_panel)
         self.logo_label.setGeometry(QtCore.QRect(140, 100, 400, 400))
-        pixmap = QtGui.QPixmap("app/resources/images/login-logo.png")
+        pixmap = QtGui.QPixmap("app/resources/images/logo/login-logo.png")
         scaled_pixmap = pixmap.scaled(350, 350, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.logo_label.setPixmap(scaled_pixmap)        
 
@@ -85,7 +84,7 @@ class LoginPage(QtWidgets.QWidget):
         self.right_panel = QtWidgets.QWidget()
         self.right_panel.setStyleSheet("background-color: white;")
         
-        # Login container - centers the login form
+        # Login container
         self.login_container = QtWidgets.QWidget(self.right_panel)
         self.login_container.setGeometry(QtCore.QRect(120, 150, 400, 420))
         
@@ -178,27 +177,29 @@ class LoginPage(QtWidgets.QWidget):
             self.show_error("Please enter both username and password")
             return
             
-        # Authenticate user
-        user = self.auth_manager.authenticate(username, password)
-        
-        if user:
-            self.open_main_window()
-        else:
-            self.show_error("Invalid username or password")
+        try:
+            # Authenticate user
+            user = self.auth_manager.authenticate(username, password)
             
+            if user:
+                self.open_main_window(user)
+            else:
+                self.show_error("Invalid username or password")
+        except Exception as e:
+            self.show_error(f"Login error: Database connection failed")
+            print(f"Authentication error: {e}")
+        
     def show_error(self, message):
         """Display error message"""
         self.error_label.setText(message)
         self.error_label.show()
         
-        # Hide the error message after 3 seconds
         QtCore.QTimer.singleShot(3000, self.error_label.hide)
         
-    def open_main_window(self):
+    def open_main_window(self, user):
         """Open the main application window after successful login"""
-        self.main_window = QtWidgets.QMainWindow()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self.main_window)
+        # Create and show the main window 
+        self.main_window = MainWindow(user_info=user)
         self.main_window.show()
         self.hide() 
 

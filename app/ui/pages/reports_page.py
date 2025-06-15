@@ -2,27 +2,22 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from app.ui.pages.base_page import BasePage
 
 class ReportsPage(BasePage):
-    def __init__(self, parent=None):
-        super(ReportsPage, self).__init__(parent)
-        
-    def setupUi(self):
-        # Main layout
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Header widget
-        self.header_widget = QtWidgets.QWidget()
-        self.header_widget.setFixedHeight(99)
-        self.header_widget.setStyleSheet("background-color: rgba(35, 35, 35, 0.95);")
-        self.layout.addWidget(self.header_widget)
-        
+    def __init__(self, parent=None, user_info=None):
+        super(ReportsPage, self).__init__(parent, title="Reports", user_info=user_info)
+    
+    def createContent(self):
         # Content area
-        self.content_widget = QtWidgets.QWidget()
-        self.content_layout = QtWidgets.QVBoxLayout(self.content_widget)
+        self.content_area = QtWidgets.QWidget()
+        self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
+        self.content_layout.setContentsMargins(20, 20, 20, 20)
         
-        # Add reports content (placeholder for now)
-        label = QtWidgets.QLabel("reports")
-        label.setAlignment(QtCore.Qt.AlignCenter)
-        self.content_layout.addWidget(label)
+        # Placeholder message
+        placeholder_label = QtWidgets.QLabel("Reports content")
+        placeholder_label.setAlignment(QtCore.Qt.AlignCenter)
+        placeholder_label.setFont(QtGui.QFont("Segoe UI", 14))
+        placeholder_label.setStyleSheet("color: #888888;")
         
-        self.layout.addWidget(self.content_widget)
+        self.content_layout.addWidget(placeholder_label)
+        self.content_layout.addStretch()
+        
+        self.layout.addWidget(self.content_area)
