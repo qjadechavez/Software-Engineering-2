@@ -771,7 +771,9 @@ class InventoryPage(BasePage):
         super(InventoryPage, self).__init__(parent, title="Inventory", user_info=user_info)
         self.load_products()
         self.load_services()
-    
+        # Load overall dashboard data
+        self.update_overall_dashboard()
+
     def createContent(self):
         # Content area with reduced margins for more space
         self.content_area = QtWidgets.QWidget()
@@ -787,6 +789,7 @@ class InventoryPage(BasePage):
         self.setup_products_tab()
         self.setup_services_tab()
         self.setup_inventory_status_tab()
+        self.setup_overall_inventory_tab()  # Add our new tab
         
         # Add the tab widget to the main layout
         self.content_layout.addWidget(self.tabs)
@@ -796,6 +799,19 @@ class InventoryPage(BasePage):
         
         # Connect the tab change signal
         self.tabs.currentChanged.connect(self.handle_tab_change)
+        
+        # Set Overview tab as the default
+        self.tabs.setCurrentIndex(0)
+
+    def handle_tab_change(self, index):
+        """Handle changing between tabs"""
+        if index == 0:  # Overview tab
+            self.update_overall_dashboard()
+        elif index == 2:  # Services tab (index shifted because of new first tab)
+            self.load_services()
+        elif index == 3:  # Inventory Status tab (index shifted because of new first tab)
+            self.load_inventory()
+            self.update_inventory_analytics()
     
     def setup_products_tab(self):
         """Setup the Products tab"""
@@ -935,8 +951,93 @@ class InventoryPage(BasePage):
         # Add Inventory tab to the tab widget
         self.tabs.addTab(self.inventory_tab, "Inventory Status")
     
-    def create_info_card(self, title, value, color, icon_type=None):
-        """Create an info card for the inventory dashboard with larger icons"""
+    def setup_overall_inventory_tab(self):
+        """Setup the Overall Inventory tab with dashboard info"""
+        self.overall_tab = QtWidgets.QWidget()
+        self.overall_layout = QtWidgets.QVBoxLayout(self.overall_tab)
+        self.overall_layout.setContentsMargins(15, 20, 15, 15)
+        self.overall_layout.setSpacing(20)
+        
+        # Add title
+        title_label = QtWidgets.QLabel("Inventory Overview Dashboard")
+        title_label.setStyleSheet("""
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        """)
+        self.overall_layout.addWidget(title_label)
+        
+        # Create top row with two cards
+        top_row = QtWidgets.QHBoxLayout()
+        top_row.setSpacing(15)
+        
+        # Categories card
+        self.categories_card = self.create_info_card(
+            "Product Categories", 
+            "0", 
+            "#4A9DFF", 
+            "categories"
+        )
+        
+        # Total Products card
+        self.products_card = self.create_info_card(
+            "Total Products", 
+            "0", 
+            "#4CAF50", 
+            "products",
+            subtitle="$0 Revenue"
+        )
+        
+        top_row.addWidget(self.categories_card)
+        top_row.addWidget(self.products_card)
+        
+        # Create bottom row with two cards
+        bottom_row = QtWidgets.QHBoxLayout()
+        bottom_row.setSpacing(15)
+        
+        # Total Services card
+        self.services_card = self.create_info_card(
+            "Total Services", 
+            "0", 
+            "#9C27B0", 
+            "services"
+        )
+        
+        # Low Stock Items card
+        self.low_stock_card = self.create_info_card(
+            "Low Stock Items", 
+            "0", 
+            "#FF5252", 
+            "warning"
+        )
+        
+        bottom_row.addWidget(self.services_card)
+        bottom_row.addWidget(self.low_stock_card)
+        
+        # Add rows to the layout
+        self.overall_layout.addLayout(top_row)
+        self.overall_layout.addLayout(bottom_row)
+        
+        # Add a spacer to push everything to the top
+        self.overall_layout.addStretch(1)
+        
+        # Add Overall tab to the tab widget (make it the first tab)
+        self.tabs.insertTab(0, self.overall_tab, "Overview")
+    
+    def create_info_card(self, title, value, color, icon_type=None, subtitle=None):
+        """Create an info card for the inventory dashboard with larger icons
+        
+        Args:
+            title: The title of the card
+            value: The main value to display
+            color: The accent color for the card
+            icon_type: The type of icon to display (warning, expired, products, etc.)
+            subtitle: Optional subtitle to display beneath the main value
+        
+        Returns:
+            QFrame: The info card frame
+        """
         card = QtWidgets.QFrame()
         card.setFrameShape(QtWidgets.QFrame.StyledPanel)
         card.setStyleSheet(f"""
@@ -962,9 +1063,13 @@ class InventoryPage(BasePage):
             icon_path = "app/resources/images/inventory/expired-items.png"
         elif icon_type == "products":
             icon_path = "app/resources/images/inventory/total-products.png"
+        elif icon_type == "categories":
+            icon_path = "app/resources/images/inventory/categories.png"
+        elif icon_type == "services":
+            icon_path = "app/resources/images/inventory/services.png"
         
         # Create a larger fixed size container for the icon
-        icon_label.setFixedSize(120, 110)  # Increased from 70x70 to 80x80
+        icon_label.setFixedSize(120, 110)
         icon_label.setAlignment(QtCore.Qt.AlignCenter)
         
         # If icon exists, show it with proper scaling
@@ -972,9 +1077,9 @@ class InventoryPage(BasePage):
             pixmap = QtGui.QPixmap(icon_path)
             # Scale the pixmap to fit the container while maintaining aspect ratio
             scaled_pixmap = pixmap.scaled(
-                70, 70,  # Scale to slightly smaller than container to avoid clipping
+                70, 70,
                 QtCore.Qt.KeepAspectRatio,
-                QtCore.Qt.SmoothTransformation  # Use smooth transformation for better quality
+                QtCore.Qt.SmoothTransformation
             )
             icon_label.setPixmap(scaled_pixmap)
         else:
@@ -987,7 +1092,7 @@ class InventoryPage(BasePage):
         
         # Text content
         text_layout = QtWidgets.QVBoxLayout()
-        text_layout.setSpacing(5)  # Reduce spacing for better layout
+        text_layout.setSpacing(5)
         
         title_label = QtWidgets.QLabel(title)
         title_label.setStyleSheet("""
@@ -1006,20 +1111,34 @@ class InventoryPage(BasePage):
         text_layout.addWidget(title_label)
         text_layout.addWidget(value_label)
         
+        # Add subtitle if provided
+        if subtitle:
+            subtitle_label = QtWidgets.QLabel(subtitle)
+            subtitle_label.setStyleSheet("""
+                color: #CCCCCC;
+                font-size: 12px;
+            """)
+            text_layout.addWidget(subtitle_label)
+            # Store reference to subtitle label for updates
+            card.subtitle_label = subtitle_label
+        
         # Add icon and text to card layout
         card_layout.addWidget(icon_label)
         card_layout.addLayout(text_layout, 1)
         
         # Store the value label to update it later
         card.value_label = value_label
+        card.title = title
         
         return card
     
     def handle_tab_change(self, index):
         """Handle changing between tabs"""
-        if index == 1:  # Services tab
+        if index == 0:  # Overview tab
+            self.update_overall_dashboard()
+        elif index == 2:  # Services tab (index shifted because of new first tab)
             self.load_services()
-        elif index == 2:  # Inventory Status tab
+        elif index == 3:  # Inventory Status tab (index shifted because of new first tab)
             self.load_inventory()
             self.update_inventory_analytics()
     
@@ -1445,3 +1564,63 @@ class InventoryPage(BasePage):
     def show_error_message(self, message):
         """Show error message dialog"""
         QtWidgets.QMessageBox.critical(self, "Error", message)
+    
+    def update_overall_dashboard(self):
+        """Update the overall inventory dashboard with fresh data"""
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Get distinct categories count 
+            cursor.execute("""
+                SELECT COUNT(DISTINCT category) as count 
+                FROM products
+            """)
+            categories_count = cursor.fetchone()['count']
+            
+            # Get total products count and revenue
+            cursor.execute("""
+                SELECT COUNT(*) as count, 
+                       SUM(price * quantity) as revenue 
+                FROM products
+            """)
+            products_data = cursor.fetchone()
+            products_count = products_data['count']
+            products_revenue = products_data['revenue'] or 0
+            
+            # Get services count
+            cursor.execute("SELECT COUNT(*) as count FROM services")
+            services_count = cursor.fetchone()['count']
+            
+            # Get low stock items count
+            cursor.execute("""
+                SELECT COUNT(*) as count 
+                FROM products 
+                WHERE quantity <= threshold_value
+            """)
+            low_stock_count = cursor.fetchone()['count']
+            
+            # Update the dashboard cards
+            self.update_card_value(self.categories_card, str(categories_count))
+            self.update_card_value(self.products_card, str(products_count), f"${products_revenue:.2f} Revenue")
+            self.update_card_value(self.services_card, str(services_count))
+            self.update_card_value(self.low_stock_card, str(low_stock_count))
+            
+            cursor.close()
+            
+        except mysql.connector.Error as err:
+            self.show_error_message(f"Database error: {err}")
+
+    def update_card_value(self, card, value, subtitle=None):
+        """Update the value and optional subtitle of a dashboard card
+        
+        Args:
+            card: The card widget to update
+            value: The new value to display
+            subtitle: Optional new subtitle text
+        """
+        if hasattr(card, 'value_label'):
+            card.value_label.setText(value)
+        
+        if subtitle and hasattr(card, 'subtitle_label'):
+            card.subtitle_label.setText(subtitle)
