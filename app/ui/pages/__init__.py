@@ -1,6 +1,6 @@
 # This file makes the 'pages' directory a Python package
 from .dashboard_page import DashboardPage
-from .inventory_page import InventoryPage
+from .inventory.inventory_page import InventoryPage
 from .reports_page import ReportsPage
 from .customers_page import CustomersPage
 from .suppliers_page import SuppliersPage
