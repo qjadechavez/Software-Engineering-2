@@ -3,7 +3,7 @@ from .dashboard_page import DashboardPage
 from .inventory.inventory_page import InventoryPage
 from .reports_page import ReportsPage
 from .customers_page import CustomersPage
-from .suppliers.suppliers_page import SuppliersPage  # Fixed the import path
+from .suppliers.suppliers_page import SuppliersPage
 from .sales_page import SalesPage
 from .maintenance_page import MaintenancePage
 from .help_page import HelpPage
