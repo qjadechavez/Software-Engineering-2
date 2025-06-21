@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 import mysql.connector
 from app.utils.db_manager import DBManager
 from .base_dialog import BaseDialog
@@ -61,9 +61,11 @@ class SupplierDialog(BaseDialog):
         
         # Products on the way input
         on_the_way_label = QtWidgets.QLabel("Products on the Way:")
-        self.on_the_way_input = QtWidgets.QSpinBox()
-        self.on_the_way_input.setRange(0, 100000)
+        self.on_the_way_input = QtWidgets.QLineEdit()
+        self.on_the_way_input.setPlaceholderText("Enter number of products")
         self.on_the_way_input.setMinimumHeight(36)
+        # Optional: Add validator to ensure only numbers are entered
+        self.on_the_way_input.setValidator(QtGui.QIntValidator(0, 100000))
         self.form_layout.addRow(on_the_way_label, self.on_the_way_input)
 
     def populate_data(self):
@@ -77,7 +79,7 @@ class SupplierDialog(BaseDialog):
             self.email_input.setText(self.item.get('email', ''))
             
             self.returns_checkbox.setChecked(self.item.get('accepts_returns', False))
-            self.on_the_way_input.setValue(self.item.get('products_on_the_way', 0))
+            self.on_the_way_input.setText(str(self.item.get('products_on_the_way', 0)))
         else:
             self.header_label.setText("Add New Supplier")
 
@@ -102,7 +104,7 @@ class SupplierDialog(BaseDialog):
             contact_number = self.contact_input.text().strip()
             email = self.email_input.text().strip()
             accepts_returns = self.returns_checkbox.isChecked()
-            products_on_the_way = self.on_the_way_input.value()
+            products_on_the_way = int(self.on_the_way_input.text()) if self.on_the_way_input.text() else 0
             
             if self.item:
                 # Update existing supplier
