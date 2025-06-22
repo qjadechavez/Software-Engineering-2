@@ -434,3 +434,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.login_window = LoginPage()
         self.login_window.show()
         self.close()
+    
+    def disable_navigation(self):
+        """Disable navigation during an active invoice transaction"""
+        # Disable all navigation buttons/menu items except the current one
+        for action in self.navigation_actions:
+            if action != self.sender():
+                action.setEnabled(False)
+        
+        # You may also want to add a visual indication that navigation is disabled
+        self.statusBar().showMessage("Transaction in progress - Navigation disabled")
+
+    def enable_navigation(self):
+        """Enable navigation after a transaction is completed or cancelled"""
+        # Re-enable all navigation actions
+        for action in self.navigation_actions:
+            action.setEnabled(True)
+        
+        self.statusBar().clearMessage()
