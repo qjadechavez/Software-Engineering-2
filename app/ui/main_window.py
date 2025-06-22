@@ -9,6 +9,7 @@ from app.ui.pages import (
     SuppliersPage,
     SalesPage,
     MaintenancePage,
+    InvoicePage,
     HelpPage,
     AboutPage
 )
@@ -293,11 +294,12 @@ class MainWindow(QtWidgets.QMainWindow):
         nav_config = [
             {"name": "Dashboard", "icon": "app/resources/images/main-window/Home.png", "class": DashboardPage},
             {"name": "Inventory", "icon": "app/resources/images/main-window/Inventory.png", "class": InventoryPage},
-            {"name": "Reports", "icon": "app/resources/images/main-window/Group 11.png", "class": ReportsPage},
+            {"name": "Reports", "icon": "app/resources/images/main-window/Report.png", "class": ReportsPage},
             {"name": "Customers", "icon": "app/resources/images/main-window/Suppliers.png", "class": CustomersPage},
             {"name": "Suppliers", "icon": "app/resources/images/main-window/Suppliers.png", "class": SuppliersPage},
             {"name": "Sales", "icon": "app/resources/images/main-window/Order.png", "class": SalesPage},
             {"name": "Maintenance", "icon": "app/resources/images/main-window/Group 15.png", "class": MaintenancePage},
+            {"name": "Invoice", "icon": "app/resources/images/main-window/Invoice.png", "class": InvoicePage},
         ]
         
         # Bottom navigation items
