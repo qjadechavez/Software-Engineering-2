@@ -82,10 +82,9 @@ class InvoicePage(BasePage):
         # Add the content area to the page layout
         self.layout.addWidget(self.content_area)
         
-        # Signal to the main window that an invoice transaction has started
-        self.transaction_in_progress = True
-        if self.parent and hasattr(self.parent, 'disable_navigation'):
-            self.parent.disable_navigation()
+        # Don't disable navigation until a service is actually selected
+        # The navigation will be disabled in the select_service method when a service is chosen
+        self.transaction_in_progress = False
     
     def on_tab_changed(self, index):
         """Handle tab change events to update data"""

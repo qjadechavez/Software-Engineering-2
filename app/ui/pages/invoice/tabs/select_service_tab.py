@@ -195,6 +195,11 @@ class SelectServiceTab(QtWidgets.QWidget):
         
         # Load products used for this service
         self.load_service_products(service['service_id'])
+        
+        # NOW set the transaction in progress and disable navigation
+        self.parent.transaction_in_progress = True
+        if hasattr(self.parent, 'parent') and self.parent.parent and hasattr(self.parent.parent, 'disable_navigation'):
+            self.parent.parent.disable_navigation()
     
     def load_service_products(self, service_id):
         """Load products used for the selected service"""
@@ -245,5 +250,21 @@ class SelectServiceTab(QtWidgets.QWidget):
     
     def cancel_transaction(self):
         """Cancel the current transaction"""
+        # Even if no service is selected, still enable navigation
         if self.parent and hasattr(self.parent, 'cancel_transaction'):
             self.parent.cancel_transaction()
+        else:
+            # Fallback if parent doesn't have the method
+            # Reset the tab state
+            self.reset()
+            
+            # Try to enable navigation in the main window
+            main_window = self.parent
+            while main_window:
+                if hasattr(main_window, 'enable_navigation'):
+                    main_window.enable_navigation()
+                    break
+                if hasattr(main_window, 'parent'):
+                    main_window = main_window.parent
+                else:
+                    break
