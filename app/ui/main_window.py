@@ -452,3 +452,15 @@ class MainWindow(QtWidgets.QMainWindow):
             action.setEnabled(True)
         
         self.statusBar().clearMessage()
+    
+    def open_invoice_page(self):
+        """Open the invoice page"""
+        # Clear existing content
+        self.clear_content()
+        
+        # Create and add invoice page
+        self.current_page = InvoicePage(self, self.user_info)
+        self.content_layout.addWidget(self.current_page)
+        
+        # Disable navigation as a transaction is starting
+        self.disable_navigation()
