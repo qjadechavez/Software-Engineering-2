@@ -5,8 +5,8 @@ from app.utils.auth_manager import AuthManager
 class LoginPage(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(LoginPage, self).__init__(parent)
+        # Create the main window
         self.setupUi()
-        
         # Create auth manager
         self.auth_manager = AuthManager()
         
@@ -48,10 +48,10 @@ class LoginPage(QtWidgets.QWidget):
         self.tagline_label.setGeometry(QtCore.QRect(120, 420, 400, 40))
         self.tagline_label.setStyleSheet("color: #E2F163; font-size: 18px;")
         self.tagline_label.setFont(QtGui.QFont("Segoe UI", 14))
-        self.tagline_label.setText("Inventory Management System")
+        self.tagline_label.setText("Sales and Inventory Management System")
         self.tagline_label.setAlignment(QtCore.Qt.AlignCenter)
 
-        # Improved help button with icon
+        # Help button with icon
         self.help_button = QtWidgets.QPushButton(self.left_panel)
         self.help_button.setGeometry(QtCore.QRect(30, 650, 150, 45))
         self.help_button.setFont(QtGui.QFont("Segoe UI", 10))
@@ -133,7 +133,7 @@ class LoginPage(QtWidgets.QWidget):
         self.password_field.setFont(QtGui.QFont("Segoe UI", 12))
         self.password_field.setStyleSheet(
             "border: 1px solid #CCCCCC; "
-            "border-radius: 5px; "
+            "border-radius: 5px;"
             "padding: 10px;"
         )
         self.password_field.setPlaceholderText("Enter your password")
@@ -178,6 +178,9 @@ class LoginPage(QtWidgets.QWidget):
             return
             
         try:
+            # Lazy initialization of auth manager
+            if self.auth_manager is None:
+                self.auth_manager = AuthManager()
             # Authenticate user
             user = self.auth_manager.authenticate(username, password)
             
@@ -208,7 +211,33 @@ class LoginPage(QtWidgets.QWidget):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText("Help Information")
-        msg.setInformativeText("For login assistance, please contact your system administrator or IT support team.")
+        
+        # Attempt to retrieve admin user information from the database        
+        try:
+            from app.utils.db_manager import DBManager
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Query for admin users
+            cursor.execute("SELECT username, full_name, role FROM users WHERE role = 'admin'")
+            admins = cursor.fetchall()
+            cursor.close()
+            
+            if admins:
+                admin_info = "For login assistance, please contact:\n"
+                for admin in admins:
+                    admin_info += f"• {admin['full_name']} ({admin['role'].capitalize()})\n"
+                admin_info += "\nOr reach out to the IT support team."
+                msg.setInformativeText(admin_info)
+            else:
+                # Fallback if no admins found
+                msg.setInformativeText("For login assistance, please contact your system administrator or IT support team.")
+        
+        except Exception as e:
+            print(f"Error retrieving admin information: {e}")
+            # Fallback in case of database error
+            msg.setInformativeText("For login assistance, please contact Juan (Admin) or IT support team.")
+        
         msg.setWindowTitle("Help")
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
