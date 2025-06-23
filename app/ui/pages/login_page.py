@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from app.ui.main_window import MainWindow
 from app.utils.auth_manager import AuthManager
-from app.ui.pages.register_page import RegisterPage
+from app.ui.pages.register.register_page import RegisterPage
 
 class LoginPage(QtWidgets.QWidget):
     def __init__(self, parent=None):
