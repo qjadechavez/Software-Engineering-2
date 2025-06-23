@@ -9,6 +9,7 @@ from app.ui.pages import (
     SuppliersPage,
     SalesPage,
     MaintenancePage,
+    InvoicePage,
     HelpPage,
     AboutPage
 )
@@ -293,11 +294,12 @@ class MainWindow(QtWidgets.QMainWindow):
         nav_config = [
             {"name": "Dashboard", "icon": "app/resources/images/main-window/Home.png", "class": DashboardPage},
             {"name": "Inventory", "icon": "app/resources/images/main-window/Inventory.png", "class": InventoryPage},
-            {"name": "Reports", "icon": "app/resources/images/main-window/Group 11.png", "class": ReportsPage},
+            {"name": "Reports", "icon": "app/resources/images/main-window/Report.png", "class": ReportsPage},
             {"name": "Customers", "icon": "app/resources/images/main-window/Suppliers.png", "class": CustomersPage},
             {"name": "Suppliers", "icon": "app/resources/images/main-window/Suppliers.png", "class": SuppliersPage},
             {"name": "Sales", "icon": "app/resources/images/main-window/Order.png", "class": SalesPage},
             {"name": "Maintenance", "icon": "app/resources/images/main-window/Group 15.png", "class": MaintenancePage},
+            {"name": "Invoice", "icon": "app/resources/images/main-window/Invoice.png", "class": InvoicePage},
         ]
         
         # Bottom navigation items
@@ -428,7 +430,37 @@ class MainWindow(QtWidgets.QMainWindow):
         auth_manager.logout(username)
         
         # Return to login screen
-        from app.ui.pages.login_page import LoginPage
+        from app.ui.pages.login.login_page import LoginPage
         self.login_window = LoginPage()
         self.login_window.show()
         self.close()
+    
+    def disable_navigation(self):
+        """Disable navigation during an active invoice transaction"""
+        # Disable all navigation buttons/menu items except the current one
+        for action in self.navigation_actions:
+            if action != self.sender():
+                action.setEnabled(False)
+        
+        # You may also want to add a visual indication that navigation is disabled
+        self.statusBar().showMessage("Transaction in progress - Navigation disabled")
+
+    def enable_navigation(self):
+        """Enable navigation after a transaction is completed or cancelled"""
+        # Re-enable all navigation actions
+        for action in self.navigation_actions:
+            action.setEnabled(True)
+        
+        self.statusBar().clearMessage()
+    
+    def open_invoice_page(self):
+        """Open the invoice page"""
+        # Clear existing content
+        self.clear_content()
+        
+        # Create and add invoice page
+        self.current_page = InvoicePage(self, self.user_info)
+        self.content_layout.addWidget(self.current_page)
+        
+        # Disable navigation as a transaction is starting
+        self.disable_navigation()

@@ -2,6 +2,7 @@ from app.utils.db_manager import DBManager
 import mysql.connector
 import datetime
 from abc import ABC, abstractmethod
+import hashlib
 
 class UserSession:
     """Class representing a user's authentication session"""
@@ -114,14 +115,29 @@ class DatabaseAuthStrategy(IAuthStrategy):
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
             
+            # Hash the password using the same method as registration
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            
+            # First try authenticating with hashed password
             cursor.execute(
                 """SELECT user_id, username, role, full_name, 
                    login_time, logout_time, total_session_time
                    FROM users WHERE username = %s AND password = %s""",
-                (username, password)
+                (username, hashed_password)
             )
             
             user = cursor.fetchone()
+            
+            # If no user found with hashed password, try with plain text
+            if not user:
+                cursor.execute(
+                    """SELECT user_id, username, role, full_name, 
+                       login_time, logout_time, total_session_time
+                       FROM users WHERE username = %s AND password = %s""",
+                    (username, password)
+                )
+                user = cursor.fetchone()
+            
             if not user:
                 return None
                 
