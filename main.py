@@ -2,7 +2,7 @@ import sys
 import mysql.connector
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QStyleFactory
-from app.ui.pages.login_page import LoginPage
+from app.ui.pages.login.login_page import LoginPage
 from app.utils.db_manager import DBManager
 
 def setup_database():

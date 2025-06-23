@@ -430,7 +430,7 @@ class MainWindow(QtWidgets.QMainWindow):
         auth_manager.logout(username)
         
         # Return to login screen
-        from app.ui.pages.login_page import LoginPage
+        from app.ui.pages.login.login_page import LoginPage
         self.login_window = LoginPage()
         self.login_window.show()
         self.close()

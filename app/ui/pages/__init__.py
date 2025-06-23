@@ -10,3 +10,4 @@ from .invoice.invoice_page import InvoicePage
 from .help_page import HelpPage
 from .about_page import AboutPage
 from .register.register_page import RegisterPage
+from .login.login_page import LoginPage
