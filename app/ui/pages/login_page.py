@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from app.ui.main_window import MainWindow
 from app.utils.auth_manager import AuthManager
+from app.ui.pages.register_page import RegisterPage
 
 class LoginPage(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -139,9 +140,18 @@ class LoginPage(QtWidgets.QWidget):
         self.password_field.setPlaceholderText("Enter your password")
         self.password_field.setEchoMode(QtWidgets.QLineEdit.Password)
         
-        # Login button
+        # Error message label (hidden initially) - MOVED below password field
+        self.error_label = QtWidgets.QLabel(self.login_container)
+        self.error_label.setGeometry(QtCore.QRect(0, 305, 400, 30))  # Changed Y position to 305
+        self.error_label.setFont(QtGui.QFont("Segoe UI", 10))
+        self.error_label.setText("Invalid username or password")
+        self.error_label.setStyleSheet("color: #FF3333;")
+        self.error_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.error_label.hide()
+        
+        # Login button - moved down to make room for error label
         self.login_button = QtWidgets.QPushButton(self.login_container)
-        self.login_button.setGeometry(QtCore.QRect(0, 330, 400, 50))
+        self.login_button.setGeometry(QtCore.QRect(0, 340, 400, 50))  # Changed Y position to 340
         self.login_button.setFont(QtGui.QFont("Segoe UI", 12, QtGui.QFont.Bold))
         self.login_button.setText("Login")
         self.login_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -152,14 +162,14 @@ class LoginPage(QtWidgets.QWidget):
             "border: none;"
         )
         
-        # Error message label (hidden initially)
-        self.error_label = QtWidgets.QLabel(self.login_container)
-        self.error_label.setGeometry(QtCore.QRect(0, 390, 400, 30))
-        self.error_label.setFont(QtGui.QFont("Segoe UI", 10))
-        self.error_label.setText("Invalid username or password")
-        self.error_label.setStyleSheet("color: #FF3333;")
-        self.error_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.error_label.hide()
+        # Register account link - adjusted position
+        self.register_link = QtWidgets.QLabel(self.login_container)
+        self.register_link.setGeometry(QtCore.QRect(0, 390, 400, 30))  # No change needed, but kept at position 390
+        self.register_link.setFont(QtGui.QFont("Segoe UI", 10))
+        self.register_link.setText("<a href='#' style='color: #232323; text-decoration: none;'>Don't have an account? <span style='color: #232323; font-weight: bold;'>Register Here</span></a>")
+        self.register_link.setAlignment(QtCore.Qt.AlignCenter)
+        self.register_link.setOpenExternalLinks(False)
+        self.register_link.linkActivated.connect(self.show_registration_page)
         
         # Connect login button to authentication function
         self.login_button.clicked.connect(self.authenticate)
@@ -241,3 +251,9 @@ class LoginPage(QtWidgets.QWidget):
         msg.setWindowTitle("Help")
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
+
+    def show_registration_page(self):
+        """Open registration form"""
+        self.register_window = RegisterPage(parent=self)
+        self.register_window.show()
+        self.hide()

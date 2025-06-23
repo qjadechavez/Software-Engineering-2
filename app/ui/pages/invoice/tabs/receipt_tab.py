@@ -429,6 +429,8 @@ class ReceiptTab(QtWidgets.QWidget):
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
             
+            print(f"Loading products for service ID: {service_id}")
+            
             # Get products used in this service
             cursor.execute("""
                 SELECT p.product_name, sp.quantity, p.price
@@ -440,11 +442,14 @@ class ReceiptTab(QtWidgets.QWidget):
             products = cursor.fetchall()
             cursor.close()
             
+            print(f"Found {len(products)} products")
+            
             # Add products to the table
             if products:
                 self.products_table.setRowCount(len(products))
                 
                 for i, product in enumerate(products):
+                    print(f"Adding product: {product['product_name']}")
                     name_item = QtWidgets.QTableWidgetItem(product['product_name'])
                     quantity_item = QtWidgets.QTableWidgetItem(str(product['quantity']))
                     price_item = QtWidgets.QTableWidgetItem(f"₱{float(product['price']):.2f}")
@@ -459,6 +464,7 @@ class ReceiptTab(QtWidgets.QWidget):
                 self.products_header_label.show()
                 self.products_table.show()
             else:
+                print("No products found, hiding products section")
                 self.products_header_label.hide()
                 self.products_table.hide()
                 
@@ -666,3 +672,9 @@ class ReceiptTab(QtWidgets.QWidget):
         self.total_value.setText("")
         self.payment_method_value.setText("")
         self.served_by_value.setText("")
+    
+    def showEvent(self, event):
+        """Called when the tab is shown"""
+        super().showEvent(event)
+        # Generate the receipt with current data when the tab becomes visible
+        self.generateReceipt()
