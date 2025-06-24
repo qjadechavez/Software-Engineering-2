@@ -47,25 +47,44 @@ class StyleFactory:
         """
     
     @staticmethod
-    def get_button_style():
-        return """
-            QPushButton {
-                background-color: #007ACC;
-                color: white;
-                border-radius: 18px;
-                padding: 8px 20px;
-                font-weight: bold;
-                font-size: 13px;
-                min-width: 150px;
-                min-height: 36px;
-            }
-            QPushButton:hover {
-                background-color: #0099FF;
-            }
-            QPushButton:pressed {
-                background-color: #0066BB;
-            }
-        """
+    def get_button_style(secondary=False):
+        if secondary:
+            return """
+                QPushButton {
+                    background-color: #555555;
+                    color: white;
+                    border-radius: 18px;
+                    padding: 8px 20px;
+                    font-weight: bold;
+                    font-size: 13px;
+                    min-height: 36px;
+                }
+                QPushButton:hover {
+                    background-color: #666666;
+                }
+                QPushButton:pressed {
+                    background-color: #444444;
+                }
+            """
+        else:
+            return """
+                QPushButton {
+                    background-color: #007ACC;
+                    color: white;
+                    border-radius: 18px;
+                    padding: 8px 20px;
+                    font-weight: bold;
+                    font-size: 13px;
+                    min-width: 150px;
+                    min-height: 36px;
+                }
+                QPushButton:hover {
+                    background-color: #0099FF;
+                }
+                QPushButton:pressed {
+                    background-color: #0066BB;
+                }
+            """
     
     @staticmethod
     def get_table_style():

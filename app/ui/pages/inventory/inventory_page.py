@@ -70,7 +70,8 @@ class InventoryPage(BasePage):
             self.search_input, 
             "+ Add Product", 
             self.show_add_product_dialog,
-            self.filter_products
+            self.filter_products,
+            self.show_product_filter_dialog
         )
         self.products_layout.addLayout(control_layout)
         
@@ -119,7 +120,8 @@ class InventoryPage(BasePage):
             self.services_search_input,
             "+ Add Service",
             self.show_add_service_dialog,
-            self.filter_services
+            self.filter_services,
+            self.show_service_filter_dialog  # Add filter callback
         )
         self.services_layout.addLayout(services_control_layout)
         
@@ -807,21 +809,23 @@ class InventoryPage(BasePage):
             """)
             expired_count = cursor.fetchone()['count']
             
-            # Update the info cards
-            for card in self.findChildren(QtWidgets.QFrame):
-                if hasattr(card, 'value_label'):
-                    text_layout = card.layout().itemAt(1).layout()
-                    if text_layout:
-                        title_label = text_layout.itemAt(0).widget()
-                        if title_label.text() == "Low Stock Items":
-                            card.value_label.setText(str(low_stock_count))
-                        elif title_label.text() == "Expired Items":
-                            card.value_label.setText(str(expired_count))
-                        elif title_label.text() == "Total Products":
-                            card.value_label.setText(str(total_count))
-        
-            cursor.close()
+            # Update the info cards - use direct references instead of searching
+            # Find cards directly in the inventory tab layout
+            for i in range(self.inventory_layout.count()):
+                layout_item = self.inventory_layout.itemAt(i)
+                if layout_item and layout_item.layout():
+                    for j in range(layout_item.layout().count()):
+                        card = layout_item.layout().itemAt(j).widget()
+                        if hasattr(card, 'title'):
+                            if card.title == "Low Stock Items":
+                                card.value_label.setText(str(low_stock_count))
+                            elif card.title == "Expired Items":
+                                card.value_label.setText(str(expired_count))
+                            elif card.title == "Total Products":
+                                card.value_label.setText(str(total_count))
             
+            cursor.close()
+        
         except mysql.connector.Error as err:
             self.show_error_message(f"Database error: {err}")
     
@@ -1178,3 +1182,253 @@ class InventoryPage(BasePage):
         inventory_status_index = self.tabs.indexOf(self.inventory_tab)
         # Switch to that tab
         self.tabs.setCurrentIndex(inventory_status_index)
+    
+    def show_product_filter_dialog(self):
+        """Show advanced filter dialog for products"""
+        # Create a dialog
+        filter_dialog = QtWidgets.QDialog(self)
+        filter_dialog.setWindowTitle("Filter Products")
+        filter_dialog.setMinimumWidth(400)
+        filter_dialog.setStyleSheet(StyleFactory.get_dialog_style())
+        
+        # Create layout
+        layout = QtWidgets.QVBoxLayout(filter_dialog)
+        form_layout = QtWidgets.QFormLayout()
+        
+        # Category filter
+        category_label = QtWidgets.QLabel("Category:")
+        category_combo = QtWidgets.QComboBox()
+        category_combo.addItem("All Categories")
+        
+        # Get unique categories
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != ''")
+            categories = cursor.fetchall()
+            for category in categories:
+                category_combo.addItem(category['category'])
+            cursor.close()
+        except mysql.connector.Error:
+            pass
+        
+        form_layout.addRow(category_label, category_combo)
+        
+        # Availability filter
+        availability_label = QtWidgets.QLabel("Availability:")
+        availability_combo = QtWidgets.QComboBox()
+        availability_combo.addItem("All")
+        availability_combo.addItem("In Stock")
+        availability_combo.addItem("Out of Stock")
+        form_layout.addRow(availability_label, availability_combo)
+        
+        # Price range filter
+        price_range_label = QtWidgets.QLabel("Price Range:")
+        price_range_layout = QtWidgets.QHBoxLayout()
+        min_price = QtWidgets.QDoubleSpinBox()
+        min_price.setPrefix("₱ ")
+        min_price.setMaximum(1000000)
+        max_price = QtWidgets.QDoubleSpinBox()
+        max_price.setPrefix("₱ ")
+        max_price.setMaximum(1000000)
+        max_price.setValue(1000000)
+        price_range_layout.addWidget(min_price)
+        price_range_layout.addWidget(QtWidgets.QLabel(" to "))
+        price_range_layout.addWidget(max_price)
+        form_layout.addRow(price_range_label, price_range_layout)
+        
+        # Buttons
+        buttons_layout = QtWidgets.QHBoxLayout()
+        apply_button = QtWidgets.QPushButton("Apply Filter")
+        reset_button = QtWidgets.QPushButton("Reset")
+        reset_button.setStyleSheet("""
+            QPushButton {
+                background-color: #666;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 8px 15px;
+            }
+            QPushButton:hover {
+                background-color: #777;
+            }
+        """)
+        
+        buttons_layout.addWidget(reset_button)
+        buttons_layout.addWidget(apply_button)
+        
+        layout.addLayout(form_layout)
+        layout.addLayout(buttons_layout)
+        
+        # Connect signals
+        def apply_filters():
+            category = category_combo.currentText()
+            availability = availability_combo.currentText()
+            min_price_val = min_price.value()
+            max_price_val = max_price.value()
+            
+            for row in range(self.products_table.rowCount()):
+                show_row = True
+                
+                # Apply category filter
+                if category != "All Categories":
+                    category_cell = self.products_table.item(row, 2).text()
+                    if category_cell != category:
+                        show_row = False
+                
+                # Apply availability filter
+                if availability != "All" and show_row:
+                    availability_cell = self.products_table.item(row, 7).text()
+                    if (availability == "In Stock" and availability_cell != "In Stock") or \
+                       (availability == "Out of Stock" and availability_cell != "Out of Stock"):
+                        show_row = False
+                
+                # Apply price filter
+                if show_row:
+                    price_text = self.products_table.item(row, 3).text().replace("₱", "")
+                    try:
+                        price = float(price_text)
+                        if price < min_price_val or price > max_price_val:
+                            show_row = False
+                    except ValueError:
+                        pass
+                
+                self.products_table.setRowHidden(row, not show_row)
+            
+            filter_dialog.accept()
+        
+        def reset_filters():
+            # Show all rows
+            for row in range(self.products_table.rowCount()):
+                self.products_table.setRowHidden(row, False)
+            filter_dialog.accept()
+        
+        apply_button.clicked.connect(apply_filters)
+        reset_button.clicked.connect(reset_filters)
+        
+        filter_dialog.exec_()
+    
+    def show_service_filter_dialog(self):
+        """Show advanced filter dialog for services"""
+        # Create a dialog
+        filter_dialog = QtWidgets.QDialog(self)
+        filter_dialog.setWindowTitle("Filter Services")
+        filter_dialog.setMinimumWidth(400)
+        filter_dialog.setStyleSheet(StyleFactory.get_dialog_style())
+        
+        # Create layout
+        layout = QtWidgets.QVBoxLayout(filter_dialog)
+        form_layout = QtWidgets.QFormLayout()
+        
+        # Category filter
+        category_label = QtWidgets.QLabel("Category:")
+        category_combo = QtWidgets.QComboBox()
+        category_combo.addItem("All Categories")
+        
+        # Get unique categories
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT DISTINCT category FROM services WHERE category IS NOT NULL AND category != ''")
+            categories = cursor.fetchall()
+            for category in categories:
+                category_combo.addItem(category['category'])
+            cursor.close()
+        except mysql.connector.Error:
+            pass
+        
+        form_layout.addRow(category_label, category_combo)
+        
+        # Availability filter
+        availability_label = QtWidgets.QLabel("Availability:")
+        availability_combo = QtWidgets.QComboBox()
+        availability_combo.addItem("All")
+        availability_combo.addItem("Available")
+        availability_combo.addItem("Unavailable")
+        form_layout.addRow(availability_label, availability_combo)
+        
+        # Price range filter
+        price_range_label = QtWidgets.QLabel("Price Range:")
+        price_range_layout = QtWidgets.QHBoxLayout()
+        min_price = QtWidgets.QDoubleSpinBox()
+        min_price.setPrefix("₱ ")
+        min_price.setMaximum(1000000)
+        max_price = QtWidgets.QDoubleSpinBox()
+        max_price.setPrefix("₱ ")
+        max_price.setMaximum(1000000)
+        max_price.setValue(1000000)
+        price_range_layout.addWidget(min_price)
+        price_range_layout.addWidget(QtWidgets.QLabel(" to "))
+        price_range_layout.addWidget(max_price)
+        form_layout.addRow(price_range_label, price_range_layout)
+        
+        # Buttons
+        buttons_layout = QtWidgets.QHBoxLayout()
+        apply_button = QtWidgets.QPushButton("Apply Filter")
+        reset_button = QtWidgets.QPushButton("Reset")
+        reset_button.setStyleSheet("""
+            QPushButton {
+                background-color: #666;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 8px 15px;
+            }
+            QPushButton:hover {
+                background-color: #777;
+            }
+        """)
+        
+        buttons_layout.addWidget(reset_button)
+        buttons_layout.addWidget(apply_button)
+        
+        layout.addLayout(form_layout)
+        layout.addLayout(buttons_layout)
+        
+        # Connect signals
+        def apply_filters():
+            category = category_combo.currentText()
+            availability = availability_combo.currentText()
+            min_price_val = min_price.value()
+            max_price_val = max_price.value()
+            
+            for row in range(self.services_table.rowCount()):
+                show_row = True
+        
+                # Apply category filter
+                if category != "All Categories":
+                    category_cell = self.services_table.item(row, 2).text()
+                    if category_cell != category:
+                        show_row = False
+        
+                # Apply availability filter
+                if availability != "All" and show_row:
+                    availability_cell = self.services_table.item(row, 4).text()
+                    if (availability == "Available" and availability_cell != "Available") or \
+                        (availability == "Unavailable" and availability_cell != "Unavailable"):
+                        show_row = False
+        
+                # Apply price filter
+                if show_row:
+                    price_text = self.services_table.item(row, 3).text().replace("₱", "")
+                    try:
+                        price = float(price_text)
+                        if price < min_price_val or price > max_price_val:
+                            show_row = False
+                    except ValueError:
+                        pass
+        
+                self.services_table.setRowHidden(row, not show_row)
+            
+            filter_dialog.accept()
+        
+        def reset_filters():
+            # Show all rows
+            for row in range(self.services_table.rowCount()):
+                self.services_table.setRowHidden(row, False)
+            filter_dialog.accept()
+        
+        apply_button.clicked.connect(apply_filters)
+        reset_button.clicked.connect(reset_filters)
+        
+        filter_dialog.exec_()
