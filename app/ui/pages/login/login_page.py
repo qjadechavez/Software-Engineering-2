@@ -57,7 +57,7 @@ class LoginPage(QtWidgets.QWidget):
             primary=False, 
             icon_path="app/resources/images/help_icon.png"
         )
-        self.help_button.setGeometry(QtCore.QRect(30, 650, 150, 45))
+        self.help_button.setGeometry(QtCore.QRect(30, 650, 160, 45))
         self.help_button.clicked.connect(self.show_help)
         
         self.layout.addWidget(self.left_panel)
@@ -134,7 +134,7 @@ class LoginPage(QtWidgets.QWidget):
             "Register Here</span></a>"
         )
         self.register_link = FormFactory.create_link_label(self.login_container, register_link_text)
-        self.register_link.setGeometry(QtCore.QRect(0, 390, 400, 30))
+        self.register_link.setGeometry(QtCore.QRect(0, 395, 400, 30))
         self.register_link.linkActivated.connect(self.show_registration_page)
         
         # Add right panel to main layout

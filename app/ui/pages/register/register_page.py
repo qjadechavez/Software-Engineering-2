@@ -60,7 +60,7 @@ class RegisterPage(QtWidgets.QWidget):
             primary=False, 
             icon_path="app/resources/images/help_icon.png"
         )
-        self.help_button.setGeometry(QtCore.QRect(30, 650, 150, 45))
+        self.help_button.setGeometry(QtCore.QRect(30, 650, 160, 45))
         self.help_button.clicked.connect(self.show_help)
         
         self.layout.addWidget(self.left_panel)
