@@ -61,12 +61,17 @@ class InventoryPage(BasePage):
 
     def handle_tab_change(self, index):
         """Handle changing between tabs"""
+        # Store the current tab before switching
+        previous_tab = self.tabs.currentWidget()
+        
         if index == 0:  # Overview tab
             self.update_overview_tab()
         elif index == 1:  # Products tab
-            self.products_tab.load_products()
+            # Force complete reload - this ensures table is properly refreshed
+            self.products_tab.rebuild_table()
         elif index == 2:  # Services tab
-            self.services_tab.load_services()
+            # Force complete reload - this ensures table is properly refreshed
+            self.services_tab.rebuild_table()
         elif index == 3:  # Inventory Status tab
             self.inventory_status_tab.load_inventory()
             self.inventory_status_tab.update_analytics()

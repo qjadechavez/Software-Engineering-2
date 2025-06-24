@@ -1,0 +1,148 @@
+from PyQt5 import QtWidgets, QtCore
+import mysql.connector
+from app.utils.db_manager import DBManager
+from ..style_factory import StyleFactory
+
+class ServiceFilterDialog(QtWidgets.QDialog):
+    """Dialog for filtering services"""
+    
+    def __init__(self, parent=None, filter_state=None):
+        super(ServiceFilterDialog, self).__init__(parent)
+        self.parent = parent
+        self.filter_state = filter_state or {
+            "is_active": False,
+            "category": "All Categories",
+            "availability": "All",
+            "price_sort": "No Sorting"
+        }
+        self.result_filter_state = self.filter_state.copy()
+        
+        self.setWindowTitle("Filter Services")
+        self.setMinimumWidth(400)
+        self.setStyleSheet(StyleFactory.get_dialog_style())
+        
+        self.setup_ui()
+    
+    def setup_ui(self):
+        # Create layout
+        layout = QtWidgets.QVBoxLayout(self)
+        form_layout = QtWidgets.QFormLayout()
+        
+        # Category filter
+        category_label = QtWidgets.QLabel("Category:")
+        self.category_combo = QtWidgets.QComboBox()
+        self.category_combo.addItem("All Categories")
+        
+        # Get unique categories
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT DISTINCT category FROM services WHERE category IS NOT NULL AND category != ''")
+            categories = cursor.fetchall()
+            for category in categories:
+                self.category_combo.addItem(category['category'])
+            cursor.close()
+        except mysql.connector.Error:
+            pass
+        
+        # Set the combo box to match stored filter state
+        category_index = self.category_combo.findText(self.filter_state["category"])
+        if category_index >= 0:
+            self.category_combo.setCurrentIndex(category_index)
+            
+        form_layout.addRow(category_label, self.category_combo)
+        
+        # Availability filter
+        availability_label = QtWidgets.QLabel("Availability:")
+        self.availability_combo = QtWidgets.QComboBox()
+        self.availability_combo.addItem("All")
+        self.availability_combo.addItem("Available")
+        self.availability_combo.addItem("Unavailable")
+        
+        # Set the combo box to match stored filter state
+        availability_index = self.availability_combo.findText(self.filter_state["availability"])
+        if availability_index >= 0:
+            self.availability_combo.setCurrentIndex(availability_index)
+            
+        form_layout.addRow(availability_label, self.availability_combo)
+        
+        # Price sorting options
+        price_sort_label = QtWidgets.QLabel("Price Sort:")
+        self.price_sort_combo = QtWidgets.QComboBox()
+        self.price_sort_combo.addItem("No Sorting")
+        self.price_sort_combo.addItem("Lowest - Highest")
+        self.price_sort_combo.addItem("Highest - Lowest")
+        
+        # Set the combo box to match stored filter state
+        price_sort_index = self.price_sort_combo.findText(self.filter_state["price_sort"])
+        if price_sort_index >= 0:
+            self.price_sort_combo.setCurrentIndex(price_sort_index)
+            
+        form_layout.addRow(price_sort_label, self.price_sort_combo)
+        
+        # Filter helper text
+        helper_text = QtWidgets.QLabel(
+            "Tip: Combine filters to find services that match specific criteria. "
+            "Try filtering by category and sorting by price to see options within your budget."
+        )
+        helper_text.setStyleSheet("color: #4FC3F7; font-style: italic; font-size: 12px;")
+        helper_text.setWordWrap(True)
+        
+        # Buttons
+        buttons_layout = QtWidgets.QHBoxLayout()
+        apply_button = QtWidgets.QPushButton("Apply Filter")
+        reset_button = QtWidgets.QPushButton("Reset")
+        reset_button.setStyleSheet("""
+            QPushButton {
+                background-color: #666;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 8px 15px;
+            }
+            QPushButton:hover {
+                background-color: #777;
+            }
+        """)
+        
+        buttons_layout.addWidget(reset_button)
+        buttons_layout.addWidget(apply_button)
+        
+        layout.addLayout(form_layout)
+        layout.addWidget(helper_text)
+        layout.addSpacing(10)
+        layout.addLayout(buttons_layout)
+        
+        # Connect signals
+        apply_button.clicked.connect(self.apply_filters)
+        reset_button.clicked.connect(self.reset_filters)
+    
+    def apply_filters(self):
+        """Apply selected filters"""
+        # Save filter state
+        self.result_filter_state["category"] = self.category_combo.currentText()
+        self.result_filter_state["availability"] = self.availability_combo.currentText()
+        self.result_filter_state["price_sort"] = self.price_sort_combo.currentText()
+        
+        # Determine if any filters are active
+        self.result_filter_state["is_active"] = (
+            self.result_filter_state["category"] != "All Categories" or
+            self.result_filter_state["availability"] != "All" or
+            self.result_filter_state["price_sort"] != "No Sorting"
+        )
+        
+        self.accept()
+    
+    def reset_filters(self):
+        """Reset all filters"""
+        self.result_filter_state = {
+            "is_active": False,
+            "category": "All Categories",
+            "availability": "All",
+            "price_sort": "No Sorting"
+        }
+        self.accept()
+    
+    def get_filter_state(self):
+        """Return the filter state after dialog is closed"""
+        return self.result_filter_state

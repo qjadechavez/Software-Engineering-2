@@ -16,7 +16,7 @@ class ControlPanelFactory:
             filter_callback: Optional callback for filter button
         
         Returns:
-            QHBoxLayout containing the search controls
+            QHBoxLayout containing the search controls and the filter_button reference
         """
         control_layout = QtWidgets.QHBoxLayout()
         control_layout.setSpacing(10)
@@ -49,6 +49,7 @@ class ControlPanelFactory:
                             else QtGui.QIcon()))
         filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
         filter_button.setFixedWidth(100)
+        filter_button.setObjectName("filterButton")  # Set object name to find it later
         if filter_callback:
             filter_button.clicked.connect(filter_callback)
         
@@ -62,5 +63,8 @@ class ControlPanelFactory:
         control_layout.addWidget(search_input, 1)
         control_layout.addWidget(filter_button)
         control_layout.addWidget(add_button)
+        
+        # Store the filter_button as an attribute of the layout
+        control_layout.filter_button = filter_button
         
         return control_layout

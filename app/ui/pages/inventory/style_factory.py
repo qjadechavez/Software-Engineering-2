@@ -58,6 +58,8 @@ class StyleFactory:
                     font-weight: bold;
                     font-size: 13px;
                     min-height: 36px;
+                    min-width: 120px;  /* Set minimum width */
+                    max-width: 120px;  /* Set maximum width */
                 }
                 QPushButton:hover {
                     background-color: #666666;
@@ -75,8 +77,9 @@ class StyleFactory:
                     padding: 8px 20px;
                     font-weight: bold;
                     font-size: 13px;
-                    min-width: 150px;
                     min-height: 36px;
+                    min-width: 120px;  /* Set minimum width */
+                    max-width: 120px;  /* Set maximum width */
                 }
                 QPushButton:hover {
                     background-color: #0099FF;
@@ -134,6 +137,9 @@ class StyleFactory:
     @staticmethod
     def get_dialog_style():
         return """
+            QDialog {
+                background-color: #1e1e1e;  /* Dark background for the entire dialog */
+            }
             QLabel {
                 color: #e0e0e0;
                 font-size: 14px;
@@ -178,6 +184,8 @@ class StyleFactory:
                 padding: 10px 25px;
                 font-size: 14px;
                 font-weight: bold;
+                min-width: 120px;  /* Set minimum width */
+                max-width: 120px;  /* Set maximum width */
             }
             QPushButton:hover {
                 background-color: #0088e0;
@@ -193,5 +201,10 @@ class StyleFactory:
             }
             QPushButton#cancelBtn:pressed {
                 background-color: #444;
+            }
+            /* Style for the dialog frame */
+            QFrame {
+                background-color: #1e1e1e;
+                border: none;
             }
         """

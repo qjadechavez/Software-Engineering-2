@@ -12,6 +12,13 @@ class ProductsTab(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(ProductsTab, self).__init__()
         self.parent = parent
+        # Initialize filter state storage
+        self.filter_state = {
+            "is_active": False,
+            "category": "All Categories",
+            "availability": "All",
+            "price_sort": "No Sorting"
+        }
         self.setup_ui()
         
     def setup_ui(self):
@@ -25,14 +32,17 @@ class ProductsTab(QtWidgets.QWidget):
         self.search_input.setPlaceholderText("Search products...")
         
         # Create control panel using factory
-        control_layout = ControlPanelFactory.create_search_control(
+        self.control_layout = ControlPanelFactory.create_search_control(
             self.search_input, 
             "+ Add Product", 
             self.show_add_product_dialog,
             self.filter_products,
             self.show_product_filter_dialog
         )
-        self.layout.addLayout(control_layout)
+        self.layout.addLayout(self.control_layout)
+        
+        # Store reference to filter button
+        self.filter_button = self.control_layout.filter_button
         
         # Create products table
         self.products_table = TableFactory.create_table()
@@ -59,18 +69,30 @@ class ProductsTab(QtWidgets.QWidget):
         self.products_table.customContextMenuRequested.connect(self.show_context_menu)
         
         self.layout.addWidget(self.products_table)
+        
+        # Add filter indicator label
+        self.filter_indicator = QtWidgets.QLabel()
+        self.filter_indicator.setStyleSheet("color: #4FC3F7; font-style: italic;")
+        self.filter_indicator.setVisible(False)
+        self.layout.addWidget(self.filter_indicator)
     
-    def load_products(self):
+    def load_products(self, preserve_filter=False):
         """Load products from the database and populate the table"""
         try:
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
             
-            # Clear existing items
+            # Remember the filter state if needed
+            filter_was_active = self.filter_state["is_active"] if preserve_filter else False
+            
+            # Clear existing items and reset table state completely
+            self.products_table.clearContents()
             self.products_table.setRowCount(0)
             
-            # Reset search filter
+            # Reset search filter (but preserve filter state)
+            self.search_input.blockSignals(True)
             self.search_input.clear()
+            self.search_input.blockSignals(False)
             
             # Query for all products
             cursor.execute("SELECT * FROM products ORDER BY product_name")
@@ -127,6 +149,10 @@ class ProductsTab(QtWidgets.QWidget):
             
             cursor.close()
             
+            # Re-apply filters only if we need to preserve them
+            if filter_was_active and preserve_filter:
+                self.apply_stored_filters()
+            
         except mysql.connector.Error as err:
             if self.parent:
                 self.parent.show_error_message(f"Database error: {err}")
@@ -148,6 +174,63 @@ class ProductsTab(QtWidgets.QWidget):
             
             # Show/hide row based on match
             self.products_table.setRowHidden(row, not match_found)
+    
+    def apply_stored_filters(self):
+        """Apply stored filters to the table"""
+        category = self.filter_state["category"]
+        availability = self.filter_state["availability"]
+        price_sort = self.filter_state["price_sort"]
+        
+        # Update the filter indicator text
+        filter_text = []
+        if category != "All Categories":
+            filter_text.append(f"Category: {category}")
+        if availability != "All":
+            filter_text.append(f"Status: {availability}")
+        if price_sort != "No Sorting":
+            filter_text.append(f"Price: {price_sort}")
+            
+        if filter_text:
+            self.filter_indicator.setText(f"Active filters: {', '.join(filter_text)}")
+            self.filter_indicator.setVisible(True)
+        else:
+            self.filter_indicator.setVisible(False)
+            
+        # First apply filters
+        for row in range(self.products_table.rowCount()):
+            show_row = True
+            
+            # Apply category filter
+            if category != "All Categories":
+                category_cell = self.products_table.item(row, 2)
+                if category_cell is None or category_cell.text() != category:
+                    show_row = False
+            
+            # Apply availability filter
+            if availability != "All" and show_row:
+                availability_cell = self.products_table.item(row, 7)
+                if availability_cell is None:
+                    show_row = False
+                else:
+                    availability_text = availability_cell.text()
+                    if (availability == "In Stock" and availability_text != "In Stock") or \
+                       (availability == "Out of Stock" and availability_text != "Out of Stock"):
+                        show_row = False
+            
+            # Show/hide row based on filters
+            self.products_table.setRowHidden(row, not show_row)
+        
+        # Then apply sorting if selected
+        if price_sort != "No Sorting":
+            # Use the built-in sort functionality with the correct column and order
+            order = QtCore.Qt.AscendingOrder if price_sort == "Lowest - Highest" else QtCore.Qt.DescendingOrder
+            self.products_table.sortItems(3, order)
+            
+        # Update button appearance
+        if self.filter_state["is_active"]:
+            self.filter_button.setStyleSheet(StyleFactory.get_button_style())  # Primary style like add button
+        else:
+            self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))  # Secondary style
     
     def show_context_menu(self, position):
         """Show context menu for product actions"""
@@ -253,127 +336,134 @@ class ProductsTab(QtWidgets.QWidget):
                 else:
                     QtWidgets.QMessageBox.critical(self, "Error", f"Database error: {err}")
     
-    def show_product_filter_dialog(self):
-        """Show advanced filter dialog for products"""
-        # Create a dialog
-        filter_dialog = QtWidgets.QDialog(self)
-        filter_dialog.setWindowTitle("Filter Products")
-        filter_dialog.setMinimumWidth(400)
-        filter_dialog.setStyleSheet(StyleFactory.get_dialog_style())
+    def rebuild_table(self):
+        """Completely rebuild the table with fresh data"""
+        # Store current filter state
+        was_filtered = self.filter_state["is_active"]
+        filter_state_copy = self.filter_state.copy()
         
-        # Create layout
-        layout = QtWidgets.QVBoxLayout(filter_dialog)
-        form_layout = QtWidgets.QFormLayout()
+        # Reset filter state temporarily
+        self.filter_state = {
+            "is_active": False,
+            "category": "All Categories",
+            "availability": "All",
+            "price_sort": "No Sorting"
+        }
         
-        # Category filter
-        category_label = QtWidgets.QLabel("Category:")
-        category_combo = QtWidgets.QComboBox()
-        category_combo.addItem("All Categories")
-        
-        # Get unique categories
         try:
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != ''")
-            categories = cursor.fetchall()
-            for category in categories:
-                category_combo.addItem(category['category'])
+            
+            # Query for all products
+            cursor.execute("SELECT * FROM products ORDER BY product_name")
+            products = cursor.fetchall()
+            
+            # Create and configure a new table from scratch
+            new_table = TableFactory.create_table()
+            product_columns = [
+                ("ID", 0.05),
+                ("Name", 0.17),
+                ("Category", 0.10),
+                ("Price", 0.07),
+                ("Quantity", 0.07),
+                ("Threshold", 0.07),
+                ("Expiry Date", 0.11),
+                ("Availability", 0.10),
+                ("Description", 0.26)
+            ]
+            screen_width = QtWidgets.QApplication.desktop().screenGeometry().width()
+            TableFactory.configure_table_columns(new_table, product_columns, screen_width)
+            
+            # Set up context menu for the new table
+            new_table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+            new_table.customContextMenuRequested.connect(self.show_context_menu)
+            
+            # Populate the new table
+            new_table.setRowCount(len(products))
+            
+            for row, product in enumerate(products):
+                id_item = QtWidgets.QTableWidgetItem(str(product['product_id']))
+                id_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                new_table.setItem(row, 0, id_item)
+                
+                new_table.setItem(row, 1, QtWidgets.QTableWidgetItem(product['product_name']))
+                new_table.setItem(row, 2, QtWidgets.QTableWidgetItem(product.get('category', '')))
+                
+                price_item = QtWidgets.QTableWidgetItem(f"₱{product['price']:.2f}")
+                price_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+                new_table.setItem(row, 3, price_item)
+                
+                qty_item = QtWidgets.QTableWidgetItem(str(product['quantity']))
+                qty_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                new_table.setItem(row, 4, qty_item)
+                
+                threshold_item = QtWidgets.QTableWidgetItem(str(product.get('threshold_value', 0)))
+                threshold_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                new_table.setItem(row, 5, threshold_item)
+                
+                expiry_date = product.get('expiry_date')
+                expiry_str = expiry_date.strftime('%Y-%m-%d') if expiry_date else "N/A"
+                expiry_item = QtWidgets.QTableWidgetItem(expiry_str)
+                expiry_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                new_table.setItem(row, 6, expiry_item)
+                
+                availability = "In Stock" if product.get('availability', True) else "Out of Stock"
+                availability_item = QtWidgets.QTableWidgetItem(availability)
+                availability_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                
+                if product.get('availability', True):
+                    availability_item.setForeground(QtGui.QColor("#4CAF50"))
+                else:
+                    availability_item.setForeground(QtGui.QColor("#FF5252"))
+                
+                new_table.setItem(row, 7, availability_item)
+                new_table.setItem(row, 8, QtWidgets.QTableWidgetItem(product.get('description', '')))
+        
+            # Replace the old table with the new one
+            old_table = self.products_table
+            self.layout.replaceWidget(old_table, new_table)
+            self.products_table = new_table
+            old_table.deleteLater()
+            
             cursor.close()
-        except mysql.connector.Error:
-            pass
-        
-        form_layout.addRow(category_label, category_combo)
-        
-        # Availability filter
-        availability_label = QtWidgets.QLabel("Availability:")
-        availability_combo = QtWidgets.QComboBox()
-        availability_combo.addItem("All")
-        availability_combo.addItem("In Stock")
-        availability_combo.addItem("Out of Stock")
-        form_layout.addRow(availability_label, availability_combo)
-        
-        # Price range filter
-        price_range_label = QtWidgets.QLabel("Price Range:")
-        price_range_layout = QtWidgets.QHBoxLayout()
-        min_price = QtWidgets.QDoubleSpinBox()
-        min_price.setPrefix("₱ ")
-        min_price.setMaximum(1000000)
-        max_price = QtWidgets.QDoubleSpinBox()
-        max_price.setPrefix("₱ ")
-        max_price.setMaximum(1000000)
-        max_price.setValue(1000000)
-        price_range_layout.addWidget(min_price)
-        price_range_layout.addWidget(QtWidgets.QLabel(" to "))
-        price_range_layout.addWidget(max_price)
-        form_layout.addRow(price_range_label, price_range_layout)
-        
-        # Buttons
-        buttons_layout = QtWidgets.QHBoxLayout()
-        apply_button = QtWidgets.QPushButton("Apply Filter")
-        reset_button = QtWidgets.QPushButton("Reset")
-        reset_button.setStyleSheet("""
-            QPushButton {
-                background-color: #666;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                padding: 8px 15px;
-            }
-            QPushButton:hover {
-                background-color: #777;
-            }
-        """)
-        
-        buttons_layout.addWidget(reset_button)
-        buttons_layout.addWidget(apply_button)
-        
-        layout.addLayout(form_layout)
-        layout.addLayout(buttons_layout)
-        
-        # Connect signals
-        def apply_filters():
-            category = category_combo.currentText()
-            availability = availability_combo.currentText()
-            min_price_val = min_price.value()
-            max_price_val = max_price.value()
             
-            for row in range(self.products_table.rowCount()):
-                show_row = True
-                
-                # Apply category filter
-                if category != "All Categories":
-                    category_cell = self.products_table.item(row, 2).text()
-                    if category_cell != category:
-                        show_row = False
-                
-                # Apply availability filter
-                if availability != "All" and show_row:
-                    availability_cell = self.products_table.item(row, 7).text()
-                    if (availability == "In Stock" and availability_cell != "In Stock") or \
-                       (availability == "Out of Stock" and availability_cell != "Out of Stock"):
-                        show_row = False
-                
-                # Apply price filter
-                if show_row:
-                    price_text = self.products_table.item(row, 3).text().replace("₱", "")
-                    try:
-                        price = float(price_text)
-                        if price < min_price_val or price > max_price_val:
-                            show_row = False
-                    except ValueError:
-                        pass
-                
-                self.products_table.setRowHidden(row, not show_row)
+            # Restore filter state if necessary
+            if was_filtered:
+                self.filter_state = filter_state_copy
+                # Add a short delay before applying filters to ensure table is fully rendered
+                QtCore.QTimer.singleShot(5, self.apply_stored_filters)
+        
+        except mysql.connector.Error as err:
+            if self.parent:
+                self.parent.show_error_message(f"Database error: {err}")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error", f"Database error: {err}")
+    
+    def show_product_filter_dialog(self):
+        """Show advanced filter dialog for products"""
+        from ..dialogs import ProductFilterDialog  # Import here to avoid circular imports
+        
+        filter_dialog = ProductFilterDialog(self, self.filter_state)
+        if filter_dialog.exec_() == QtWidgets.QDialog.Accepted:
+            # Get the filter state from the dialog
+            new_filter_state = filter_dialog.get_filter_state()
             
-            filter_dialog.accept()
-        
-        def reset_filters():
-            # Show all rows
-            for row in range(self.products_table.rowCount()):
-                self.products_table.setRowHidden(row, False)
-            filter_dialog.accept()
-        
-        apply_button.clicked.connect(apply_filters)
-        reset_button.clicked.connect(reset_filters)
-        
-        filter_dialog.exec_()
+            # Check if filters were reset
+            if not new_filter_state["is_active"] and self.filter_state["is_active"]:
+                # Filters were reset
+                self.filter_state = new_filter_state
+                self.filter_indicator.setVisible(False)
+                self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
+                
+                # Completely rebuild the table
+                QtCore.QTimer.singleShot(50, self.rebuild_table)
+            else:
+                # Regular filter applied
+                self.filter_state = new_filter_state
+                
+                # Apply filters after dialog is closed
+                if self.filter_state["is_active"]:
+                    QtCore.QTimer.singleShot(50, self.apply_stored_filters)
+                else:
+                    self.filter_indicator.setVisible(False)
+                    self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
