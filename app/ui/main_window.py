@@ -7,7 +7,6 @@ from app.ui.pages import (
     ReportsPage,
     CustomersPage,
     SuppliersPage,
-    SalesPage,
     MaintenancePage,
     InvoicePage,
     HelpPage,
@@ -292,21 +291,20 @@ class MainWindow(QtWidgets.QMainWindow):
         """Initialize navigation items from configuration"""
         # Main navigation items
         nav_config = [
-            {"name": "Dashboard", "icon": "app/resources/images/main-window/Home.png", "class": DashboardPage},
+            {"name": "Dashboard", "icon": "app/resources/images/main-window/Dashboard.png", "class": DashboardPage},
             {"name": "Inventory", "icon": "app/resources/images/main-window/Inventory.png", "class": InventoryPage},
-            {"name": "Reports", "icon": "app/resources/images/main-window/Report.png", "class": ReportsPage},
-            {"name": "Customers", "icon": "app/resources/images/main-window/Suppliers.png", "class": CustomersPage},
+            {"name": "Reports", "icon": "app/resources/images/main-window/Reports.png", "class": ReportsPage},
+            {"name": "Customers", "icon": "app/resources/images/main-window/Customers.png", "class": CustomersPage},
             {"name": "Suppliers", "icon": "app/resources/images/main-window/Suppliers.png", "class": SuppliersPage},
-            {"name": "Sales", "icon": "app/resources/images/main-window/Order.png", "class": SalesPage},
-            {"name": "Maintenance", "icon": "app/resources/images/main-window/Group 15.png", "class": MaintenancePage},
-            {"name": "Invoice", "icon": "app/resources/images/main-window/Invoice.png", "class": InvoicePage},
+            {"name": "Sales", "icon": "app/resources/images/main-window/Sales.png", "class": InvoicePage},
+            {"name": "Maintenance", "icon": "app/resources/images/main-window/Maintenance.png", "class": MaintenancePage},
         ]
         
         # Bottom navigation items
         bottom_config = [
             {"name": "Help", "icon": "app/resources/images/main-window/Settings.png", "class": HelpPage},
-            {"name": "About", "icon": "app/resources/images/main-window/Suppliers.png", "class": AboutPage},
-            {"name": "Logout", "icon": "app/resources/images/main-window/Vector.png", "action": "handle_logout"},
+            {"name": "About", "icon": "app/resources/images/main-window/About.png", "class": AboutPage},
+            {"name": "Logout", "icon": "app/resources/images/main-window/Logout.png", "action": "handle_logout"},
         ]
         
         # Create NavigationItem objects

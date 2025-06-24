@@ -12,7 +12,7 @@ from .tabs.receipt_tab import ReceiptTab
 
 class InvoicePage(BasePage):
     def __init__(self, parent=None, user_info=None):
-        super(InvoicePage, self).__init__(parent, title="Invoice", user_info=user_info)
+        super(InvoicePage, self).__init__(parent, title="Point of Sale", user_info=user_info)
         self.initializeInvoiceData()
         # Add a flag to track if a transaction is in progress
         self.transaction_in_progress = False
