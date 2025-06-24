@@ -5,7 +5,7 @@ class ControlPanelFactory:
     """Factory class for creating consistent control panels"""
     
     @staticmethod
-    def create_search_control(search_input, add_button_text, add_button_callback, search_callback):
+    def create_search_control(search_input, add_button_text, add_button_callback, search_callback, filter_callback=None):
         """Create a control panel with search and add button
         
         Args:
@@ -13,9 +13,10 @@ class ControlPanelFactory:
             add_button_text: Text for the add button
             add_button_callback: Function to call when add button is clicked
             search_callback: Function to call when search text changes
+            filter_callback: Optional callback for filter button
             
         Returns:
-            QHBoxLayout: The control panel layout
+            QHBoxLayout: The control panel layout with filter_button attribute if filter_callback is provided
         """
         control_layout = QtWidgets.QHBoxLayout()
         control_layout.setContentsMargins(0, 0, 0, 10)
@@ -42,10 +43,34 @@ class ControlPanelFactory:
         # Add to search container
         search_container.addWidget(search_input)
         
+        # Filter button (optional)
+        if filter_callback:
+            filter_button = QtWidgets.QPushButton("Filter")
+            filter_button.setCursor(QtCore.Qt.PointingHandCursor)
+            filter_button.setMinimumHeight(36)
+            filter_button.setFixedWidth(120)
+            filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
+            filter_button.clicked.connect(filter_callback)
+            
+            # Add filter indicator (hidden by default)
+            filter_indicator = QtWidgets.QLabel("•")
+            filter_indicator.setStyleSheet("""
+                color: #4CAF50;
+                font-size: 24px;
+                font-weight: bold;
+                margin-right: -10px;
+            """)
+            filter_indicator.setVisible(False)
+            
+            # Store references as attributes
+            control_layout.filter_button = filter_button
+            control_layout.filter_indicator = filter_indicator
+        
         # Add button
         add_button = QtWidgets.QPushButton(add_button_text)
         add_button.setCursor(QtCore.Qt.PointingHandCursor)
         add_button.setMinimumHeight(36)
+        add_button.setFixedWidth(150)
         add_button.setStyleSheet(StyleFactory.get_button_style())
         add_button.clicked.connect(add_button_callback)
         
@@ -62,6 +87,12 @@ class ControlPanelFactory:
         # Add widgets to layout
         control_layout.addLayout(search_layout)
         control_layout.addLayout(search_container, 1)
+        
+        # Add filter button and indicator if provided
+        if filter_callback:
+            control_layout.addWidget(filter_indicator)
+            control_layout.addWidget(filter_button)
+            
         control_layout.addWidget(add_button)
         
         return control_layout

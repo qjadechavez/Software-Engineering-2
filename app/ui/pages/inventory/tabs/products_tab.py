@@ -228,7 +228,7 @@ class ProductsTab(QtWidgets.QWidget):
             
         # Update button appearance
         if self.filter_state["is_active"]:
-            self.filter_button.setStyleSheet(StyleFactory.get_button_style())  # Primary style like add button
+            self.filter_button.setStyleSheet(StyleFactory.get_active_filter_button_style())
         else:
             self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))  # Secondary style
     
@@ -464,6 +464,10 @@ class ProductsTab(QtWidgets.QWidget):
                 # Apply filters after dialog is closed
                 if self.filter_state["is_active"]:
                     QtCore.QTimer.singleShot(50, self.apply_stored_filters)
+                    # Show filter indicator
+                    self.filter_indicator.setVisible(True)
+                    # Use the same blue button style
+                    self.filter_button.setStyleSheet(StyleFactory.get_active_filter_button_style())
                 else:
                     self.filter_indicator.setVisible(False)
                     self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))

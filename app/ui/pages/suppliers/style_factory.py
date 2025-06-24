@@ -47,17 +47,61 @@ class StyleFactory:
         """
     
     @staticmethod
-    def get_button_style():
+    def get_button_style(secondary=False):
+        if secondary:
+            return """
+                QPushButton {
+                    background-color: #555555;
+                    color: white;
+                    border-radius: 18px;
+                    padding: 8px 20px;
+                    font-weight: bold;
+                    font-size: 13px;
+                    min-height: 36px;
+                    min-width: 120px;
+                    max-width: 120px;
+                }
+                QPushButton:hover {
+                    background-color: #666666;
+                }
+                QPushButton:pressed {
+                    background-color: #444444;
+                }
+            """
+        else:
+            return """
+                QPushButton {
+                    background-color: #007ACC;
+                    color: white;
+                    border-radius: 18px;
+                    padding: 8px 20px;
+                    font-weight: bold;
+                    font-size: 13px;
+                    min-height: 36px;
+                    min-width: 120px;  /* Set minimum width */
+                    max-width: 120px;  /* Set maximum width */
+                }
+                QPushButton:hover {
+                    background-color: #0099FF;
+                }
+                QPushButton:pressed {
+                    background-color: #0066BB;
+                }
+            """
+    
+    @staticmethod
+    def get_active_filter_button_style():
         return """
             QPushButton {
-                background-color: #007ACC;
+                background-color: #007ACC;  /* Same blue as primary buttons */
                 color: white;
                 border-radius: 18px;
                 padding: 8px 20px;
                 font-weight: bold;
                 font-size: 13px;
-                min-width: 150px;
                 min-height: 36px;
+                min-width: 120px;
+                max-width: 120px;
             }
             QPushButton:hover {
                 background-color: #0099FF;
@@ -116,46 +160,31 @@ class StyleFactory:
     def get_dialog_style():
         return """
             QDialog {
-                background-color: transparent;
+                background-color: #1e1e1e;  /* Dark background for the entire dialog */
             }
             QLabel {
-                color: white;
+                color: #e0e0e0;
+                font-size: 14px;
+                background: transparent;
             }
-            QLineEdit, QTextEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateEdit {
-                background-color: #2a2a2a;
+            QLineEdit, QTextEdit, QComboBox, QDateEdit, QSpinBox, QDoubleSpinBox {
+                background-color: #2d2d2d;
+                color: white;
                 border: 1px solid #444;
-                border-radius: 4px;
-                padding: 5px;
-                color: white;
-                selection-background-color: #0078d7;
+                border-radius: 5px;
+                padding: 8px;
+                selection-background-color: #007acc;
+                font-size: 13px;
             }
-            QLineEdit:focus, QTextEdit:focus, QComboBox:focus, 
-            QSpinBox:focus, QDoubleSpinBox:focus, QDateEdit:focus {
-                border: 1px solid #0078d7;
-            }
-            QSpinBox, QDoubleSpinBox {
-                padding-right: 15px;
-            }
-            QComboBox {
-                padding: 5px 10px;
-            }
-            QComboBox::drop-down {
-                border: none;
-                width: 20px;
-            }
-            QComboBox::down-arrow {
-                image: url(app/resources/images/dropdown.png);
-                width: 12px;
-                height: 12px;
-            }
-            QComboBox QAbstractItemView {
-                background-color: #2a2a2a;
-                border: 1px solid #444;
-                color: white;
-                selection-background-color: #0078d7;
+            QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QDateEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
+                border: 1px solid #007acc;
+                background-color: #333;
             }
             QCheckBox {
                 color: white;
+                font-size: 14px;
+                background: transparent;
+                spacing: 8px;
             }
             QCheckBox::indicator {
                 width: 18px;
@@ -177,6 +206,8 @@ class StyleFactory:
                 padding: 10px 25px;
                 font-size: 14px;
                 font-weight: bold;
+                min-width: 120px;  /* Set minimum width */
+                max-width: 120px;  /* Set maximum width */
             }
             QPushButton:hover {
                 background-color: #0088e0;
@@ -192,5 +223,10 @@ class StyleFactory:
             }
             QPushButton#cancelBtn:pressed {
                 background-color: #444;
+            }
+            /* Style for the dialog frame */
+            QFrame {
+                background-color: #1e1e1e;
+                border: none;
             }
         """

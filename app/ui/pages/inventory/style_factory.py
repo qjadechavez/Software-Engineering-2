@@ -90,6 +90,28 @@ class StyleFactory:
             """
     
     @staticmethod
+    def get_active_filter_button_style():
+        return """
+            QPushButton {
+                background-color: #007ACC;  /* Same blue as primary buttons */
+                color: white;
+                border-radius: 18px;
+                padding: 8px 20px;
+                font-weight: bold;
+                font-size: 13px;
+                min-height: 36px;
+                min-width: 120px;
+                max-width: 120px;
+            }
+            QPushButton:hover {
+                background-color: #0099FF;
+            }
+            QPushButton:pressed {
+                background-color: #0066BB;
+            }
+        """
+    
+    @staticmethod
     def get_table_style():
         return """
             QTableWidget {
