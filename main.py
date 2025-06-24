@@ -10,12 +10,11 @@ def setup_database():
     try:
         conn = DBManager.get_connection()
         print("Connected to MySQL database successfully")
-        
         conn.close()
         return True
         
     except mysql.connector.Error as err:
-        print(f"Database setup error: {err}")
+        print(f"Database connection error: {err}")
         return False
 
 def show_database_error():

@@ -25,10 +25,12 @@ class InventoryStatusTab(QtWidgets.QWidget):
         self.low_stock_card = self.create_info_card("Low Stock Items", "0", "#FF5252", "warning")
         self.expired_card = self.create_info_card("Expired Items", "0", "#FF9800", "expired")
         self.total_card = self.create_info_card("Total Products", "0", "#4CAF50", "products")
+        self.received_card = self.create_info_card("Recently Received", "0", "#2196F3", "received")
         
         analytics_layout.addWidget(self.low_stock_card)
         analytics_layout.addWidget(self.expired_card)
         analytics_layout.addWidget(self.total_card)
+        analytics_layout.addWidget(self.received_card)
         
         self.layout.addLayout(analytics_layout)
         
@@ -37,11 +39,12 @@ class InventoryStatusTab(QtWidgets.QWidget):
         
         # Define column headers and their relative widths
         inventory_columns = [
-            ("ID", 0.05),
-            ("Product Name", 0.35), 
-            ("Quantity", 0.15),
-            ("Status", 0.20),
-            ("Last Updated", 0.25)
+            ("ID", 0.08),
+            ("Product Name", 0.20), 
+            ("Quantity", 0.12),
+            ("Status", 0.18),
+            ("Last Updated", 0.22),
+            ("Notes", 0.20)
         ]
         
         # Configure the table columns
@@ -51,18 +54,7 @@ class InventoryStatusTab(QtWidgets.QWidget):
         self.layout.addWidget(self.inventory_table)
     
     def create_info_card(self, title, value, color, icon_type=None, subtitle=None):
-        """Create an info card for the inventory dashboard with larger icons
-        
-        Args:
-            title: The title of the card
-            value: The main value to display
-            color: The accent color for the card
-            icon_type: The type of icon to display (warning, expired, products, etc.)
-            subtitle: Optional subtitle to display beneath the main value
-        
-        Returns:
-            QFrame: The info card frame
-        """
+        """Create an info card for the inventory dashboard"""
         card = QtWidgets.QFrame()
         card.setFrameShape(QtWidgets.QFrame.StyledPanel)
         card.setStyleSheet(f"""
@@ -71,7 +63,7 @@ class InventoryStatusTab(QtWidgets.QWidget):
                 border-radius: 10px;
                 border-left: 5px solid {color};
                 padding: 10px;
-                min-height: 60px;
+                min-height: 80px;
             }}
         """)
         
@@ -80,35 +72,13 @@ class InventoryStatusTab(QtWidgets.QWidget):
         
         # Add icon based on card type
         icon_label = QtWidgets.QLabel()
-        icon_path = ""
-        
-        if icon_type == "warning":
-            icon_path = "app/resources/images/inventory/low-stocks-items.png"
-        elif icon_type == "expired":
-            icon_path = "app/resources/images/inventory/expired-items.png"
-        elif icon_type == "products":
-            icon_path = "app/resources/images/inventory/total-products.png"
-        elif icon_type == "categories":
-            icon_path = "app/resources/images/inventory/product-categories.png"
-        elif icon_type == "services":
-            icon_path = "app/resources/images/inventory/services.png"
-        
-        icon_label.setFixedSize(200, 200)
+        icon_label.setFixedSize(60, 60)
         icon_label.setAlignment(QtCore.Qt.AlignCenter)
-        if icon_path and QtCore.QFile(icon_path).exists():
-            pixmap = QtGui.QPixmap(icon_path)
-            scaled_pixmap = pixmap.scaled(
-                150, 150,
-                QtCore.Qt.KeepAspectRatio,
-                QtCore.Qt.SmoothTransformation
-            )
-            icon_label.setPixmap(scaled_pixmap)
-        else:
-            icon_label.setText("●")
-            icon_label.setStyleSheet(f"""
-                color: {color};
-                font-size: 60px;
-            """)
+        icon_label.setText("●")
+        icon_label.setStyleSheet(f"""
+            color: {color};
+            font-size: 40px;
+        """)
         
         # Text content
         text_layout = QtWidgets.QVBoxLayout()
@@ -124,22 +94,12 @@ class InventoryStatusTab(QtWidgets.QWidget):
         value_label = QtWidgets.QLabel(value)
         value_label.setStyleSheet(f"""
             color: {color};
-            font-size: 32px;
+            font-size: 24px;
             font-weight: bold;
         """)
         
         text_layout.addWidget(title_label)
         text_layout.addWidget(value_label)
-        
-        # Add subtitle if provided
-        if subtitle:
-            subtitle_label = QtWidgets.QLabel(subtitle)
-            subtitle_label.setStyleSheet("""
-                color: #CCCCCC;
-                font-size: 12px;
-            """)
-            text_layout.addWidget(subtitle_label)
-            card.subtitle_label = subtitle_label
         
         # Add icon and text to card layout
         card_layout.addWidget(icon_label)
@@ -151,7 +111,7 @@ class InventoryStatusTab(QtWidgets.QWidget):
         return card
     
     def load_inventory(self):
-        """Load inventory data from the database"""
+        """Load inventory data from the new inventory_status table"""
         try:
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
@@ -159,12 +119,16 @@ class InventoryStatusTab(QtWidgets.QWidget):
             # Clear existing items
             self.inventory_table.setRowCount(0)
             
-            # Query for inventory items with product names
+            # Query for inventory status items
             cursor.execute("""
-                SELECT i.inventory_id, p.product_name, i.quantity, i.status, i.last_updated
-                FROM inventory i
-                JOIN products p ON i.product_id = p.product_id
-                ORDER BY i.last_updated DESC
+                SELECT 
+                    inventory_id,
+                    product_name,
+                    quantity,
+                    status,
+                    last_updated
+                FROM inventory_status
+                ORDER BY last_updated DESC
             """)
             
             inventory_items = cursor.fetchall()
@@ -173,19 +137,59 @@ class InventoryStatusTab(QtWidgets.QWidget):
             self.inventory_table.setRowCount(len(inventory_items))
             
             for row, item in enumerate(inventory_items):
-                self.inventory_table.setItem(row, 0, QtWidgets.QTableWidgetItem(str(item['inventory_id'])))
-                self.inventory_table.setItem(row, 1, QtWidgets.QTableWidgetItem(item['product_name']))
-                self.inventory_table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(item['quantity'])))
-                self.inventory_table.setItem(row, 3, QtWidgets.QTableWidgetItem(item['status'] or "N/A"))
+                # ID
+                id_item = QtWidgets.QTableWidgetItem(str(item['inventory_id']))
+                id_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                self.inventory_table.setItem(row, 0, id_item)
                 
-                # Format last updated date
+                # Product Name
+                self.inventory_table.setItem(row, 1, QtWidgets.QTableWidgetItem(item['product_name']))
+                
+                # Quantity
+                qty_item = QtWidgets.QTableWidgetItem(str(item['quantity']))
+                qty_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                self.inventory_table.setItem(row, 2, qty_item)
+                
+                # Status with color coding
+                status = item['status'] or "Unknown"
+                status_item = QtWidgets.QTableWidgetItem(status)
+                status_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                
+                # Set color based on status
+                if status == 'In Stock':
+                    status_item.setForeground(QtGui.QColor("#4CAF50"))  # Green
+                elif status == 'Low Stock':
+                    status_item.setForeground(QtGui.QColor("#FF9800"))  # Orange
+                elif status == 'Out of Stock':
+                    status_item.setForeground(QtGui.QColor("#FF5252"))  # Red
+                elif status == 'Received':
+                    status_item.setForeground(QtGui.QColor("#2196F3"))  # Blue
+                elif status == 'Updated':
+                    status_item.setForeground(QtGui.QColor("#9C27B0"))  # Purple
+                    
+                self.inventory_table.setItem(row, 3, status_item)
+                
+                # Last Updated
                 last_updated = item.get('last_updated')
-                last_updated_str = last_updated.strftime('%Y-%m-%d %H:%M') if last_updated else "N/A"
+                last_updated_str = last_updated.strftime('%Y-%m-%d %I:%M %p') if last_updated else "N/A"
                 self.inventory_table.setItem(row, 4, QtWidgets.QTableWidgetItem(last_updated_str))
+                
+                # Notes (based on status)
+                notes = ""
+                if status == 'Received':
+                    notes = "Recently received from supplier"
+                elif status == 'Low Stock':
+                    notes = "Needs restocking"
+                elif status == 'Out of Stock':
+                    notes = "Urgent: Out of stock"
+                    
+                self.inventory_table.setItem(row, 5, QtWidgets.QTableWidgetItem(notes))
             
             cursor.close()
+            print(f"✓ Loaded {len(inventory_items)} inventory status records")
             
         except mysql.connector.Error as err:
+            print(f"Error loading inventory status: {err}")
             if self.parent:
                 self.parent.show_error_message(f"Database error: {err}")
             else:
@@ -198,31 +202,41 @@ class InventoryStatusTab(QtWidgets.QWidget):
             cursor = conn.cursor(dictionary=True)
             
             # Get total products count
-            cursor.execute("SELECT COUNT(*) as count FROM products")
+            cursor.execute("SELECT COUNT(*) as count FROM inventory_status")
             total_count = cursor.fetchone()['count']
             
             # Get low stock items count
             cursor.execute("""
-                SELECT COUNT(*) as count FROM products 
-                WHERE quantity <= threshold_value
+                SELECT COUNT(*) as count FROM inventory_status 
+                WHERE status = 'Low Stock'
             """)
             low_stock_count = cursor.fetchone()['count']
             
-            # Get expired items count
+            # Get expired items count (from products table)
             cursor.execute("""
                 SELECT COUNT(*) as count FROM products 
                 WHERE expiry_date IS NOT NULL AND expiry_date < CURDATE()
             """)
             expired_count = cursor.fetchone()['count']
             
+            # Get recently received items count
+            cursor.execute("""
+                SELECT COUNT(*) as count FROM inventory_status 
+                WHERE status = 'Received' AND last_updated >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            """)
+            received_count = cursor.fetchone()['count']
+            
             # Update the info cards
             self.low_stock_card.value_label.setText(str(low_stock_count))
             self.expired_card.value_label.setText(str(expired_count))
             self.total_card.value_label.setText(str(total_count))
+            self.received_card.value_label.setText(str(received_count))
             
             cursor.close()
-        
+            print(f"✓ Updated analytics: Total={total_count}, Low Stock={low_stock_count}, Expired={expired_count}, Recently Received={received_count}")
+            
         except mysql.connector.Error as err:
+            print(f"Error updating analytics: {err}")
             if self.parent:
                 self.parent.show_error_message(f"Database error: {err}")
             else:

@@ -13,7 +13,8 @@ class SupplierFilterDialog(QtWidgets.QDialog):
             "is_active": False,
             "category": "All Categories",
             "accepts_returns": "All",
-            "products_on_the_way": "All"
+            "products_on_the_way": "All",
+            "status": "All Statuses"  # Add status to filter state
         }
         self.result_filter_state = self.filter_state.copy()
         
@@ -84,6 +85,21 @@ class SupplierFilterDialog(QtWidgets.QDialog):
             
         form_layout.addRow(on_the_way_label, self.on_the_way_combo)
         
+        # Status filter
+        status_label = QtWidgets.QLabel("Supplier Status:")
+        self.status_combo = QtWidgets.QComboBox()
+        self.status_combo.addItem("All Statuses")
+        self.status_combo.addItem("Pending")
+        self.status_combo.addItem("Received")
+        self.status_combo.addItem("Cancelled")
+        
+        # Set the combo box to match stored filter state
+        status_index = self.status_combo.findText(self.filter_state["status"])
+        if status_index >= 0:
+            self.status_combo.setCurrentIndex(status_index)
+            
+        form_layout.addRow(status_label, self.status_combo)
+        
         # Filter helper text
         helper_text = QtWidgets.QLabel(
             "Tip: Filter by category and returns policy to find suppliers that best meet your business needs."
@@ -128,12 +144,14 @@ class SupplierFilterDialog(QtWidgets.QDialog):
         self.result_filter_state["category"] = self.category_combo.currentText()
         self.result_filter_state["accepts_returns"] = self.returns_combo.currentText()
         self.result_filter_state["products_on_the_way"] = self.on_the_way_combo.currentText()
+        self.result_filter_state["status"] = self.status_combo.currentText()  # Save status filter
         
         # Determine if any filters are active
         self.result_filter_state["is_active"] = (
             self.result_filter_state["category"] != "All Categories" or
             self.result_filter_state["accepts_returns"] != "All" or
-            self.result_filter_state["products_on_the_way"] != "All"
+            self.result_filter_state["products_on_the_way"] != "All" or
+            self.result_filter_state["status"] != "All Statuses"  # Check status filter
         )
         
         self.accept()
@@ -144,7 +162,8 @@ class SupplierFilterDialog(QtWidgets.QDialog):
             "is_active": False,
             "category": "All Categories",
             "accepts_returns": "All",
-            "products_on_the_way": "All"
+            "products_on_the_way": "All",
+            "status": "All Statuses"  # Reset status filter
         }
         self.accept()
     
