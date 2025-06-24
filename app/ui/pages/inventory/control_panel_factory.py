@@ -5,7 +5,7 @@ class ControlPanelFactory:
     """Factory class for creating search control panels"""
     
     @staticmethod
-    def create_search_control(search_input, add_button_text, add_button_callback, search_callback):
+    def create_search_control(search_input, add_button_text, add_button_callback, search_callback, filter_callback=None):
         """Create a consistent search and control panel
         
         Args:
@@ -13,9 +13,10 @@ class ControlPanelFactory:
             add_button_text: Text for the add button
             add_button_callback: Callback for the add button
             search_callback: Callback for search input changes
+            filter_callback: Optional callback for filter button
         
         Returns:
-            QHBoxLayout containing the search controls
+            QHBoxLayout containing the search controls and the filter_button reference
         """
         control_layout = QtWidgets.QHBoxLayout()
         control_layout.setSpacing(10)
@@ -41,6 +42,17 @@ class ControlPanelFactory:
         search_layout.addWidget(search_icon)
         search_layout.addWidget(search_label)
         
+        # Filter button
+        filter_button = QtWidgets.QPushButton("Filter")
+        filter_button.setIcon(QtGui.QIcon("app/resources/images/filter.png" 
+                            if QtCore.QFile("app/resources/images/filter.png").exists() 
+                            else QtGui.QIcon()))
+        filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
+        filter_button.setFixedWidth(100)
+        filter_button.setObjectName("filterButton")  # Set object name to find it later
+        if filter_callback:
+            filter_button.clicked.connect(filter_callback)
+        
         # Add button
         add_button = QtWidgets.QPushButton(add_button_text)
         add_button.setStyleSheet(StyleFactory.get_button_style())
@@ -49,6 +61,10 @@ class ControlPanelFactory:
         # Layout for controls
         control_layout.addLayout(search_layout)
         control_layout.addWidget(search_input, 1)
+        control_layout.addWidget(filter_button)
         control_layout.addWidget(add_button)
+        
+        # Store the filter_button as an attribute of the layout
+        control_layout.filter_button = filter_button
         
         return control_layout

@@ -357,7 +357,7 @@ class RegisterPage(QtWidgets.QWidget):
             self.parent.show()
         else:
             # If parent reference is lost, create a new login page
-            from app.ui.pages.login_page import LoginPage
+            from app.ui.pages.login.login_page import LoginPage
             login_window = LoginPage()
             login_window.show()
         self.close()
