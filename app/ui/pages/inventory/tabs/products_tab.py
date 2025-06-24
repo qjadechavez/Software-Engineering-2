@@ -195,7 +195,10 @@ class ProductsTab(QtWidgets.QWidget):
             self.filter_indicator.setVisible(True)
         else:
             self.filter_indicator.setVisible(False)
-            
+        
+        # Track if any row is visible
+        rows_visible = False
+        
         # First apply filters
         for row in range(self.products_table.rowCount()):
             show_row = True
@@ -219,6 +222,15 @@ class ProductsTab(QtWidgets.QWidget):
             
             # Show/hide row based on filters
             self.products_table.setRowHidden(row, not show_row)
+            
+            # Track if at least one row is visible
+            if show_row:
+                rows_visible = True
+        
+        # Show a message if no results are found
+        if not rows_visible and self.products_table.rowCount() > 0:
+            QtWidgets.QMessageBox.information(self, "No Results", 
+                "No products match the current filters. Try adjusting your filter criteria.")
         
         # Then apply sorting if selected
         if price_sort != "No Sorting":
@@ -230,7 +242,7 @@ class ProductsTab(QtWidgets.QWidget):
         if self.filter_state["is_active"]:
             self.filter_button.setStyleSheet(StyleFactory.get_active_filter_button_style())
         else:
-            self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))  # Secondary style
+            self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True)) 
     
     def show_context_menu(self, position):
         """Show context menu for product actions"""

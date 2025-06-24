@@ -153,15 +153,16 @@ class ServicesTab(QtWidgets.QWidget):
             self.services_table.setRowHidden(row, not match_found)
 
     def apply_stored_filters(self):
-        """Apply stored filters to the table"""
-        category = self.filter_state["category"]
+        """Apply the filters stored in filter_state"""
+        # Get current filter settings
+        service_category = self.filter_state["category"]
         availability = self.filter_state["availability"]
         price_sort = self.filter_state["price_sort"]
         
         # Update the filter indicator text
         filter_text = []
-        if category != "All Categories":
-            filter_text.append(f"Category: {category}")
+        if service_category != "All Categories":
+            filter_text.append(f"Category: {service_category}")
         if availability != "All":
             filter_text.append(f"Status: {availability}")
         if price_sort != "No Sorting":
@@ -172,20 +173,23 @@ class ServicesTab(QtWidgets.QWidget):
             self.filter_indicator.setVisible(True)
         else:
             self.filter_indicator.setVisible(False)
-            
-        # First apply filters
+        
+        # Track if any row is visible
+        rows_visible = False
+        
+        # First apply the filters
         for row in range(self.services_table.rowCount()):
             show_row = True
-
+            
             # Apply category filter
-            if category != "All Categories":
+            if service_category != "All Categories":
                 category_cell = self.services_table.item(row, 2)
-                if category_cell is None or category_cell.text() != category:
+                if category_cell is None or category_cell.text() != service_category:
                     show_row = False
-
+            
             # Apply availability filter
             if availability != "All" and show_row:
-                availability_cell = self.services_table.item(row, 4)
+                availability_cell = self.services_table.item(row, 6)
                 if availability_cell is None:
                     show_row = False
                 else:
@@ -193,10 +197,19 @@ class ServicesTab(QtWidgets.QWidget):
                     if (availability == "Available" and availability_text != "Available") or \
                        (availability == "Unavailable" and availability_text != "Unavailable"):
                         show_row = False
-
+            
             # Show/hide row based on filters
             self.services_table.setRowHidden(row, not show_row)
-    
+            
+            # Track if at least one row is visible
+            if show_row:
+                rows_visible = True
+        
+        # Show a message if no results are found
+        if not rows_visible and self.services_table.rowCount() > 0:
+            QtWidgets.QMessageBox.information(self, "No Results", 
+                "No services match the current filters. Try adjusting your filter criteria.")
+        
         # Then apply sorting if selected
         if price_sort != "No Sorting":
             # Use the built-in sort functionality with the correct column and order
@@ -205,9 +218,9 @@ class ServicesTab(QtWidgets.QWidget):
             
         # Update button appearance
         if self.filter_state["is_active"]:
-            self.filter_button.setStyleSheet(StyleFactory.get_button_style())  # Primary style like add button
+            self.filter_button.setStyleSheet(StyleFactory.get_active_filter_button_style())
         else:
-            self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))  # Secondary style
+            self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
     
     def show_context_menu(self, position):
         """Show context menu for service actions"""
