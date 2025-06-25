@@ -1,7 +1,9 @@
 from PyQt5 import QtWidgets, QtCore
 from app.utils.db_manager import DBManager
 import mysql.connector
-from ..factories.panel_factory import PanelFactory
+from ..style_factory import StyleFactory
+from ..control_panel_factory import ControlPanelFactory
+from ..dialogs.service_filter_dialog import ServiceFilterDialog
 
 class SelectServiceTab(QtWidgets.QWidget):
     """Tab for selecting a service"""
@@ -9,14 +11,36 @@ class SelectServiceTab(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(SelectServiceTab, self).__init__()
         self.parent = parent
+        # Initialize filter state
+        self.filter_state = {
+            "is_active": False,
+            "category": "All Categories",
+            "price_range": "All Prices"
+        }
         self.setup_ui()
         self.load_services()
     
     def setup_ui(self):
         """Set up the UI components"""
         self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(20, 20, 20, 20)
-        self.layout.setSpacing(20)
+        self.layout.setContentsMargins(10, 15, 10, 10)
+        self.layout.setSpacing(10)
+        
+        # Create search input first
+        self.search_input = QtWidgets.QLineEdit()
+        self.search_input.setPlaceholderText("Search services...")
+        self.search_input.textChanged.connect(self.filter_services)
+        
+        # Then use it in the control panel with filter button
+        control_layout = ControlPanelFactory.create_search_control(
+            self.search_input,
+            self.filter_services,  # search_callback parameter
+            self.show_service_filter_dialog  # filter_callback parameter
+        )
+        self.layout.addLayout(control_layout)
+        
+        # Store reference to filter button
+        self.filter_button = control_layout.itemAt(2).widget()
         
         # Header
         header_label = QtWidgets.QLabel("Select a Service")
@@ -107,7 +131,7 @@ class SelectServiceTab(QtWidgets.QWidget):
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
         
-        self.continue_button = PanelFactory.create_action_button("Continue to Customer Info")
+        self.continue_button = ControlPanelFactory.create_action_button("Continue to Customer Info")
         self.continue_button.setEnabled(False)
         self.continue_button.clicked.connect(self.continue_to_customer)
         button_layout.addWidget(self.continue_button)
@@ -137,6 +161,12 @@ class SelectServiceTab(QtWidgets.QWidget):
         cancel_layout.addWidget(cancel_button)
         
         self.layout.addLayout(cancel_layout)
+        
+        # Add filter indicator label at the bottom
+        self.filter_indicator = QtWidgets.QLabel()
+        self.filter_indicator.setStyleSheet("color: #4FC3F7; font-style: italic; padding-top: 5px;")
+        self.filter_indicator.setVisible(False)
+        self.layout.addWidget(self.filter_indicator)
 
         # Add stretch to push everything to the top
         self.layout.addStretch()
@@ -167,7 +197,7 @@ class SelectServiceTab(QtWidgets.QWidget):
             max_cols = 3  # Number of cards per row
             
             for service in services:
-                card = PanelFactory.create_service_card(service, self.select_service)
+                card = ControlPanelFactory.create_service_card(service, self.select_service)
                 self.services_grid.addWidget(card, row, col)
                 
                 col += 1
@@ -268,3 +298,124 @@ class SelectServiceTab(QtWidgets.QWidget):
                     main_window = main_window.parent
                 else:
                     break
+    
+    def filter_services(self):
+        """Filter services based on search input"""
+        search_text = self.search_input.text().lower()
+        
+        # Loop through all service cards in the grid
+        for i in range(self.services_grid.count()):
+            item = self.services_grid.itemAt(i)
+            if item and item.widget():
+                widget = item.widget()
+                # Try to find the service name in the widget (adjust this based on your card structure)
+                service_name = ""
+                for child in widget.findChildren(QtWidgets.QLabel):
+                    if child.text() and not child.text().startswith("₱"):  # Assuming price labels start with ₱
+                        service_name = child.text().lower()
+                        break
+                        
+                # Show/hide based on search text
+                widget.setVisible(search_text == "" or search_text in service_name)
+    
+    def show_service_filter_dialog(self):
+        """Show advanced filter dialog for services"""
+        filter_dialog = ServiceFilterDialog(self, self.filter_state)
+        if filter_dialog.exec_() == QtWidgets.QDialog.Accepted:
+            # Get the filter state from the dialog
+            new_filter_state = filter_dialog.get_filter_state()
+            
+            # Update our filter state
+            self.filter_state = new_filter_state
+            
+            # Check if filters were reset or are not active
+            if not self.filter_state["is_active"]:
+                # Filters were reset or cleared
+                self.filter_indicator.setVisible(False)
+                # Update button appearance
+                self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
+                
+                # Reload all services
+                self.load_services()
+            else:
+                # Apply filters
+                self.apply_filter()
+    
+    def apply_filter(self):
+        """Apply the filters stored in filter_state"""
+        # Get current filter settings
+        service_category = self.filter_state["category"]
+        price_range = self.filter_state["price_range"]
+        
+        # Update the filter indicator text
+        filter_text = []
+        if service_category != "All Categories":
+            filter_text.append(f"Category: {service_category}")
+        if price_range != "All Prices":
+            filter_text.append(f"Price: {price_range}")
+            
+        if filter_text:
+            self.filter_indicator.setText(f"Active filters: {', '.join(filter_text)}")
+            self.filter_indicator.setVisible(True)
+            # Change filter button color to indicate active filters
+            self.filter_button.setStyleSheet(StyleFactory.get_active_filter_button_style())
+        else:
+            self.filter_indicator.setVisible(False)
+            self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
+        
+        # Apply filters to service cards
+        for i in range(self.services_grid.count()):
+            item = self.services_grid.itemAt(i)
+            if item and item.widget():
+                widget = item.widget()
+                show_card = True
+                
+                # First try to get data from stored service_data attribute (more reliable)
+                if hasattr(widget, "service_data"):
+                    service_data = widget.service_data
+                else:
+                    # Fallback to extracting from labels
+                    service_data = {}
+                    for child in widget.findChildren(QtWidgets.QLabel):
+                        if child.text():
+                            if child.text().startswith("₱"):
+                                service_data["price"] = float(child.text().replace("₱", "").strip())
+                            elif "category" not in service_data:  # First non-price label is likely category
+                                service_data["category"] = child.text()
+                
+                # Apply category filter
+                if service_category != "All Categories" and service_data.get("category") != service_category:
+                    show_card = False
+                
+                # Apply price range filter
+                if price_range != "All Prices" and show_card:
+                    price = float(service_data.get("price", 0))
+                    
+                    if price_range == "Under ₱500" and price >= 500:
+                        show_card = False
+                    elif price_range == "₱500 - ₱1000" and (price < 500 or price > 1000):
+                        show_card = False
+                    elif price_range == "₱1000 - ₱2000" and (price < 1000 or price > 2000):
+                        show_card = False
+                    elif price_range == "Over ₱2000" and price <= 2000:
+                        show_card = False
+            
+            # Show/hide card based on filters
+            widget.setVisible(show_card)
+    
+    def get_service_data_from_widget(self, widget):
+        """Extract service data from a card widget"""
+        # First try to access the stored service data if available (better method)
+        if hasattr(widget, "service_data"):
+            return widget.service_data
+        
+        # Fallback to extracting data from labels
+        service_data = {}
+        for child in widget.findChildren(QtWidgets.QLabel):
+            if child.text():
+                if child.text().startswith("₱"):
+                    service_data["price"] = float(child.text().replace("₱", "").strip())
+                elif "category" not in service_data:  # First non-price label is likely category
+                    service_data["category"] = child.text()
+            
+        return service_data

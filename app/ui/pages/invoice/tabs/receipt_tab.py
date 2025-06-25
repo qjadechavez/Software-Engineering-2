@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore, QtGui, QtPrintSupport
-from ..factories.panel_factory import PanelFactory
+from ..control_panel_factory import ControlPanelFactory
 import datetime
 import random
 
@@ -45,24 +45,24 @@ class ReceiptTab(QtWidgets.QWidget):
         button_layout = QtWidgets.QHBoxLayout()
         
         # Print button
-        print_button = PanelFactory.create_action_button("Print Receipt")
+        print_button = ControlPanelFactory.create_action_button("Print Receipt")
         print_button.clicked.connect(self.print_receipt)
         button_layout.addWidget(print_button)
         
         # Save as PDF button
-        save_pdf_button = PanelFactory.create_action_button("Save as PDF")
+        save_pdf_button = ControlPanelFactory.create_action_button("Save as PDF")
         save_pdf_button.clicked.connect(self.save_as_pdf)
         button_layout.addWidget(save_pdf_button)
         
         button_layout.addStretch()
         
         # New transaction button
-        new_transaction_button = PanelFactory.create_action_button("New Transaction", primary=False)
+        new_transaction_button = ControlPanelFactory.create_action_button("New Transaction", primary=False)
         new_transaction_button.clicked.connect(self.start_new_transaction)
         button_layout.addWidget(new_transaction_button)
         
         # Exit button
-        exit_button = PanelFactory.create_action_button("Exit", primary=False)
+        exit_button = ControlPanelFactory.create_action_button("Exit", primary=False)
         exit_button.setStyleSheet("""
             QPushButton {
                 padding: 8px 15px;

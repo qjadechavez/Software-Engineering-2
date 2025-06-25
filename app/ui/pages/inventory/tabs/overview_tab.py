@@ -14,8 +14,8 @@ class OverviewTab(QtWidgets.QWidget):
     def setup_ui(self):
         """Set up the UI components for the overview tab"""
         self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(20, 20, 20, 20)
-        self.layout.setSpacing(15)
+        self.layout.setContentsMargins(10, 15, 10, 10)
+        self.layout.setSpacing(10)
         
         # Create dashboard header
         header_layout = QtWidgets.QHBoxLayout()

@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-from ..factories.panel_factory import PanelFactory
+from ..control_panel_factory import ControlPanelFactory
 import random
 from datetime import datetime
 
@@ -209,13 +209,13 @@ class OverviewTab(QtWidgets.QWidget):
         # Buttons
         button_layout = QtWidgets.QHBoxLayout()
         
-        back_button = PanelFactory.create_action_button("Back", primary=False)
+        back_button = ControlPanelFactory.create_action_button("Back", primary=False)
         back_button.clicked.connect(self.go_back)
         button_layout.addWidget(back_button)
         
         button_layout.addStretch()
         
-        finalize_button = PanelFactory.create_action_button("Finalize Invoice")
+        finalize_button = ControlPanelFactory.create_action_button("Finalize Invoice")
         finalize_button.clicked.connect(self.finalize_invoice)
         button_layout.addWidget(finalize_button)
         
