@@ -28,7 +28,7 @@ class BaseDialog(QtWidgets.QDialog):
             dialog_height: Height of the dialog
         """
         # Set dialog size
-        self.resize(550, dialog_height)
+        self.resize(600, dialog_height)
         
         # Main layout
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -62,26 +62,29 @@ class BaseDialog(QtWidgets.QDialog):
         """)
         
         close_button = QtWidgets.QPushButton("×")
+        close_button.setObjectName("closeBtn")  # Add unique object name
         close_button.setFixedSize(35, 35)
         close_button.setStyleSheet("""
-            QPushButton {
+            QPushButton#closeBtn {
                 background-color: transparent;
                 color: #aaa;
                 font-size: 20px;
                 font-weight: bold;
                 border: none;
-                border-radius: 15px;
+                border-radius: 17px;
                 margin: 0px 0px 0px 0px;
                 line-height: 33px;
+                min-width: 35px;  /* Override global min-width */
+                max-width: 35px;  /* Override global max-width */
             }
-            QPushButton:hover {
+            QPushButton#closeBtn:hover {
                 background-color: rgba(255, 255, 255, 0.1);
                 color: white;
-                border-radius: 15px;
+                border-radius: 17px;
             }
-            QPushButton:pressed {
+            QPushButton#closeBtn:pressed {
                 background-color: rgba(255, 255, 255, 0.2);
-                border-radius: 15px;
+                border-radius: 17px;
             }
         """)
         close_button.clicked.connect(self.reject)

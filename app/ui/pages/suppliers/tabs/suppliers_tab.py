@@ -289,7 +289,7 @@ class SuppliersTab(QtWidgets.QWidget):
                 elif products_on_the_way == "No Products on the Way" and row_has_products_on_way:
                     show_row = False
             
-            # Apply status filter - NEW
+            # Apply status filter - Updated to handle "All Statuses"
             if show_row and status != "All Statuses":
                 if status.lower() != row_status:
                     show_row = False
@@ -569,7 +569,7 @@ class SuppliersTab(QtWidgets.QWidget):
             "category": "All Categories", 
             "accepts_returns": "All",
             "products_on_the_way": "All",
-            "status": "All Statuses"  # Add status to reset filter
+            "status": "All Statuses"  # Updated to match dialog
         }
         
         try:
@@ -671,10 +671,10 @@ class SuppliersTab(QtWidgets.QWidget):
                 
                 # Add a lock icon or indicator for received items
                 if status == 'received':
-                    # Add a lock symbol to the supplier name to indicate it's locked
+                    # Remove the padlock icon logic
                     supplier_name_item = new_table.item(row, 1)
                     if supplier_name_item:
-                        supplier_name_item.setText(f"🔒 {supplier_name_item.text()}")
+                        supplier_name_item.setText(supplier_name_item.text())  # Keep the original text
             
             # Replace the old table with the new one
             old_table = self.suppliers_table
@@ -695,3 +695,10 @@ class SuppliersTab(QtWidgets.QWidget):
                 self.parent.show_error_message(f"Database error: {err}")
             else:
                 QtWidgets.QMessageBox.critical(self, "Error", f"Database error: {err}")
+
+    def refresh_inventory_displays(self):
+        """Refresh inventory-related displays"""
+        if self.parent and hasattr(self.parent, "update_overview_tab"):
+            self.parent.update_overview_tab()
+        if self.parent and hasattr(self.parent, "inventory_status_tab"):
+            self.parent.inventory_status_tab.load_inventory()

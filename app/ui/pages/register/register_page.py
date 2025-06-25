@@ -260,9 +260,11 @@ class RegisterPage(QtWidgets.QWidget):
         
         # Basic validation
         if not admin_username or not admin_password:
+            admin_dialog.reset_fields()  # Reset fields on error
             return {'verified': False, 'message': "Admin credentials are required"}
             
         if not reason:
+            admin_dialog.reset_fields()  # Reset fields on error
             return {'verified': False, 'message': "Reason for account creation is required"}
         
         # Verify admin credentials in the database
@@ -271,6 +273,7 @@ class RegisterPage(QtWidgets.QWidget):
         admin = auth_manager._auth_strategy.authenticate(admin_username, admin_password)
         
         if not admin or admin.role != 'admin':
+            admin_dialog.reset_fields()  # Reset fields on failed verification
             return {'verified': False, 'message': "Invalid admin credentials"}
         
         # Get admin ID
@@ -280,6 +283,10 @@ class RegisterPage(QtWidgets.QWidget):
             cursor.execute("SELECT user_id FROM users WHERE username = %s", (admin_username,))
             admin_data = cursor.fetchone()
             admin_id = admin_data['user_id']
+            
+            # Reset fields after successful verification
+            admin_dialog.reset_fields()
+            
             return {
                 'verified': True, 
                 'message': "", 

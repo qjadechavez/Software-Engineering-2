@@ -1,13 +1,13 @@
 from PyQt5 import QtWidgets, QtCore
 import mysql.connector
 from app.utils.db_manager import DBManager
-from ..style_factory import StyleFactory
+from app.ui.pages.inventory.dialogs.base_dialog import BaseDialog
 
-class TransactionFilterDialog(QtWidgets.QDialog):
+class TransactionFilterDialog(BaseDialog):
     """Dialog for filtering customer transactions"""
     
     def __init__(self, parent=None, filter_state=None):
-        super(TransactionFilterDialog, self).__init__(parent)
+        super(TransactionFilterDialog, self).__init__(parent, None, "Filter Transactions")
         self.parent = parent
         self.filter_state = filter_state or {
             "is_active": False,
@@ -17,17 +17,12 @@ class TransactionFilterDialog(QtWidgets.QDialog):
         }
         self.result_filter_state = self.filter_state.copy()
         
-        self.setWindowTitle("Filter Transactions")
-        self.setMinimumWidth(400)
-        self.setStyleSheet(StyleFactory.get_dialog_style())
-        
         self.setup_ui()
     
     def setup_ui(self):
-        # Create layout
-        layout = QtWidgets.QVBoxLayout(self)
-        form_layout = QtWidgets.QFormLayout()
-        form_layout.setSpacing(15)
+        self.setup_base_ui(450)
+        
+        self.header_label.setText("Filter Transactions")
         
         # Date range filter
         date_label = QtWidgets.QLabel("Date Range:")
@@ -39,7 +34,7 @@ class TransactionFilterDialog(QtWidgets.QDialog):
         if date_index >= 0:
             self.date_combo.setCurrentIndex(date_index)
             
-        form_layout.addRow(date_label, self.date_combo)
+        self.form_layout.addRow(date_label, self.date_combo)
         
         # Payment method filter
         payment_label = QtWidgets.QLabel("Payment Method:")
@@ -64,7 +59,7 @@ class TransactionFilterDialog(QtWidgets.QDialog):
         if payment_index >= 0:
             self.payment_combo.setCurrentIndex(payment_index)
             
-        form_layout.addRow(payment_label, self.payment_combo)
+        self.form_layout.addRow(payment_label, self.payment_combo)
         
         # Gender filter
         gender_label = QtWidgets.QLabel("Gender:")
@@ -90,7 +85,7 @@ class TransactionFilterDialog(QtWidgets.QDialog):
         if gender_index >= 0:
             self.gender_combo.setCurrentIndex(gender_index)
             
-        form_layout.addRow(gender_label, self.gender_combo)
+        self.form_layout.addRow(gender_label, self.gender_combo)
         
         # Filter helper text
         helper_text = QtWidgets.QLabel(
@@ -98,40 +93,32 @@ class TransactionFilterDialog(QtWidgets.QDialog):
         )
         helper_text.setStyleSheet("color: #4FC3F7; font-style: italic; font-size: 12px;")
         helper_text.setWordWrap(True)
+        self.form_layout.addRow(helper_text)
         
-        # Buttons
-        buttons_layout = QtWidgets.QHBoxLayout()
-        reset_button = QtWidgets.QPushButton("Reset Filters")
-        reset_button.setObjectName("resetButton")
-        reset_button.setStyleSheet("""
+        # Update save button to "Apply Filters"
+        self.save_button.setText("Apply Filters")
+        self.save_button.clicked.connect(self.apply_filters)
+        
+        # Add reset button next to the cancel button
+        self.reset_button = QtWidgets.QPushButton("Reset Filters")
+        self.reset_button.setObjectName("resetButton")
+        self.reset_button.setStyleSheet("""
             QPushButton {
                 background-color: #666;
                 color: white;
                 border: none;
                 border-radius: 5px;
                 padding: 8px 15px;
-                min-width: 120px;
-                max-width: 120px;
             }
             QPushButton:hover {
                 background-color: #777;
             }
         """)
+        self.reset_button.clicked.connect(self.reset_filters)
         
-        apply_button = QtWidgets.QPushButton("Apply Filters")
-        
-        buttons_layout.addWidget(reset_button)
-        buttons_layout.addStretch()
-        buttons_layout.addWidget(apply_button)
-        
-        layout.addLayout(form_layout)
-        layout.addWidget(helper_text)
-        layout.addSpacing(10)
-        layout.addLayout(buttons_layout)
-        
-        # Connect signals
-        apply_button.clicked.connect(self.apply_filters)
-        reset_button.clicked.connect(self.reset_filters)
+        # Find the button layout and insert reset button
+        button_layout = self.save_button.parent().layout()
+        button_layout.insertWidget(button_layout.count() - 2, self.reset_button)
     
     def apply_filters(self):
         """Apply selected filters"""

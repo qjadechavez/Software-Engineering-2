@@ -1,13 +1,13 @@
 from PyQt5 import QtWidgets, QtCore
 import mysql.connector
 from app.utils.db_manager import DBManager
-from ..style_factory import StyleFactory
+from app.ui.pages.inventory.dialogs.base_dialog import BaseDialog
 
-class ServiceFilterDialog(QtWidgets.QDialog):
+class ServiceFilterDialog(BaseDialog):
     """Dialog for filtering services"""
     
     def __init__(self, parent=None, filter_state=None):
-        super(ServiceFilterDialog, self).__init__(parent)
+        super(ServiceFilterDialog, self).__init__(parent, None, "Filter Services")
         self.parent = parent
         self.filter_state = filter_state or {
             "is_active": False,
@@ -16,16 +16,12 @@ class ServiceFilterDialog(QtWidgets.QDialog):
         }
         self.result_filter_state = self.filter_state.copy()
         
-        self.setWindowTitle("Filter Services")
-        self.setMinimumWidth(400)
-        self.setStyleSheet(StyleFactory.get_dialog_style())
-        
         self.setup_ui()
     
     def setup_ui(self):
-        # Create layout
-        layout = QtWidgets.QVBoxLayout(self)
-        form_layout = QtWidgets.QFormLayout()
+        self.setup_base_ui(400)
+        
+        self.header_label.setText("Filter Services")
         
         # Category filter
         category_label = QtWidgets.QLabel("Category:")
@@ -49,7 +45,7 @@ class ServiceFilterDialog(QtWidgets.QDialog):
         if category_index >= 0:
             self.category_combo.setCurrentIndex(category_index)
             
-        form_layout.addRow(category_label, self.category_combo)
+        self.form_layout.addRow(category_label, self.category_combo)
         
         # Price range filter
         price_label = QtWidgets.QLabel("Price Range:")
@@ -65,7 +61,7 @@ class ServiceFilterDialog(QtWidgets.QDialog):
         if price_index >= 0:
             self.price_combo.setCurrentIndex(price_index)
             
-        form_layout.addRow(price_label, self.price_combo)
+        self.form_layout.addRow(price_label, self.price_combo)
         
         # Filter helper text
         helper_text = QtWidgets.QLabel(
@@ -73,12 +69,15 @@ class ServiceFilterDialog(QtWidgets.QDialog):
         )
         helper_text.setStyleSheet("color: #4FC3F7; font-style: italic; font-size: 12px;")
         helper_text.setWordWrap(True)
+        self.form_layout.addRow(helper_text)
         
-        # Buttons
-        buttons_layout = QtWidgets.QHBoxLayout()
-        apply_button = QtWidgets.QPushButton("Apply Filter")
-        reset_button = QtWidgets.QPushButton("Reset")
-        reset_button.setStyleSheet("""
+        # Update save button to "Apply Filter"
+        self.save_button.setText("Apply Filter")
+        self.save_button.clicked.connect(self.apply_filters)
+        
+        # Add reset button next to the cancel button
+        self.reset_button = QtWidgets.QPushButton("Reset")
+        self.reset_button.setStyleSheet("""
             QPushButton {
                 background-color: #666;
                 color: white;
@@ -90,18 +89,11 @@ class ServiceFilterDialog(QtWidgets.QDialog):
                 background-color: #777;
             }
         """)
+        self.reset_button.clicked.connect(self.reset_filters)
         
-        buttons_layout.addWidget(reset_button)
-        buttons_layout.addWidget(apply_button)
-        
-        layout.addLayout(form_layout)
-        layout.addWidget(helper_text)
-        layout.addSpacing(10)
-        layout.addLayout(buttons_layout)
-        
-        # Connect signals
-        apply_button.clicked.connect(self.apply_filters)
-        reset_button.clicked.connect(self.reset_filters)
+        # Find the button layout and insert reset button
+        button_layout = self.save_button.parent().layout()
+        button_layout.insertWidget(button_layout.count() - 2, self.reset_button)
     
     def apply_filters(self):
         """Apply selected filters"""

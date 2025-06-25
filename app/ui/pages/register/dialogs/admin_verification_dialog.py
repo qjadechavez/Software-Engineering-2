@@ -1,63 +1,66 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
+from app.ui.pages.inventory.dialogs.base_dialog import BaseDialog
 
-class AdminVerificationDialog(QtWidgets.QDialog):
+class AdminVerificationDialog(BaseDialog):
     """Dialog for admin verification when creating a new staff account"""
     
     def __init__(self, parent=None):
-        super(AdminVerificationDialog, self).__init__(parent)
+        super(AdminVerificationDialog, self).__init__(parent, None, "Admin Verification")
         self.setup_ui()
-        
+    
     def setup_ui(self):
         """Set up the admin verification dialog UI"""
-        self.setWindowTitle("Admin Verification")
-        self.setFixedSize(400, 300)
+        self.setup_base_ui(450)  # Use BaseDialog's setup_base_ui method
         
-        # Dialog layout
-        layout = QtWidgets.QVBoxLayout(self)
-        
-        # Title label
-        title_label = QtWidgets.QLabel("Admin Verification Required")
-        title_label.setFont(QtGui.QFont("Segoe UI", 14, QtGui.QFont.Bold))
-        title_label.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(title_label)
+        self.header_label.setText("Admin Verification Required")
         
         # Description
         desc_label = QtWidgets.QLabel("Please enter admin credentials to continue with staff registration:")
         desc_label.setWordWrap(True)
-        layout.addWidget(desc_label)
-        
-        # Form layout for fields
-        form_layout = QtWidgets.QFormLayout()
+        self.form_layout.addRow(desc_label)
         
         # Admin username
         self.admin_username_field = QtWidgets.QLineEdit()
         self.admin_username_field.setObjectName("admin_username")
         self.admin_username_field.setPlaceholderText("Admin username")
-        form_layout.addRow("Admin Username:", self.admin_username_field)
+        self.form_layout.addRow("Admin Username:", self.admin_username_field)
         
         # Admin password
         self.admin_password_field = QtWidgets.QLineEdit()
         self.admin_password_field.setObjectName("admin_password")
         self.admin_password_field.setEchoMode(QtWidgets.QLineEdit.Password)
         self.admin_password_field.setPlaceholderText("Admin password")
-        form_layout.addRow("Admin Password:", self.admin_password_field)
+        self.form_layout.addRow("Admin Password:", self.admin_password_field)
         
         # Reason for creation
         self.reason_field = QtWidgets.QTextEdit()
         self.reason_field.setObjectName("reason")
         self.reason_field.setPlaceholderText("Enter the reason for creating this account")
         self.reason_field.setMaximumHeight(80)
-        form_layout.addRow("Reason:", self.reason_field)
+        self.form_layout.addRow("Reason:", self.reason_field)
         
-        layout.addLayout(form_layout)
+        # Update save button
+        self.save_button.setText("Verify")
+        self.save_button.clicked.connect(self.verify_admin)
+    
+    def verify_admin(self):
+        """Verify admin credentials"""
+        admin_username = self.admin_username_field.text().strip()
+        admin_password = self.admin_password_field.text().strip()
+        reason = self.reason_field.toPlainText().strip()
         
-        # Buttons
-        button_box = QtWidgets.QDialogButtonBox(
-            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
-        )
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
-        layout.addWidget(button_box)
+        if not admin_username or not admin_password or not reason:
+            QtWidgets.QMessageBox.warning(self, "Warning", "All fields are required.")
+            return
+        
+        # Accept the dialog first
+        self.accept()
+    
+    def reset_fields(self):
+        """Reset all input fields"""
+        self.admin_username_field.clear()
+        self.admin_password_field.clear()
+        self.reason_field.clear()
     
     def get_verification_data(self):
         """Get the entered verification data"""

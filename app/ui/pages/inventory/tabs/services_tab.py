@@ -5,6 +5,7 @@ from ..style_factory import StyleFactory
 from ..table_factory import TableFactory
 from ..control_panel_factory import ControlPanelFactory
 from ..dialogs import ServiceDialog
+from ..dialogs.service_products_dialog import ServiceProductsDialog
 
 class ServicesTab(QtWidgets.QWidget):
     """Tab for managing services in inventory"""
@@ -230,13 +231,16 @@ class ServicesTab(QtWidgets.QWidget):
         current_row = self.services_table.currentRow()
         
         if current_row >= 0:
+            view_products_action = context_menu.addAction("View Products")
             edit_action = context_menu.addAction("Edit")
             delete_action = context_menu.addAction("Delete")
             
             # Show the context menu
             action = context_menu.exec_(self.services_table.mapToGlobal(position))
             
-            if action == edit_action:
+            if action == view_products_action:
+                self.view_service_products(current_row)
+            elif action == edit_action:
                 self.edit_service(current_row)
             elif action == delete_action:
                 self.delete_service(current_row)
@@ -445,3 +449,42 @@ class ServicesTab(QtWidgets.QWidget):
                 else:
                     self.filter_indicator.setVisible(False)
                     self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
+
+    def view_service_products(self, row):
+        """View products associated with a service"""
+        service_id = int(self.services_table.item(row, 0).text())
+        service_name = self.services_table.item(row, 1).text()
+        
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Get products used in this service
+            query = """
+                SELECT p.product_id, p.product_name, p.category, p.price, sp.quantity
+                FROM service_products sp
+                JOIN products p ON sp.product_id = p.product_id
+                WHERE sp.service_id = %s
+                ORDER BY p.product_name
+            """
+            cursor.execute(query, (service_id,))
+            products = cursor.fetchall()
+            cursor.close()
+            
+            if not products:
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "No Products",
+                    f"Service '{service_name}' does not use any products."
+                )
+                return
+                
+            # Create and show dialog with products
+            dialog = ServiceProductsDialog(self, service_name, products)
+            dialog.exec_()
+            
+        except mysql.connector.Error as err:
+            if self.parent:
+                self.parent.show_error_message(f"Database error: {err}")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error", f"Database error: {err}")
