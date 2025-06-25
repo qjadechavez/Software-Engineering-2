@@ -101,10 +101,10 @@ class ReceiptTab(QtWidgets.QWidget):
         address.setAlignment(QtCore.Qt.AlignCenter)
         self.receipt_layout.addWidget(address)
         
-        contact = QtWidgets.QLabel("Tel: 0962 915 5277")
-        contact.setStyleSheet("color: #555555; font-size: 10px;")
-        contact.setAlignment(QtCore.Qt.AlignCenter)
-        self.receipt_layout.addWidget(contact)
+        contact_details = QtWidgets.QLabel("0962 915 5277 | miere.beautylounge@gmail.com")
+        contact_details.setStyleSheet("color: #555555; font-size: 10px;")
+        contact_details.setAlignment(QtCore.Qt.AlignCenter)
+        self.receipt_layout.addWidget(contact_details)
         
         # Space instead of divider
         self.receipt_layout.addSpacing(10)
