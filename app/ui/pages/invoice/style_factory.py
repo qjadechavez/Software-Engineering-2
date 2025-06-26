@@ -1,53 +1,9 @@
 class StyleFactory:
-    """Factory class for consistent styling across components"""
-    
-    @staticmethod
-    def get_tab_style():
-        return """
-            QTabWidget::pane { 
-                border: 1px solid #444; 
-                background-color: #232323;
-                border-radius: 5px;
-            }
-            QTabBar::tab {
-                background-color: #343434;
-                color: #ffffff;
-                padding: 10px 30px;
-                border-top-left-radius: 6px;
-                border-top-right-radius: 6px;
-                font-weight: bold;
-                min-width: 120px;
-                font-size: 13px;
-            }
-            QTabBar::tab:selected {
-                background-color: #1a1a1a;
-                border-bottom-color: #1a1a1a;
-            }
-            QTabBar::tab:hover:!selected {
-                background-color: #3a3a3a;
-            }
-        """
-    
-    @staticmethod
-    def get_search_input_style():
-        return """
-            QLineEdit {
-                border: 1px solid #555;
-                border-radius: 18px;
-                padding: 8px 15px;
-                background: #2a2a2a;
-                color: white;
-                font-size: 13px;
-                min-height: 36px;
-            }
-            QLineEdit:focus {
-                border: 1px solid #0078d7;
-                background: #323232;
-            }
-        """
+    """Factory class for creating consistent UI styles"""
     
     @staticmethod
     def get_button_style(secondary=False):
+        """Get standard button style (primary or secondary)"""
         if secondary:
             return """
                 QPushButton {
@@ -90,112 +46,341 @@ class StyleFactory:
             """
     
     @staticmethod
+    def get_search_input_style():
+        return """
+            QLineEdit {
+                border: 1px solid #555;
+                border-radius: 18px;
+                padding: 8px 15px;
+                background: #2a2a2a;
+                color: white;
+                font-size: 13px;
+                min-height: 36px;
+            }
+            QLineEdit:focus {
+                border: 1px solid #0078d7;
+                background: #323232;
+            }
+        """
+    
+    @staticmethod
+    def get_services_grid_style():
+        """Get style for services grid container with background"""
+        return """
+            QWidget {
+                background-color: #1a1a1a;
+                border-radius: 12px;
+                border: 1px solid #333333;
+                margin: 5px;
+            }
+        """
+    
+    @staticmethod
+    def get_scroll_area_style():
+        """Get style for scroll area"""
+        return """
+            QScrollArea {
+                border: none;
+                background-color: transparent;
+            }
+            QScrollBar:vertical {
+                background: #2a2a2a;
+                width: 12px;
+                border-radius: 6px;
+            }
+            QScrollBar::handle:vertical {
+                background: #555555;
+                border-radius: 6px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #666666;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """
+    
+    @staticmethod
+    def get_service_card_style():
+        """Get style for service cards - clean design without borders"""
+        return """
+            QFrame {
+                background-color: #1e1e1e;
+                border-radius: 12px;
+                border: none;
+            }
+            QFrame:hover {
+                background-color: #252525;
+                border: 2px solid #007ACC;
+            }
+            QLabel {
+                border: none;
+                background: transparent;
+            }
+        """
+    
+    @staticmethod
+    def get_service_card_selected_style():
+        """Get style for selected service cards - clean design"""
+        return """
+            QFrame {
+                background-color: #0d4f3c;
+                border-radius: 12px;
+                border: 2px solid #4CAF50;
+            }
+            QFrame:hover {
+                background-color: #0f5a44;
+                border: 2px solid #66BB6A;
+            }
+            QLabel {
+                border: none;
+                background: transparent;
+            }
+        """
+    
+    @staticmethod
     def get_active_filter_button_style():
-        """Get style for filter button when filter is active"""
+        """Get style for active filter button (blue)"""
         return """
             QPushButton {
                 background-color: #2196F3;
                 color: white;
                 border: none;
-                border-radius: 4px;
-                padding: 8px 12px;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-weight: bold;
+                font-size: 14px;
             }
             QPushButton:hover {
-                background-color: #0d8aee;
+                background-color: #42A5F5;
+            }
+            QPushButton:pressed {
+                background-color: #1976D2;
             }
         """
     
     @staticmethod
-    def get_table_style():
+    def get_selected_services_frame_style():
+        """Get style for selected services frame"""
         return """
-            QTableWidget {
-                background-color: #1e1e1e;
-                gridline-color: #444;
-                color: white;
-                border-radius: 5px;
-                border: 1px solid #555;
-                font-size: 13px;
+            QFrame {
+                background-color: #1c1c1c;
+                border-radius: 10px;
+                border: 1px solid #444444;
+                margin: 5px;
             }
-            QHeaderView::section {
-                background-color: #2c2c2c;
+        """
+    
+    @staticmethod
+    def get_selected_services_list_style():
+        """Get style for selected services list widget"""
+        return """
+            QListWidget {
+                background-color: #2a2a2a;
+                border: 1px solid #444444;
+                border-radius: 4px;
                 color: white;
-                padding: 8px;
-                border: 1px solid #444;
-                font-weight: bold;
-            }
-            QTableWidget::item {
                 padding: 5px;
-                background-color: #1e1e1e;
             }
-            QTableWidget::item:selected {
-                background-color: #0078d7;
+            QListWidget::item {
+                padding: 8px;
+                border-bottom: 1px solid #444444;
+                border-radius: 4px;
+                margin: 2px;
+                background-color: #333333;
             }
-            QScrollBar:vertical {
-                background: #2a2a2a;
-                width: 12px;
+            QListWidget::item:hover {
+                background-color: #3a3a3a;
             }
-            QScrollBar::handle:vertical {
-                background: #666;
-                border-radius: 5px;
-                min-height: 20px;
+            QListWidget::item:selected {
+                background-color: #4CAF50;
+                color: white;
             }
-            QScrollBar:horizontal {
-                background: #2a2a2a;
-                height: 12px;
+        """
+    
+    @staticmethod
+    def get_products_list_style():
+        """Get style for products list widget"""
+        return """
+            QListWidget {
+                background-color: #2a2a2a;
+                border: 1px solid #444444;
+                border-radius: 4px;
+                color: white;
+                padding: 5px;
             }
-            QScrollBar::handle:horizontal {
-                background: #666;
-                border-radius: 5px;
-                min-width: 20px;
+            QListWidget::item {
+                padding: 6px;
+                border-radius: 3px;
+                margin: 1px;
+                background-color: #333333;
+                font-size: 12px;
+            }
+            QListWidget::item:hover {
+                background-color: #3a3a3a;
+            }
+        """
+    
+    @staticmethod
+    def get_cancel_button_style():
+        """Get style for cancel transaction button"""
+        return """
+            QPushButton {
+                background-color: #F44336;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background-color: #E53935;
+            }
+            QPushButton:pressed {
+                background-color: #C62828;
+            }
+        """
+    
+    @staticmethod
+    def get_overview_container_style():
+        """Get style for overview main container with background"""
+        return """
+            QWidget {
+                background-color: #1a1a1a;
+                border-radius: 12px;
+                border: 1px solid #333333;
+                margin: 5px;
+            }
+        """
+    
+    @staticmethod
+    def get_overview_section_style():
+        """Get style for overview sections"""
+        return """
+            QFrame {
+                background-color: #1c1c1c;
+                border-radius: 8px;
+                border: 1px solid #444444;
+                padding: 15px;
+                margin: 5px;
+            }
+        """
+    
+    @staticmethod
+    def get_overview_total_section_style():
+        """Get style for overview total section with emphasis"""
+        return """
+            QFrame {
+                background-color: #1c1c1c;
+                border-radius: 8px;
+                border: 2px solid #4CAF50;
+                padding: 15px;
+                margin: 5px;
+            }
+        """
+    
+    @staticmethod
+    def get_overview_list_style():
+        """Get style for overview list widgets"""
+        return """
+            QListWidget {
+                background-color: #2a2a2a;
+                border: 1px solid #444444;
+                border-radius: 4px;
+                color: white;
+                padding: 5px;
+            }
+            QListWidget::item {
+                padding: 6px;
+                border-radius: 3px;
+                margin: 1px;
+                color: white;
+                background-color: transparent;
+                border: none;
+                font-size: 12px;
+            }
+            QListWidget::item:hover {
+                background-color: #3a3a3a;
             }
         """
     
     @staticmethod
     def get_dialog_style():
-        """Get dialog style"""
+        """Get style for dialogs"""
         return """
             QDialog {
-                background-color: #1a1a1a;
-                color: white;
+                background-color: rgba(0, 0, 0, 0.8);
             }
             QLabel {
                 color: white;
-                font-size: 14px;
+                background: transparent;
             }
-            QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QTextEdit {
+            QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QTextEdit {
+                padding: 8px;
                 background-color: #2a2a2a;
                 color: white;
-                border: 1px solid #444;
+                border: 1px solid #444444;
                 border-radius: 4px;
-                padding: 8px;
-                min-height: 24px;
+                font-size: 14px;
             }
-            QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus, QTextEdit:focus {
+            QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus, QTextEdit:focus {
                 border: 1px solid #2196F3;
             }
             QPushButton {
-                background-color: #2196F3;
+                padding: 10px 20px;
+                background-color: #4CAF50;
                 color: white;
                 border: none;
-                border-radius: 5px;
-                padding: 8px 15px;
-                min-width: 120px;
+                border-radius: 6px;
+                font-weight: bold;
+                min-width: 100px;
             }
             QPushButton:hover {
-                background-color: #0d8aee;
+                background-color: #45a049;
             }
-            QPushButton:disabled {
-                background-color: #666;
+            QPushButton:pressed {
+                background-color: #3d8b40;
             }
-            QComboBox::drop-down {
-                border: none;
-                width: 30px;
+            QPushButton#cancelBtn {
+                background-color: #666666;
             }
-            QSpinBox::up-button, QDoubleSpinBox::up-button {
-                width: 25px;
+            QPushButton#cancelBtn:hover {
+                background-color: #777777;
             }
-            QSpinBox::down-button, QDoubleSpinBox::down-button {
-                width: 25px;
+            QPushButton#cancelBtn:pressed {
+                background-color: #555555;
             }
         """
+    
+    @staticmethod
+    def get_main_container_style():
+        return """
+            QFrame {
+                background-color: #1E1E1E;
+                border-radius: 16px;
+                padding: 12px;
+            }
+        """
+
+    @staticmethod
+    def get_section_frame_style():
+        return """
+            QFrame {
+                background-color: #2A2A2A;
+                border-radius: 8px;
+                padding: 8px;
+            }
+        """
+
+    @staticmethod
+    def get_separator_style():
+        # a slightly lighter line for separation
+        return "color: #3C3C3C;"
+
+    @staticmethod
+    def get_standard_font():
+        # returns a QFont string for consistent typography
+        return "font-family: 'Segoe UI';"
 

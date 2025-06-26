@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 from ..control_panel_factory import ControlPanelFactory
+from ..style_factory import StyleFactory
 
 class CustomerTab(QtWidgets.QWidget):
     """Tab for entering customer information"""
@@ -118,7 +119,11 @@ class CustomerTab(QtWidgets.QWidget):
         
         self.layout.addWidget(form_container)
         
-        # Buttons
+        # Add stretch to push buttons to bottom
+        self.layout.addStretch()
+        
+        
+        # Buttons at the bottom
         button_layout = QtWidgets.QHBoxLayout()
         
         back_button = ControlPanelFactory.create_action_button("Back", primary=False)
@@ -127,14 +132,11 @@ class CustomerTab(QtWidgets.QWidget):
         
         button_layout.addStretch()
         
-        self.continue_button = ControlPanelFactory.create_action_button("Continue to Payment")
+        self.continue_button = ControlPanelFactory.create_action_button("Continue", primary=True)
         self.continue_button.clicked.connect(self.continue_to_payment)
         button_layout.addWidget(self.continue_button)
         
         self.layout.addLayout(button_layout)
-        
-        # Add stretch to push everything to the top
-        self.layout.addStretch()
         
         # Connect input events
         self.name_input.textChanged.connect(self.validate_inputs)

@@ -39,9 +39,11 @@ class ReceiptTab(QtWidgets.QWidget):
         self.setup_receipt_template()
         
         self.layout.addWidget(self.receipt_content, alignment=QtCore.Qt.AlignCenter)
+        
+        # Add stretch to push buttons to bottom
         self.layout.addStretch()
         
-        # Action buttons
+        # Action buttons at the bottom
         button_layout = QtWidgets.QHBoxLayout()
         
         # Print button
@@ -62,27 +64,10 @@ class ReceiptTab(QtWidgets.QWidget):
         button_layout.addWidget(new_transaction_button)
         
         # Exit button
+        # unified secondary button style
+        from ..style_factory import StyleFactory
         exit_button = ControlPanelFactory.create_action_button("Exit", primary=False)
-        exit_button.setStyleSheet("""
-            QPushButton {
-                padding: 8px 15px;
-                background-color: #dc3545;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                font-weight: bold;
-                min-width: 80px;
-            }
-            QPushButton:hover {
-                background-color: #c82333;
-            }
-            QPushButton:pressed {
-                background-color: #bd2130;
-            }
-            QPushButton:disabled {
-                background-color: #6c757d;
-            }
-        """)
+        exit_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
         exit_button.clicked.connect(self.exit_transaction)
         button_layout.addWidget(exit_button)
         
@@ -191,7 +176,7 @@ class ReceiptTab(QtWidgets.QWidget):
         
         self.receipt_layout.addWidget(items_header)
         
-        # SERVICE TABLE
+        # SERVICES TABLE
         self.service_table = QtWidgets.QTableWidget()
         self.service_table.setColumnCount(3)
         self.service_table.setStyleSheet("""
@@ -241,7 +226,6 @@ class ReceiptTab(QtWidgets.QWidget):
         self.products_table.setSelectionMode(QtWidgets.QTableWidget.NoSelection)
         self.products_table.setColumnWidth(0, 240)
         self.products_table.setColumnWidth(1, 40)
-        self.products_table.setColumnWidth(2, 80)
         self.products_table.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.receipt_layout.addWidget(self.products_table)
         
@@ -320,7 +304,7 @@ class ReceiptTab(QtWidgets.QWidget):
     def generateReceipt(self):
         """Generate the receipt with current invoice data"""
         data = self.parent.invoice_data
-        service = data.get("service", {})
+        services = data.get("services", [])  # Now handle multiple services
         customer = data.get("customer", {})
         payment = data.get("payment", {})
         
@@ -340,25 +324,26 @@ class ReceiptTab(QtWidgets.QWidget):
         
         # Update service details
         self.service_table.setRowCount(0)
-        if service and service.get("service_name") and service.get("price"):
-            self.service_table.setRowCount(1)
-            service_name_item = QtWidgets.QTableWidgetItem(service.get("service_name"))
-            quantity_item = QtWidgets.QTableWidgetItem("1")
-            price_item = QtWidgets.QTableWidgetItem(f"₱{float(service.get('price')):.2f}")
-            
-            service_name_item.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-            quantity_item.setTextAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-            price_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-            
-            self.service_table.setItem(0, 0, service_name_item)
-            self.service_table.setItem(0, 1, quantity_item)
-            self.service_table.setItem(0, 2, price_item)
-            self.service_table.setRowHeight(0, 20)
+        if services:
+            self.service_table.setRowCount(len(services))
+            for i, service in enumerate(services):
+                service_name_item = QtWidgets.QTableWidgetItem(service.get("service_name", ""))
+                quantity_item = QtWidgets.QTableWidgetItem("1")
+                price_item = QtWidgets.QTableWidgetItem(f"₱{float(service.get('price', 0)):.2f}")
+                
+                service_name_item.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+                quantity_item.setTextAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+                price_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+                
+                self.service_table.setItem(i, 0, service_name_item)
+                self.service_table.setItem(i, 1, quantity_item)
+                self.service_table.setItem(i, 2, price_item)
+                self.service_table.setRowHeight(i, 20)
         
         # Update products
         self.products_table.setRowCount(0)
-        service_id = service.get("service_id")
-        if service_id:
+        service_ids = [service.get("service_id") for service in services if service.get("service_id")]
+        if service_ids:
             try:
                 from app.utils.db_manager import DBManager
                 conn = DBManager.get_connection()
@@ -368,9 +353,9 @@ class ReceiptTab(QtWidgets.QWidget):
                     SELECT p.product_name, sp.quantity, p.price
                     FROM service_products sp
                     JOIN products p ON sp.product_id = p.product_id
-                    WHERE sp.service_id = %s
-                """
-                cursor.execute(query, (service_id,))
+                    WHERE sp.service_id IN (%s)
+                """ % ','.join(['%s'] * len(service_ids))  # Dynamic placeholder generation
+                cursor.execute(query, tuple(service_ids))
                 products = cursor.fetchall()
                 cursor.close()
                 
@@ -389,7 +374,6 @@ class ReceiptTab(QtWidgets.QWidget):
                         
                         self.products_table.setItem(i, 0, name_item)
                         self.products_table.setItem(i, 1, quantity_item)
-                        self.products_table.setItem(i, 2, price_item)
                         self.products_table.setRowHeight(i, 20)
                 else:
                     self.products_header_label.hide()
@@ -403,9 +387,9 @@ class ReceiptTab(QtWidgets.QWidget):
             self.products_table.hide()
         
         # Update payment summary
-        if service and payment:
+        if services and payment:
             try:
-                base_price = float(service.get('price', 0))
+                base_price = sum(float(service.get('price', 0)) for service in services)
                 discount_percentage = float(payment.get('discount_percentage', 0))
                 discount_amount = base_price * (discount_percentage / 100)
                 final_price = float(payment.get('total_amount', base_price - discount_amount))
@@ -482,17 +466,17 @@ class ReceiptTab(QtWidgets.QWidget):
         try:
             from app.utils.db_manager import DBManager
             data = self.parent.invoice_data
-            service = data.get("service", {})
+            services = data.get("services", [])
             customer = data.get("customer", {})
             payment = data.get("payment", {})
             
-            if not all([service, customer, payment, data.get("or_number")]):
+            if not all([services, customer, payment, data.get("or_number")]):
                 return
             
             conn = DBManager.get_connection()
             cursor = conn.cursor()
             
-            base_amount = float(service.get('price', 0))
+            base_amount = sum(float(service.get('price', 0)) for service in services)
             discount_percentage = float(payment.get('discount_percentage', 0))
             discount_amount = base_amount * (discount_percentage / 100)
             total_amount = float(payment.get('total_amount', base_amount - discount_amount))
@@ -510,7 +494,7 @@ class ReceiptTab(QtWidgets.QWidget):
             """, (
                 data["transaction_id"],
                 data["or_number"],
-                service.get("service_id"),
+                services[0].get("service_id"),  # Assuming first service for transaction
                 customer.get("name"),
                 customer.get("phone"),
                 customer.get("gender"),

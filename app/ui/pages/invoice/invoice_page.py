@@ -22,7 +22,8 @@ class InvoicePage(BasePage):
     def initializeInvoiceData(self):
         """Initialize the invoice data dictionary to be shared between tabs"""
         self.invoice_data = {
-            "service": None,
+            "services": [],  # Changed from single service to multiple services
+            "total_service_price": 0.0,  # Total price of all selected services
             "customer": {
                 "name": "",
                 "phone": "",
@@ -61,7 +62,7 @@ class InvoicePage(BasePage):
         self.receipt_tab = ReceiptTab(self)
         
         # Add tabs to the tab widget
-        self.tabs.addTab(self.select_service_tab, "Select Service")
+        self.tabs.addTab(self.select_service_tab, "Select Services")
         self.tabs.addTab(self.customer_tab, "Customer")
         self.tabs.addTab(self.payment_details_tab, "Payment Details")
         self.tabs.addTab(self.overview_tab, "Overview")
@@ -131,8 +132,8 @@ class InvoicePage(BasePage):
     
     def cancel_transaction(self):
         """Cancel the current transaction"""
-        # Only ask for confirmation if we've selected a service
-        if self.invoice_data["service"] is not None:
+        # Only ask for confirmation if we've selected services
+        if self.invoice_data["services"]:
             reply = QtWidgets.QMessageBox.question(
                 self,
                 "Cancel Transaction",

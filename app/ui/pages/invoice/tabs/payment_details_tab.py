@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 from ..control_panel_factory import ControlPanelFactory
+from ..style_factory import StyleFactory
 import decimal
 
 class PaymentDetailsTab(QtWidgets.QWidget):
@@ -26,7 +27,13 @@ class PaymentDetailsTab(QtWidgets.QWidget):
         desc_label.setStyleSheet("color: #cccccc; font-size: 14px;")
         self.layout.addWidget(desc_label)
         
-        # Service summary
+        # Main content area - 2 column layout
+        main_content_layout = QtWidgets.QHBoxLayout()
+        main_content_layout.setSpacing(20)
+        
+        # LEFT COLUMN - Services summary
+        left_column = QtWidgets.QVBoxLayout()
+        
         self.summary_frame = QtWidgets.QFrame()
         self.summary_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.summary_frame.setStyleSheet("""
@@ -34,47 +41,86 @@ class PaymentDetailsTab(QtWidgets.QWidget):
                 background-color: #1c1c1c;
                 border-radius: 8px;
                 border: 1px solid #444444;
-                padding: 10px;
+                padding: 15px;
             }
         """)
         
         summary_layout = QtWidgets.QVBoxLayout(self.summary_frame)
         
-        self.service_name_label = QtWidgets.QLabel()
-        self.service_name_label.setStyleSheet("color: white; font-weight: bold;")
-        summary_layout.addWidget(self.service_name_label)
+        # Services header
+        services_header = QtWidgets.QLabel("Selected Services:")
+        services_header.setStyleSheet("color: white; font-weight: bold; font-size: 16px; border: none;")
+        summary_layout.addWidget(services_header)
         
-        self.service_price_label = QtWidgets.QLabel()
-        self.service_price_label.setStyleSheet("color: #4CAF50; font-weight: bold;")
-        summary_layout.addWidget(self.service_price_label)
+        # Services list
+        self.services_list_widget = QtWidgets.QListWidget()
+        self.services_list_widget.setStyleSheet("""
+            QListWidget {
+                background-color: #2a2a2a;
+                border: 1px solid #444444;
+                border-radius: 4px;
+                color: white;
+                padding: 5px;
+            }
+            QListWidget::item {
+                padding: 8px;
+                border-bottom: 1px solid #444444;
+                border-radius: 4px;
+                margin: 2px;
+            }
+            QListWidget::item:hover {
+                background-color: #3a3a3a;
+            }
+        """)
+        self.services_list_widget.setMinimumHeight(150)
+        self.services_list_widget.setMaximumHeight(200)
+        summary_layout.addWidget(self.services_list_widget)
         
+        # Total services price
+        self.total_services_price_label = QtWidgets.QLabel()
+        self.total_services_price_label.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 16px; margin: 10px 0; border: none;")
+        summary_layout.addWidget(self.total_services_price_label)
+        
+        # Customer info
         self.service_customer_label = QtWidgets.QLabel()
-        self.service_customer_label.setStyleSheet("color: #cccccc;")
+        self.service_customer_label.setStyleSheet("color: #cccccc; font-size: 14px; border: none;")
         summary_layout.addWidget(self.service_customer_label)
         
-        self.layout.addWidget(self.summary_frame)
+        left_column.addWidget(self.summary_frame)
+        left_column.addStretch()
         
-        # Form container
+        # RIGHT COLUMN - Form container
+        right_column = QtWidgets.QVBoxLayout()
+        
         form_container = QtWidgets.QWidget()
+        form_container.setStyleSheet("""
+            QWidget {
+                background-color: #1c1c1c;
+                border-radius: 8px;
+                border: 1px solid #444444;
+                padding: 15px;
+            }
+        """)
         form_layout = QtWidgets.QFormLayout(form_container)
-        form_layout.setContentsMargins(0, 10, 0, 10)
-        form_layout.setSpacing(15)
-        form_layout.setLabelAlignment(QtCore.Qt.AlignRight)
+        form_layout.setContentsMargins(20, 20, 20, 20)
+        form_layout.setSpacing(20)
+        form_layout.setLabelAlignment(QtCore.Qt.AlignLeft)
         form_layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         
         # Payment method - changed to display only Cash
         payment_label = QtWidgets.QLabel("Payment Method:")
-        payment_label.setStyleSheet("color: white;")
+        payment_label.setStyleSheet("color: white; font-weight: bold; border: none;")
         
         payment_value = QtWidgets.QLabel("Cash")
         payment_value.setStyleSheet("""
             QLabel {
-                padding: 8px;
+                padding: 12px;
                 background-color: #2a2a2a;
                 color: white;
                 border: 1px solid #444444;
-                border-radius: 4px;
-                min-height: 36px;
+                border-radius: 6px;
+                min-height: 20px;
+                font-size: 14px;
             }
         """)
         
@@ -82,23 +128,29 @@ class PaymentDetailsTab(QtWidgets.QWidget):
         
         # Discount
         discount_label = QtWidgets.QLabel("Discount (%):")
-        discount_label.setStyleSheet("color: white;")
+        discount_label.setStyleSheet("color: white; font-weight: bold; border: none;")
         
         self.discount_spin = QtWidgets.QSpinBox()
         self.discount_spin.setRange(0, 50)
+        self.discount_spin.setEnabled(False)
         self.discount_spin.setValue(0)
         self.discount_spin.setStyleSheet("""
             QSpinBox {
-                padding: 8px;
+                padding: 12px;
                 background-color: #2a2a2a;
                 color: white;
                 border: 1px solid #444444;
-                border-radius: 4px;
-                min-height: 36px;
+                border-radius: 6px;
+                min-height: 20px;
+                font-size: 14px;
             }
             QSpinBox::up-button, QSpinBox::down-button {
                 background-color: #3a3a3a;
                 width: 20px;
+                border-radius: 3px;
+            }
+            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+                background-color: #4a4a4a;
             }
         """)
         self.discount_spin.valueChanged.connect(self.calculate_total)
@@ -107,7 +159,7 @@ class PaymentDetailsTab(QtWidgets.QWidget):
         
         # Coupon code
         coupon_label = QtWidgets.QLabel("Coupon Code:")
-        coupon_label.setStyleSheet("color: white;")
+        coupon_label.setStyleSheet("color: white; font-weight: bold; border: none;")
         
         coupon_container = QtWidgets.QWidget()
         coupon_layout = QtWidgets.QHBoxLayout(coupon_container)
@@ -118,26 +170,34 @@ class PaymentDetailsTab(QtWidgets.QWidget):
         self.coupon_input.setPlaceholderText("Enter coupon code (optional)")
         self.coupon_input.setStyleSheet("""
             QLineEdit {
-                padding: 8px;
+                padding: 12px;
                 background-color: #2a2a2a;
                 color: white;
-                border: 1px solid #444444;
-                border-radius: 4px;
-                min-height: 36px;
+                border-radius: 6px;
+                min-height: 20px;
+                font-size: 14px;
+            }
+            QLineEdit:focus {
+                border: 1px solid #2196F3;
             }
         """)
         
         coupon_button = QtWidgets.QPushButton("Apply")
         coupon_button.setStyleSheet("""
             QPushButton {
-                padding: 8px 15px;
+                padding: 12px 20px;
                 background-color: #4CAF50;
                 color: white;
                 border: none;
-                border-radius: 4px;
+                border-radius: 6px;
+                font-weight: bold;
+                min-width: 80px;
             }
             QPushButton:hover {
                 background-color: #45a049;
+            }
+            QPushButton:pressed {
+                background-color: #3d8b40;
             }
         """)
         coupon_button.clicked.connect(self.apply_coupon)
@@ -147,26 +207,39 @@ class PaymentDetailsTab(QtWidgets.QWidget):
         
         form_layout.addRow(coupon_label, coupon_container)
         
-        self.layout.addWidget(form_container)
-        
         # Total amount
-        total_container = QtWidgets.QWidget()
-        total_layout = QtWidgets.QHBoxLayout(total_container)
-        total_layout.setContentsMargins(0, 10, 0, 10)
-        
         total_label = QtWidgets.QLabel("Total Amount:")
-        total_label.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
+        total_label.setStyleSheet("color: white; font-size: 18px; font-weight: bold; border: none;")
         
-        self.total_amount_label = QtWidgets.QLabel()
-        self.total_amount_label.setStyleSheet("color: #4CAF50; font-size: 18px; font-weight: bold;")
+        self.total_amount_label = QtWidgets.QLabel("₱0.00")
+        self.total_amount_label.setStyleSheet("""
+            QLabel {
+                color: #4CAF50; 
+                font-size: 24px; 
+                font-weight: bold;
+                padding: 12px;
+                background-color: #2a2a2a;
+                border: 2px solid #4CAF50;
+                border-radius: 6px;
+                min-height: 20px;
+            }
+        """)
         
-        total_layout.addWidget(total_label)
-        total_layout.addStretch()
-        total_layout.addWidget(self.total_amount_label)
+        form_layout.addRow(total_label, self.total_amount_label)
         
-        self.layout.addWidget(total_container)
+        right_column.addWidget(form_container)
+        right_column.addStretch()
         
-        # Buttons
+        # Add columns to main content layout (50% left, 50% right)
+        main_content_layout.addLayout(left_column, 1)
+        main_content_layout.addLayout(right_column, 1)
+        
+        self.layout.addLayout(main_content_layout)
+        
+        # Add stretch to push buttons to bottom
+        self.layout.addStretch()
+        
+        # Buttons at the bottom
         button_layout = QtWidgets.QHBoxLayout()
         
         back_button = ControlPanelFactory.create_action_button("Back", primary=False)
@@ -175,14 +248,11 @@ class PaymentDetailsTab(QtWidgets.QWidget):
         
         button_layout.addStretch()
         
-        self.continue_button = ControlPanelFactory.create_action_button("Continue to Overview")
+        self.continue_button = ControlPanelFactory.create_action_button("Continue", primary=True)
         self.continue_button.clicked.connect(self.continue_to_overview)
         button_layout.addWidget(self.continue_button)
         
         self.layout.addLayout(button_layout)
-        
-        # Add stretch to push everything to the top
-        self.layout.addStretch()
     
     def showEvent(self, event):
         """Update the UI when the tab is shown"""
@@ -191,37 +261,48 @@ class PaymentDetailsTab(QtWidgets.QWidget):
         self.calculate_total()
     
     def update_summary(self):
-        """Update the service summary"""
-        service = self.parent.invoice_data.get("service")
+        """Update the services summary"""
+        services = self.parent.invoice_data.get("services", [])
         customer = self.parent.invoice_data.get("customer")
         
-        if service:
-            self.service_name_label.setText(f"Service: {service['service_name']}")
-            self.service_price_label.setText(f"Base Price: ₱{float(service['price']):.2f}")
-            
-            if customer:
-                customer_name = customer.get("name", "")
-                customer_phone = customer.get("phone", "")
-                self.service_customer_label.setText(f"Customer: {customer_name} | Phone: {customer_phone}")
+        # Clear and update services list
+        self.services_list_widget.clear()
+        total_price = 0
+        
+        for service in services:
+            price = float(service['price'])
+            total_price += price
+            item_text = f"{service['service_name']} - ₱{price:.2f}"
+            self.services_list_widget.addItem(item_text)
+        
+        # Update total services price
+        self.total_services_price_label.setText(f"Services Total: ₱{total_price:.2f}")
+        
+        # Update customer info
+        if customer:
+            customer_name = customer.get("name", "")
+            customer_phone = customer.get("phone", "")
+            self.service_customer_label.setText(f"Customer: {customer_name} | Phone: {customer_phone}")
     
     def calculate_total(self):
         """Calculate the total amount with discount"""
-        service = self.parent.invoice_data.get("service")
+        services = self.parent.invoice_data.get("services", [])
         
-        if service:
-            price = float(service['price'])
+        if services:
+            # Calculate total price of all services
+            total_price = sum(float(service['price']) for service in services)
             discount = self.discount_spin.value()
             
             # Apply discount
-            discount_amount = price * (discount / 100)
-            final_price = price - discount_amount
+            discount_amount = total_price * (discount / 100)
+            final_price = total_price - discount_amount
             
             # Update the total
             self.total_amount_label.setText(f"₱{final_price:.2f}")
             
             # Store the total and discount amounts in invoice data
             self.parent.invoice_data["payment"]["total_amount"] = final_price
-            self.parent.invoice_data["payment"]["base_amount"] = price
+            self.parent.invoice_data["payment"]["base_amount"] = total_price
             self.parent.invoice_data["payment"]["discount_amount"] = discount_amount
     
     def apply_coupon(self):
@@ -273,3 +354,7 @@ class PaymentDetailsTab(QtWidgets.QWidget):
         # No need to reset payment method as it's fixed to Cash
         self.discount_spin.setValue(0)
         self.coupon_input.clear()
+        self.services_list_widget.clear()
+        self.total_services_price_label.setText("")
+        self.service_customer_label.setText("")
+        self.total_amount_label.setText("")

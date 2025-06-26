@@ -1,5 +1,8 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtWidgets import QSizePolicy      # << add this
 from ..control_panel_factory import ControlPanelFactory
+from ..style_factory import StyleFactory
+from ..dialogs.payment_dialog import PaymentDialog
 import random
 from datetime import datetime
 
@@ -9,229 +12,289 @@ class OverviewTab(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(OverviewTab, self).__init__()
         self.parent = parent
+        self.payment_completed = False
         self.setup_ui()
     
     def setup_ui(self):
         """Set up the UI components"""
         self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(20, 20, 20, 20)
-        self.layout.setSpacing(20)
+        self.layout.setContentsMargins(15, 15, 15, 15)
+        self.layout.setSpacing(10)
         
         # Header
         header_label = QtWidgets.QLabel("Invoice Overview")
-        header_label.setStyleSheet("color: white; font-size: 20px; font-weight: bold;")
+        header_label.setStyleSheet("color: white; font-size: 22px; font-weight: bold;")
         self.layout.addWidget(header_label)
         
         # Description
-        desc_label = QtWidgets.QLabel("Review the invoice details before finalizing:")
+        desc_label = QtWidgets.QLabel("Review all invoice details before finalizing the transaction:")
         desc_label.setStyleSheet("color: #cccccc; font-size: 14px;")
         self.layout.addWidget(desc_label)
         
-        # Create scrollable container
-        scroll_area = QtWidgets.QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setStyleSheet("""
-            QScrollArea {
-                border: none;
-                background-color: transparent;
-            }
-            QScrollBar:vertical {
-                background: #2a2a2a;
-                width: 10px;
-                border-radius: 5px;
-            }
-            QScrollBar::handle:vertical {
-                background: #555;
-                border-radius: 5px;
-            }
-        """)
+        # Main content container - Single unified container
+        main_container = QtWidgets.QFrame()
+        # company-standard main card
+        main_container.setStyleSheet(
+            StyleFactory.get_main_container_style() +
+            StyleFactory.get_standard_font()
+        )
+
+        # Single layout for all content
+        content_layout = QtWidgets.QVBoxLayout(main_container)
+        content_layout.setContentsMargins(10, 10, 10, 10)
+        content_layout.setSpacing(8)
         
-        scroll_content = QtWidgets.QWidget()
-        scroll_layout = QtWidgets.QVBoxLayout(scroll_content)
-        scroll_layout.setContentsMargins(0, 0, 10, 0)
-        scroll_layout.setSpacing(15)
+        # TRANSACTION HEADER - in its own box
+        transaction_frame = QtWidgets.QFrame()
+        # transaction header sub-card
+        transaction_frame.setStyleSheet(
+            StyleFactory.get_section_frame_style() +
+            StyleFactory.get_standard_font()
+        )
+        tx_layout = QtWidgets.QHBoxLayout(transaction_frame)
+        tx_layout.setContentsMargins(8, 8, 8, 8)
+        tx_layout.setSpacing(10)
         
-        # Service details section
-        service_details = QtWidgets.QFrame()
-        service_details.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        service_details.setStyleSheet("""
-            QFrame {
-                background-color: #1c1c1c;
-                border-radius: 8px;
-                border: 1px solid #444444;
-            }
-        """)
+        # Transaction ID / Date / Staff
+        self.transaction_id_label = QtWidgets.QLabel()
+        self.transaction_id_label.setStyleSheet("color: #4FC3F7; font-size: 14px; font-weight: bold;")
         
-        service_layout = QtWidgets.QVBoxLayout(service_details)
+        self.transaction_date_label = QtWidgets.QLabel()
+        self.transaction_date_label.setStyleSheet("color: #cccccc; font-size: 12px;")
         
-        service_title = QtWidgets.QLabel("Service Details")
-        service_title.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
-        service_layout.addWidget(service_title)
+        # Staff info
+        self.staff_label = QtWidgets.QLabel()
+        self.staff_label.setStyleSheet("color: #cccccc; font-size: 12px;")
+        self.staff_label.setAlignment(QtCore.Qt.AlignRight)
         
-        self.service_name = QtWidgets.QLabel()
-        self.service_name.setStyleSheet("color: white;")
-        service_layout.addWidget(self.service_name)
+        tx_layout.addWidget(self.transaction_id_label)
+        tx_layout.addWidget(self.transaction_date_label)
+        tx_layout.addStretch()
+        tx_layout.addWidget(self.staff_label)
+        content_layout.addWidget(transaction_frame)
         
-        self.service_price = QtWidgets.QLabel()
-        self.service_price.setStyleSheet("color: #4CAF50;")
-        service_layout.addWidget(self.service_price)
+        # CUSTOMER AND SERVICES - in a box
+        customer_services_frame = QtWidgets.QFrame()
+        customer_services_frame.setStyleSheet(
+            StyleFactory.get_section_frame_style() +
+            StyleFactory.get_standard_font()
+        )
+        cs_layout = QtWidgets.QHBoxLayout(customer_services_frame)
+        cs_layout.setContentsMargins(8, 8, 8, 8)
+        cs_layout.setSpacing(20)
         
-        scroll_layout.addWidget(service_details)
+        # LEFT SIDE - Customer Information
+        customer_layout = QtWidgets.QVBoxLayout()
         
-        # Customer details section
-        customer_details = QtWidgets.QFrame()
-        customer_details.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        customer_details.setStyleSheet("""
-            QFrame {
-                background-color: #1c1c1c;
-                border-radius: 8px;
-                border: 1px solid #444444;
-            }
-        """)
-        
-        customer_layout = QtWidgets.QVBoxLayout(customer_details)
-        
-        customer_title = QtWidgets.QLabel("Customer Details")
+        customer_title = QtWidgets.QLabel("Customer Information")
         customer_title.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
         customer_layout.addWidget(customer_title)
         
+        # Customer details in compact format
         self.customer_name = QtWidgets.QLabel()
-        self.customer_name.setStyleSheet("color: white;")
+        self.customer_name.setStyleSheet("color: white; font-size: 13px;")
         customer_layout.addWidget(self.customer_name)
         
         self.customer_phone = QtWidgets.QLabel()
-        self.customer_phone.setStyleSheet("color: white;")
+        self.customer_phone.setStyleSheet("color: #cccccc; font-size: 12px;")
         customer_layout.addWidget(self.customer_phone)
         
         self.customer_gender = QtWidgets.QLabel()
-        self.customer_gender.setStyleSheet("color: white;")
+        self.customer_gender.setStyleSheet("color: #cccccc; font-size: 12px;")
         customer_layout.addWidget(self.customer_gender)
         
         self.customer_city = QtWidgets.QLabel()
-        self.customer_city.setStyleSheet("color: white;")
+        self.customer_city.setStyleSheet("color: #cccccc; font-size: 12px;")
         customer_layout.addWidget(self.customer_city)
         
-        scroll_layout.addWidget(customer_details)
+        customer_layout.addStretch()
+        cs_layout.addLayout(customer_layout, 1)
         
-        # Payment details section
-        payment_details = QtWidgets.QFrame()
-        payment_details.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        payment_details.setStyleSheet("""
-            QFrame {
-                background-color: #1c1c1c;
-                border-radius: 8px;
-                border: 1px solid #444444;
-            }
-        """)
+        # RIGHT SIDE - Services Information
+        services_layout = QtWidgets.QVBoxLayout()
         
-        payment_layout = QtWidgets.QVBoxLayout(payment_details)
+        services_title = QtWidgets.QLabel("Selected Services")
+        services_title.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
+        services_layout.addWidget(services_title)
+        
+        # Services list - more compact
+        self.services_list_widget = QtWidgets.QListWidget()
+        # use unified list style
+        self.services_list_widget.setStyleSheet(StyleFactory.get_selected_services_list_style())
+        self.services_list_widget.setMaximumHeight(70)
+        self.services_list_widget.setMinimumHeight(50)
+        services_layout.addWidget(self.services_list_widget)
+        
+        # Services total
+        self.services_total_label = QtWidgets.QLabel()
+        self.services_total_label.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 14px;")
+        self.services_total_label.setAlignment(QtCore.Qt.AlignRight)
+        services_layout.addWidget(self.services_total_label)
+        
+        cs_layout.addLayout(services_layout, 1)
+        content_layout.addWidget(customer_services_frame)
+        
+        # separator
+        sep1 = QtWidgets.QFrame()
+        sep1.setFrameShape(QtWidgets.QFrame.HLine)
+        sep1.setStyleSheet(StyleFactory.get_separator_style())
+
+        content_layout.addWidget(sep1)
+        
+        # PAYMENT AND TOTAL - in a box
+        payment_frame = QtWidgets.QFrame()
+        payment_frame.setStyleSheet(
+            StyleFactory.get_section_frame_style() +
+            StyleFactory.get_standard_font()
+        )
+        pay_layout = QtWidgets.QHBoxLayout(payment_frame)
+        pay_layout.setContentsMargins(8, 8, 8, 8)
+        pay_layout.setSpacing(20)
+        
+        # LEFT SIDE - Payment Details
+        payment_info_layout = QtWidgets.QVBoxLayout()
         
         payment_title = QtWidgets.QLabel("Payment Details")
         payment_title.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
-        payment_layout.addWidget(payment_title)
+        payment_info_layout.addWidget(payment_title)
         
         self.payment_method = QtWidgets.QLabel()
-        self.payment_method.setStyleSheet("color: white;")
-        payment_layout.addWidget(self.payment_method)
-        
-        self.payment_discount = QtWidgets.QLabel()
-        self.payment_discount.setStyleSheet("color: white;")
-        payment_layout.addWidget(self.payment_discount)
+        self.payment_method.setStyleSheet("color: white; font-size: 13px;")
+        payment_info_layout.addWidget(self.payment_method)
         
         self.payment_coupon = QtWidgets.QLabel()
-        self.payment_coupon.setStyleSheet("color: white;")
-        payment_layout.addWidget(self.payment_coupon)
+        self.payment_coupon.setStyleSheet("color: #cccccc; font-size: 12px;")
+        payment_info_layout.addWidget(self.payment_coupon)
         
-        scroll_layout.addWidget(payment_details)
+        payment_info_layout.addStretch()
+        pay_layout.addLayout(payment_info_layout, 1)
         
-        # Total amount section
-        total_details = QtWidgets.QFrame()
-        total_details.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        total_details.setStyleSheet("""
-            QFrame {
-                background-color: #1c1c1c;
-                border-radius: 8px;
-                border: 1px solid #444444;
-            }
-        """)
+        # RIGHT SIDE - Total Calculation
+        total_layout = QtWidgets.QVBoxLayout()
         
-        total_layout = QtWidgets.QVBoxLayout(total_details)
-        
-        total_title = QtWidgets.QLabel("Total")
+        total_title = QtWidgets.QLabel("Total Summary")
         total_title.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
         total_layout.addWidget(total_title)
         
-        total_grid = QtWidgets.QGridLayout()
-        total_grid.setColumnStretch(0, 1)
-        total_grid.setColumnStretch(1, 0)
+        # Total calculation in compact format
+        total_details_layout = QtWidgets.QGridLayout()
+        total_details_layout.setVerticalSpacing(2)
+        total_details_layout.setHorizontalSpacing(8)
         
-        base_price_label = QtWidgets.QLabel("Base Price:")
-        base_price_label.setStyleSheet("color: white;")
+        # Base price
+        base_label = QtWidgets.QLabel("Base Price:")
+        base_label.setStyleSheet("color: #cccccc; font-size: 12px;")
         self.base_price_value = QtWidgets.QLabel()
-        self.base_price_value.setStyleSheet("color: white; font-weight: bold;")
+        self.base_price_value.setStyleSheet("color: white; font-size: 12px; font-weight: bold;")
         self.base_price_value.setAlignment(QtCore.Qt.AlignRight)
         
-        total_grid.addWidget(base_price_label, 0, 0)
-        total_grid.addWidget(self.base_price_value, 0, 1)
+        total_details_layout.addWidget(base_label, 0, 0)
+        total_details_layout.addWidget(self.base_price_value, 0, 1)
         
+        # Discount
         discount_label = QtWidgets.QLabel("Discount:")
-        discount_label.setStyleSheet("color: white;")
+        discount_label.setStyleSheet("color: #cccccc; font-size: 12px;")
         self.discount_value = QtWidgets.QLabel()
-        self.discount_value.setStyleSheet("color: #FF5252; font-weight: bold;")
+        self.discount_value.setStyleSheet("color: #FF5252; font-size: 12px; font-weight: bold;")
         self.discount_value.setAlignment(QtCore.Qt.AlignRight)
         
-        total_grid.addWidget(discount_label, 1, 0)
-        total_grid.addWidget(self.discount_value, 1, 1)
+        total_details_layout.addWidget(discount_label, 1, 0)
+        total_details_layout.addWidget(self.discount_value, 1, 1)
         
-        separator = QtWidgets.QFrame()
-        separator.setFrameShape(QtWidgets.QFrame.HLine)
-        separator.setFrameShadow(QtWidgets.QFrame.Sunken)
-        separator.setStyleSheet("background-color: #444444;")
+        total_layout.addLayout(total_details_layout)
         
+        # Final total - prominent
+        final_total_layout = QtWidgets.QHBoxLayout()
         final_label = QtWidgets.QLabel("Final Total:")
         final_label.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
         self.final_value = QtWidgets.QLabel()
-        self.final_value.setStyleSheet("color: #4CAF50; font-size: 16px; font-weight: bold;")
+        self.final_value.setStyleSheet("color: #4CAF50; font-size: 18px; font-weight: bold;")
         self.final_value.setAlignment(QtCore.Qt.AlignRight)
         
-        total_grid.addWidget(separator, 2, 0, 1, 2)
-        total_grid.addWidget(final_label, 3, 0)
-        total_grid.addWidget(self.final_value, 3, 1)
+        final_total_layout.addWidget(final_label)
+        final_total_layout.addWidget(self.final_value)
         
-        total_layout.addLayout(total_grid)
+        total_layout.addLayout(final_total_layout)
+        pay_layout.addLayout(total_layout, 1)
+        content_layout.addWidget(payment_frame)
         
-        scroll_layout.addWidget(total_details)
+        self.layout.addWidget(main_container, 1)
         
-        # Add scroll area to layout
-        scroll_area.setWidget(scroll_content)
-        self.layout.addWidget(scroll_area)
+        # final separator before action buttons
+        sep2 = QtWidgets.QFrame()
+        sep2.setFrameShape(QtWidgets.QFrame.HLine)
+        sep2.setStyleSheet(StyleFactory.get_separator_style())
+
+        self.layout.addWidget(sep2)
         
-        # Buttons
+        # Buttons at the bottom
         button_layout = QtWidgets.QHBoxLayout()
         
         back_button = ControlPanelFactory.create_action_button("Back", primary=False)
+        back_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
         back_button.clicked.connect(self.go_back)
         button_layout.addWidget(back_button)
         
         button_layout.addStretch()
         
-        finalize_button = ControlPanelFactory.create_action_button("Finalize Invoice")
-        finalize_button.clicked.connect(self.finalize_invoice)
-        button_layout.addWidget(finalize_button)
+        # Payment button
+        self.payment_button = ControlPanelFactory.create_action_button("Payment")
+        # (primary button uses default StyleFactory.get_button_style())
+        self.payment_button.clicked.connect(self.open_payment_dialog)
+        button_layout.addWidget(self.payment_button)
+        
+        # Finalize Invoice button (initially disabled)
+        self.finalize_button = ControlPanelFactory.create_action_button("Finalize Invoice")
+        self.finalize_button.setEnabled(False)
+        self.finalize_button.clicked.connect(self.finalize_invoice)
+        button_layout.addWidget(self.finalize_button)
         
         self.layout.addLayout(button_layout)
+    
+    def open_payment_dialog(self):
+        """Open the payment dialog"""
+        total_amount = float(self.parent.invoice_data["payment"].get("total_amount", 0))
+        
+        dialog = PaymentDialog(self, total_amount)
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            # Payment completed successfully
+            self.payment_completed = True
+            self.finalize_button.setEnabled(True)
+            self.payment_button.setEnabled(False)
+            self.payment_button.setText("Payment Completed ✓")
+            QtWidgets.QMessageBox.information(self, "Payment Complete", "Payment has been processed successfully!")
+    
+    def showEvent(self, event):
+        """Update the overview when the tab is shown"""
+        super().showEvent(event)
+        self.updateOverview()
     
     def updateOverview(self):
         """Update the overview with current invoice data"""
         data = self.parent.invoice_data
-        service = data.get("service", {})
+        services = data.get("services", [])
         customer = data.get("customer", {})
         payment = data.get("payment", {})
         
-        # Update service details
-        if service:
-            self.service_name.setText(f"Service: {service.get('service_name', '')}")
-            self.service_price.setText(f"Base Price: ₱{float(service.get('price', 0)):.2f}")
+        # Update transaction info
+        transaction_id = data.get("transaction_id", "")
+        if not transaction_id:
+            # Generate if not exists
+            now = datetime.now()
+            transaction_id = f"TXN-{now.strftime('%Y%m%d')}-{random.randint(10000, 99999)}"
+            data["transaction_id"] = transaction_id
+        
+        self.transaction_id_label.setText(f"ID: {transaction_id}")
+        
+        # Current date and time
+        now = datetime.now()
+        self.transaction_date_label.setText(f"{now.strftime('%b %d, %Y at %I:%M %p')}")
+        
+        # Staff info
+        staff_name = "Staff Member"
+        if hasattr(self.parent, 'user_info') and self.parent.user_info:
+            staff_name = self.parent.user_info.get('name', 'Staff Member')
+        self.staff_label.setText(f"Served by: {staff_name}")
         
         # Update customer details
         if customer:
@@ -240,11 +303,21 @@ class OverviewTab(QtWidgets.QWidget):
             self.customer_gender.setText(f"Gender: {customer.get('gender', '')}")
             self.customer_city.setText(f"City: {customer.get('city', '')}")
         
+        # Update services details
+        self.services_list_widget.clear()
+        total_services_price = 0
+        
+        for service in services:
+            price = float(service.get('price', 0))
+            total_services_price += price
+            item_text = f"{service.get('service_name', '')} - ₱{price:.2f}"
+            self.services_list_widget.addItem(item_text)
+        
+        self.services_total_label.setText(f"Subtotal: ₱{total_services_price:.2f}")
+        
         # Update payment details
         if payment:
-            self.payment_method.setText(f"Payment Method: {payment.get('method', 'Cash')}")
-            discount = payment.get('discount_percentage', 0)
-            self.payment_discount.setText(f"Discount: {discount}%")
+            self.payment_method.setText(f"Method: {payment.get('method', 'Cash')}")
             
             coupon = payment.get('coupon_code', '')
             if coupon:
@@ -253,8 +326,8 @@ class OverviewTab(QtWidgets.QWidget):
                 self.payment_coupon.setText("Coupon: None")
         
         # Update total calculation
-        if service and payment:
-            base_price = float(service.get('price', 0))
+        if services and payment:
+            base_price = total_services_price
             discount_amount = float(payment.get('discount_amount', 0))
             final_price = float(payment.get('total_amount', 0))
             
@@ -268,6 +341,10 @@ class OverviewTab(QtWidgets.QWidget):
     
     def finalize_invoice(self):
         """Finalize the invoice and generate OR number"""
+        if not self.payment_completed:
+            QtWidgets.QMessageBox.warning(self, "Payment Required", "Please complete the payment process first.")
+            return
+            
         # Generate a simple OR number (in a real system, this would be more sophisticated)
         now = datetime.now()
         or_number = f"OR-{now.strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
@@ -285,14 +362,21 @@ class OverviewTab(QtWidgets.QWidget):
     
     def reset(self):
         """Reset the tab state"""
-        self.service_name.setText("")
-        self.service_price.setText("")
+        self.payment_completed = False
+        self.finalize_button.setEnabled(False)
+        self.payment_button.setEnabled(True)
+        self.payment_button.setText("Payment")
+        
+        self.transaction_id_label.setText("")
+        self.transaction_date_label.setText("")
+        self.staff_label.setText("")
+        self.services_list_widget.clear()
+        self.services_total_label.setText("")
         self.customer_name.setText("")
         self.customer_phone.setText("")
         self.customer_gender.setText("")
         self.customer_city.setText("")
         self.payment_method.setText("")
-        self.payment_discount.setText("")
         self.payment_coupon.setText("")
         self.base_price_value.setText("")
         self.discount_value.setText("")
