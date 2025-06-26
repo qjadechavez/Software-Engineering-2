@@ -27,7 +27,7 @@ class DashboardPage(BasePage):
         # Key metrics cards
         self.create_metrics_cards()
         
-        # Charts section - Maximized to take remaining space
+        # Charts section
         charts_layout = QtWidgets.QHBoxLayout()
         charts_layout.setSpacing(20)
         
@@ -114,16 +114,16 @@ class DashboardPage(BasePage):
         metrics_layout.setSpacing(15)
         
         # Total Revenue card
-        self.total_revenue_card = self.create_metric_card("Total Revenue", "₱0.00", "#4CAF50", "💰")
+        self.total_revenue_card = self.create_metric_card("Total Revenue", "₱0.00", "#4CAF50", "")
         
         # Today's Revenue card
-        self.today_revenue_card = self.create_metric_card("Today's Revenue", "₱0.00", "#2196F3", "📈")
+        self.today_revenue_card = self.create_metric_card("Today's Revenue", "₱0.00", "#2196F3", "")
         
         # Services card
-        self.services_card = self.create_metric_card("Total Services", "0", "#9C27B0", "🛠️")
+        self.services_card = self.create_metric_card("Total Services", "0", "#9C27B0", "")
         
         # Today's Transactions card
-        self.transactions_card = self.create_metric_card("Today's Transactions", "0", "#FF9800", "🔄")
+        self.transactions_card = self.create_metric_card("Today's Transactions", "0", "#FF9800", "")
         
         metrics_layout.addWidget(self.total_revenue_card)
         metrics_layout.addWidget(self.today_revenue_card)
@@ -187,7 +187,7 @@ class DashboardPage(BasePage):
         """)
         
         layout = QtWidgets.QVBoxLayout(widget)
-        layout.setContentsMargins(15, 10, 15, 10)  # Reduced margins for more chart space
+        layout.setContentsMargins(15, 10, 15, 10) 
         layout.setSpacing(8)  # Reduced spacing
         
         # Header with title and view all button
@@ -198,7 +198,7 @@ class DashboardPage(BasePage):
         title_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold; border: none;")  # Smaller font
         
         desc_label = QtWidgets.QLabel(description)
-        desc_label.setStyleSheet("color: #cccccc; font-size: 10px; border: none;")  # Smaller font
+        desc_label.setStyleSheet("color: #cccccc; font-size: 10px; border: none;") 
         
         title_layout.addWidget(title_label)
         title_layout.addWidget(desc_label)
@@ -211,7 +211,7 @@ class DashboardPage(BasePage):
         
         layout.addLayout(header_layout)
         
-        # Chart area - This will now expand to fill available space
+        # Chart area 
         chart_frame = chart_function()
         layout.addWidget(chart_frame, 1)
         
@@ -290,7 +290,6 @@ class DashboardPage(BasePage):
     
     def create_inventory_chart(self):
         """Create inventory status chart with zoomed out view"""
-        # Smaller figure size for zoomed out effect
         figure = Figure(figsize=(6, 3.5), facecolor='#232323', dpi=80)  # Reduced DPI and size
         canvas = FigureCanvas(figure)
         canvas.setStyleSheet("background-color: #232323;")
@@ -321,7 +320,7 @@ class DashboardPage(BasePage):
             cursor.close()
             
             if data:
-                categories = [item['category'][:8] + '...' if len(item['category']) > 8 else item['category'] for item in data]  # Truncate long names
+                categories = [item['category'][:8] + '...' if len(item['category']) > 8 else item['category'] for item in data] 
                 in_stock = [item['in_stock'] for item in data]
                 low_stock = [item['low_stock'] for item in data]
                 out_of_stock = [item['out_of_stock'] for item in data]
@@ -385,7 +384,7 @@ class DashboardPage(BasePage):
                         # Switch to Sales Report tab
                         reports_page = main_window.stackedWidgetMain.currentWidget()
                         if hasattr(reports_page, 'tabs'):
-                            reports_page.tabs.setCurrentIndex(2)  # Sales Report Tab
+                            reports_page.tabs.setCurrentIndex(2) 
                         break
                         
             elif page_name == "Inventory":
