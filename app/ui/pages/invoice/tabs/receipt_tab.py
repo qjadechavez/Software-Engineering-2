@@ -462,7 +462,7 @@ class ReceiptTab(QtWidgets.QWidget):
             self.parent.reset_invoice()
     
     def save_transaction_to_db(self):
-        """Save the completed transaction to the database"""
+        """Save the completed transaction to the database and update inventory"""
         try:
             from app.utils.db_manager import DBManager
             data = self.parent.invoice_data
@@ -483,6 +483,7 @@ class ReceiptTab(QtWidgets.QWidget):
             
             user_id = self.parent.user_info.get('user_id') if hasattr(self.parent, 'user_info') and self.parent.user_info else None
             
+            # Insert transaction
             cursor.execute("""
                 INSERT INTO transactions (
                     transaction_id, or_number, service_id, customer_name, customer_phone,
@@ -508,11 +509,100 @@ class ReceiptTab(QtWidgets.QWidget):
                 user_id
             ))
             
+            # Deduct inventory for products used in services
+            service_ids = [service.get("service_id") for service in services if service.get("service_id")]
+            if service_ids:
+                # Get all products used in the services
+                cursor_dict = conn.cursor(dictionary=True)
+                query = """
+                    SELECT sp.product_id, sp.quantity, p.product_name, p.quantity as current_stock
+                    FROM service_products sp
+                    JOIN products p ON sp.product_id = p.product_id
+                    WHERE sp.service_id IN (%s)
+                """ % ','.join(['%s'] * len(service_ids))
+                cursor_dict.execute(query, tuple(service_ids))
+                products_to_deduct = cursor_dict.fetchall()
+                cursor_dict.close()
+                
+                # Update inventory for each product
+                for product in products_to_deduct:
+                    new_quantity = max(0, product['current_stock'] - product['quantity'])
+                    
+                    # Update product quantity
+                    cursor.execute("""
+                        UPDATE products 
+                        SET quantity = %s, 
+                            availability = CASE WHEN %s <= 0 THEN 0 ELSE 1 END
+                        WHERE product_id = %s
+                    """, (new_quantity, new_quantity, product['product_id']))
+                    
+                    # Update inventory table
+                    cursor.execute("""
+                        INSERT INTO inventory (product_id, quantity, status, last_updated) 
+                        VALUES (%s, %s, %s, NOW())
+                        ON DUPLICATE KEY UPDATE 
+                        quantity = VALUES(quantity),
+                        status = VALUES(status),
+                        last_updated = NOW()
+                    """, (product['product_id'], new_quantity, "Used in Service"))
+                    
+                    print(f"Deducted {product['quantity']} units of {product['product_name']} from inventory")
+            
             conn.commit()
             cursor.close()
+            
+            # Refresh inventory display if parent has inventory page reference
+            self.refresh_inventory_display()
+            
+            # Refresh customers table if parent has customers page reference
+            self.refresh_customers_display()
+            
         except Exception as e:
             print(f"Database error: {e}")
             QtWidgets.QMessageBox.warning(self, "Database Error", f"Failed to save transaction: {e}")
+    
+    def refresh_inventory_display(self):
+        """Refresh inventory displays across the application"""
+        try:
+            # Get main window reference
+            main_window = self.parent
+            while main_window and not hasattr(main_window, 'page_manager'):
+                main_window = getattr(main_window, 'parent', None)
+            
+            if main_window and hasattr(main_window, 'page_manager'):
+                # Find inventory page and refresh products tab
+                for page_name, page_info in main_window.page_manager.pages.items():
+                    if 'inventory' in page_name.lower() and hasattr(page_info, 'page') and page_info.page:
+                        inventory_page = page_info.page
+                        if hasattr(inventory_page, 'products_tab'):
+                            inventory_page.products_tab.load_products(preserve_filter=True)
+                            print("Refreshed inventory products display")
+                        if hasattr(inventory_page, 'inventory_status_tab'):
+                            inventory_page.inventory_status_tab.load_inventory_status()
+                            print("Refreshed inventory status display")
+                        break
+        except Exception as e:
+            print(f"Error refreshing inventory display: {e}")
+    
+    def refresh_customers_display(self):
+        """Refresh customers table across the application"""
+        try:
+            # Get main window reference
+            main_window = self.parent
+            while main_window and not hasattr(main_window, 'page_manager'):
+                main_window = getattr(main_window, 'parent', None)
+            
+            if main_window and hasattr(main_window, 'page_manager'):
+                # Find customers page and refresh table
+                for page_name, page_info in main_window.page_manager.pages.items():
+                    if 'customer' in page_name.lower() and hasattr(page_info, 'page') and page_info.page:
+                        customers_page = page_info.page
+                        if hasattr(customers_page, 'customers_tab'):
+                            customers_page.customers_tab.load_transactions()
+                            print("Refreshed customers table display")
+                        break
+        except Exception as e:
+            print(f"Error refreshing customers display: {e}")
     
     def exit_transaction(self):
         """Save the transaction and exit to main dashboard"""
