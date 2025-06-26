@@ -14,8 +14,8 @@ class OverviewTab(QtWidgets.QWidget):
     def setup_ui(self):
         """Set up the UI components for the overview tab"""
         self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(20, 20, 20, 20)
-        self.layout.setSpacing(15)
+        self.layout.setContentsMargins(10, 15, 10, 10)
+        self.layout.setSpacing(10)
         
         # Create dashboard header
         header_layout = QtWidgets.QHBoxLayout()
@@ -395,12 +395,15 @@ class OverviewTab(QtWidgets.QWidget):
             top_category = cursor.fetchone()
             top_category_name = top_category['category'] if top_category else "-"
             
-            # Get recent activity data
+            # Get recent activity data - FIXED QUERY
             cursor.execute("""
-                SELECT p.product_name, i.status, i.quantity, i.last_updated
-                FROM inventory i
-                JOIN products p ON i.product_id = p.product_id
-                ORDER BY i.last_updated DESC
+                SELECT 
+                    it.product_name,
+                    it.transaction_type as status,
+                    it.quantity,
+                    it.transaction_date as last_updated
+                FROM inventory_transactions it
+                ORDER BY it.transaction_date DESC
                 LIMIT 8
             """)
             
@@ -426,10 +429,12 @@ class OverviewTab(QtWidgets.QWidget):
                 
                 # Status with color indicator
                 status_item = QtWidgets.QTableWidgetItem(data['status'])
-                if data['status'] == 'Updated':
-                    status_item.setForeground(QtGui.QColor("#2196F3"))
-                elif data['status'] == 'New':
-                    status_item.setForeground(QtGui.QColor("#4CAF50"))
+                if data['status'] == 'Stock In':
+                    status_item.setForeground(QtGui.QColor("#4CAF50"))  # Green for stock in
+                elif data['status'] == 'Stock Out':
+                    status_item.setForeground(QtGui.QColor("#FF5252"))  # Red for stock out
+                elif data['status'] == 'Adjustment':
+                    status_item.setForeground(QtGui.QColor("#2196F3"))  # Blue for adjustment
                 self.activity_table.setItem(row, 1, status_item)
                 
                 # Quantity
@@ -439,14 +444,17 @@ class OverviewTab(QtWidgets.QWidget):
                 last_updated = data['last_updated']
                 date_str = last_updated.strftime('%Y-%m-%d %I:%M %p') if last_updated else "N/A"
                 self.activity_table.setItem(row, 3, QtWidgets.QTableWidgetItem(date_str))
-            
+        
             # Update the last updated timestamp
             current_time = datetime.now().strftime("%Y-%m-%d %I:%M %p")
             self.last_updated_label.setText(f"Last updated: {current_time}")
             
             cursor.close()
             
+            print("✓ Overview dashboard updated successfully")
+            
         except mysql.connector.Error as err:
+            print(f"Error updating dashboard: {err}")
             if self.parent:
                 self.parent.show_error_message(f"Database error: {err}")
             else:

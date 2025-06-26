@@ -12,7 +12,7 @@ from .tabs.receipt_tab import ReceiptTab
 
 class InvoicePage(BasePage):
     def __init__(self, parent=None, user_info=None):
-        super(InvoicePage, self).__init__(parent, title="Invoice", user_info=user_info)
+        super(InvoicePage, self).__init__(parent, title="Point of Sale", user_info=user_info)
         self.initializeInvoiceData()
         # Add a flag to track if a transaction is in progress
         self.transaction_in_progress = False
@@ -22,7 +22,8 @@ class InvoicePage(BasePage):
     def initializeInvoiceData(self):
         """Initialize the invoice data dictionary to be shared between tabs"""
         self.invoice_data = {
-            "service": None,
+            "services": [],  # Changed from single service to multiple services
+            "total_service_price": 0.0,  # Total price of all selected services
             "customer": {
                 "name": "",
                 "phone": "",
@@ -39,7 +40,8 @@ class InvoicePage(BasePage):
             },
             "or_number": "",
             "transaction_id": None,
-            "transaction_date": None
+            "transaction_date": None,
+            "notes": ""  # Add notes field
         }
     
     def createContent(self):
@@ -61,7 +63,7 @@ class InvoicePage(BasePage):
         self.receipt_tab = ReceiptTab(self)
         
         # Add tabs to the tab widget
-        self.tabs.addTab(self.select_service_tab, "Select Service")
+        self.tabs.addTab(self.select_service_tab, "Select Services")
         self.tabs.addTab(self.customer_tab, "Customer")
         self.tabs.addTab(self.payment_details_tab, "Payment Details")
         self.tabs.addTab(self.overview_tab, "Overview")
@@ -131,8 +133,8 @@ class InvoicePage(BasePage):
     
     def cancel_transaction(self):
         """Cancel the current transaction"""
-        # Only ask for confirmation if we've selected a service
-        if self.invoice_data["service"] is not None:
+        # Only ask for confirmation if we've selected services
+        if self.invoice_data["services"]:
             reply = QtWidgets.QMessageBox.question(
                 self,
                 "Cancel Transaction",

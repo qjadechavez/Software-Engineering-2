@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 import mysql.connector
 from app.utils.db_manager import DBManager
+from app.utils.inventory_updater import InventoryUpdater
 from ..table_factory import TableFactory
 from ..style_factory import StyleFactory
 from ..control_panel_factory import ControlPanelFactory
@@ -10,14 +11,15 @@ class SuppliersTab(QtWidgets.QWidget):
     """Tab for managing suppliers"""
     
     def __init__(self, parent=None):
-        super(SuppliersTab, self).__init__()
+        super(SuppliersTab, self).__init__(parent)  # Pass parent to super()
         self.parent = parent
         # Initialize filter state storage
         self.filter_state = {
             "is_active": False,
             "category": "All Categories",
             "accepts_returns": "All",
-            "products_on_the_way": "All"
+            "products_on_the_way": "All",
+            "status": "All Statuses"
         }
         self.setup_ui()
         self.load_suppliers()
@@ -50,16 +52,17 @@ class SuppliersTab(QtWidgets.QWidget):
         # Create suppliers table
         self.suppliers_table = TableFactory.create_table()
         
-        # Define column headers and their relative widths
+        # Define column headers and their relative widths - ADD STATUS COLUMN
         supplier_columns = [
             ("ID", 0.05), 
-            ("Supplier Name", 0.15),
-            ("Product Name", 0.15),
-            ("Category", 0.10),
-            ("Contact Number", 0.12),
+            ("Supplier Name", 0.13),
+            ("Product Name", 0.13),
+            ("Category", 0.09),
+            ("Contact Number", 0.10),
             ("Email", 0.10),
-            ("Accepts Returns", 0.10),
-            ("Products on the Way", 0.23)
+            ("Accepts Returns", 0.08),
+            ("Products on the Way", 0.14),
+            ("Status", 0.08)  # New status column
         ]
         
         # Configure the table columns to fit horizontally
@@ -85,13 +88,7 @@ class SuppliersTab(QtWidgets.QWidget):
             cursor = conn.cursor(dictionary=True)
             
             # Clear existing items
-            self.suppliers_table.clearContents()
             self.suppliers_table.setRowCount(0)
-            
-            # Reset search filter (but preserve filter state)
-            self.search_input.blockSignals(True)
-            self.search_input.clear()
-            self.search_input.blockSignals(False)
             
             # Query for all suppliers
             cursor.execute("SELECT * FROM suppliers ORDER BY supplier_name")
@@ -146,6 +143,21 @@ class SuppliersTab(QtWidgets.QWidget):
                     on_the_way_item.setForeground(QtGui.QColor("#2196F3"))  # Blue for in transit
                 
                 self.suppliers_table.setItem(row, 7, on_the_way_item)
+                
+                # Status column with special handling for received items
+                status = supplier.get('status', 'pending')
+                status_item = QtWidgets.QTableWidgetItem(status.capitalize())
+                status_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                
+                # Special styling for received items
+                if status == 'received':
+                    status_item.setForeground(QtGui.QColor("#4CAF50"))
+                    # Make entire row have a light green background
+                    for col in range(self.suppliers_table.columnCount()):
+                        if self.suppliers_table.item(row, col):
+                            self.suppliers_table.item(row, col).setBackground(QtGui.QColor("#E8F5E8"))
+                
+                self.suppliers_table.setItem(row, 8, status_item)
             
             cursor.close()
             
@@ -214,6 +226,7 @@ class SuppliersTab(QtWidgets.QWidget):
         category = self.filter_state["category"]
         accepts_returns = self.filter_state["accepts_returns"]
         products_on_the_way = self.filter_state["products_on_the_way"]
+        status = self.filter_state["status"]  # Get status filter
         
         # Update the filter indicator text
         filter_text = []
@@ -222,7 +235,9 @@ class SuppliersTab(QtWidgets.QWidget):
         if accepts_returns != "All":
             filter_text.append(f"Returns: {accepts_returns}")
         if products_on_the_way != "All":
-            filter_text.append(f"Status: {products_on_the_way}")
+            filter_text.append(f"Products: {products_on_the_way}")
+        if status != "All Statuses":
+            filter_text.append(f"Status: {status}")
             
         if filter_text:
             self.filter_indicator.setText(f"Active filters: {', '.join(filter_text)}")
@@ -249,6 +264,10 @@ class SuppliersTab(QtWidgets.QWidget):
             row_on_the_way_text = self.suppliers_table.item(row, 7).text() if self.suppliers_table.item(row, 7) else "None"
             row_has_products_on_way = (row_on_the_way_text != "None")
             
+            # Get status value (column 8)
+            row_status_text = self.suppliers_table.item(row, 8).text() if self.suppliers_table.item(row, 8) else "Pending"
+            row_status = row_status_text.lower()
+            
             # By default, show the row
             show_row = True
             
@@ -270,6 +289,11 @@ class SuppliersTab(QtWidgets.QWidget):
                 elif products_on_the_way == "No Products on the Way" and row_has_products_on_way:
                     show_row = False
             
+            # Apply status filter - Updated to handle "All Statuses"
+            if show_row and status != "All Statuses":
+                if status.lower() != row_status:
+                    show_row = False
+            
             # Set row visibility
             self.suppliers_table.setRowHidden(row, not show_row)
             
@@ -283,63 +307,217 @@ class SuppliersTab(QtWidgets.QWidget):
                 "No suppliers match the current filters. Try adjusting your filter criteria.")
     
     def show_context_menu(self, position):
-        """Show context menu for supplier actions"""
-        context_menu = QtWidgets.QMenu()
+        """Show context menu for the table"""
+        item = self.suppliers_table.itemAt(position)
+        if item is None:
+            return
         
-        # Get the current row
-        current_row = self.suppliers_table.currentRow()
+        row = item.row()
+        status = self.suppliers_table.item(row, 8).text().lower()  # Status column
         
-        if current_row >= 0:
-            edit_action = context_menu.addAction("Edit")
-            delete_action = context_menu.addAction("Delete")
+        menu = QtWidgets.QMenu(self)
+        
+        # Only allow editing if status is not "received"
+        if status != 'received':
+            edit_action = menu.addAction("Edit Supplier")
+            edit_action.triggered.connect(lambda: self.edit_supplier(row))
             
-            # Show the context menu
-            action = context_menu.exec_(self.suppliers_table.mapToGlobal(position))
+            # Add "Mark as Received" option if status is not already received
+            receive_action = menu.addAction("Mark as Received")
+            receive_action.triggered.connect(lambda: self.mark_as_received(row))
+            menu.addSeparator()
             
-            if action == edit_action:
-                self.edit_supplier(current_row)
-            elif action == delete_action:
-                self.delete_supplier(current_row)
+            delete_action = menu.addAction("Delete Supplier")
+            delete_action.triggered.connect(lambda: self.delete_supplier(row))
+        else:
+            # For received items, show read-only options
+            view_action = menu.addAction("View Details (Read-Only)")
+            view_action.triggered.connect(lambda: self.view_supplier_readonly(row))
+            
+            menu.addSeparator()
+            
+            # Add informational action
+            info_action = menu.addAction("Cannot Edit - Already Received")
+            info_action.setEnabled(False)
+    
+        menu.exec_(self.suppliers_table.mapToGlobal(position))
+
+    def mark_as_received(self, row):
+        """Mark supplier delivery as received and update inventory"""
+        supplier_id = int(self.suppliers_table.item(row, 0).text())
+        supplier_name = self.suppliers_table.item(row, 1).text()
+        product_name = self.suppliers_table.item(row, 2).text()
+        category = self.suppliers_table.item(row, 3).text()
+        products_on_way_text = self.suppliers_table.item(row, 7).text()
+        
+        # Parse products on the way
+        try:
+            products_on_way = int(products_on_way_text) if products_on_way_text != "None" else 0
+        except ValueError:
+            products_on_way = 0
+        
+        if products_on_way <= 0:
+            QtWidgets.QMessageBox.warning(
+                self, 
+                "No Products", 
+                "This supplier has no products on the way to receive."
+            )
+            return
+        
+        # Confirm the action
+        confirm = QtWidgets.QMessageBox.question(
+            self,
+            "Confirm Receipt",
+            f"Mark {products_on_way} units of '{product_name}' as received from {supplier_name}?\n\nThis will update your inventory.",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.Yes
+        )
+        
+        if confirm == QtWidgets.QMessageBox.Yes:
+            try:
+                conn = DBManager.get_connection()
+                cursor = conn.cursor()
+                
+                # Update supplier status to received
+                cursor.execute(
+                    "UPDATE suppliers SET status = 'received' WHERE supplier_id = %s",
+                    (supplier_id,)
+                )
+                
+                # Update inventory
+                success, message = InventoryUpdater.update_inventory_on_delivery(
+                    supplier_id, product_name, category, products_on_way, supplier_name
+                )
+                
+                conn.commit()
+                cursor.close()
+                
+                if success:
+                    QtWidgets.QMessageBox.information(self, "Success", message)
+                    self.load_suppliers()  # Refresh the table
+                    self.refresh_inventory_displays()  # Refresh inventory displays
+                else:
+                    QtWidgets.QMessageBox.critical(self, "Error", message)
+                    
+            except mysql.connector.Error as err:
+                QtWidgets.QMessageBox.critical(self, "Database Error", f"Error updating supplier: {err}")
     
     def show_add_supplier_dialog(self):
         """Show dialog to add a new supplier"""
-        dialog = SupplierDialog(self.parent or self)
+        dialog = SupplierDialog(self)
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             self.load_suppliers()
-            # Reset row visibility
-            for row in range(self.suppliers_table.rowCount()):
-                self.suppliers_table.setRowHidden(row, False)
+            # Refresh inventory if needed
+            self.refresh_inventory_displays()
     
     def edit_supplier(self, row):
-        """Edit the selected supplier"""
+        """Edit the selected supplier - with protection for received items"""
+        # Check if the supplier is already received
+        status = self.suppliers_table.item(row, 8).text().lower()
+        
+        if status == 'received':
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Cannot Edit",
+                "This supplier has been marked as 'Received' and cannot be edited.\n\n"
+                "Received items are locked to maintain inventory integrity."
+            )
+            return
+        
         supplier_id = int(self.suppliers_table.item(row, 0).text())
         
+        # Get supplier data
         try:
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
-            
             cursor.execute("SELECT * FROM suppliers WHERE supplier_id = %s", (supplier_id,))
             supplier = cursor.fetchone()
-            
-            if supplier:
-                dialog = SupplierDialog(self.parent or self, supplier)
-                if dialog.exec_() == QtWidgets.QDialog.Accepted:
-                    self.load_suppliers()
-                    
-            # Reset row visibility
-            for row in range(self.suppliers_table.rowCount()):
-                self.suppliers_table.setRowHidden(row, False)
-            
             cursor.close()
             
+            if supplier:
+                dialog = SupplierDialog(self, supplier)
+                if dialog.exec_() == QtWidgets.QDialog.Accepted:
+                    self.load_suppliers()
+                    # Refresh inventory if needed
+                    self.refresh_inventory_displays()
+                    
         except mysql.connector.Error as err:
             if self.parent:
                 self.parent.show_error_message(f"Database error: {err}")
             else:
                 QtWidgets.QMessageBox.critical(self, "Error", f"Database error: {err}")
-    
+
+    def view_supplier_readonly(self, row):
+        """View supplier details in read-only mode"""
+        supplier_id = int(self.suppliers_table.item(row, 0).text())
+        
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM suppliers WHERE supplier_id = %s", (supplier_id,))
+            supplier = cursor.fetchone()
+            cursor.close()
+            
+            if supplier:
+                # Show a read-only dialog
+                self.show_readonly_supplier_info(supplier)
+                
+        except mysql.connector.Error as err:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Database error: {err}")
+
+    def show_readonly_supplier_info(self, supplier):
+        """Show supplier information in a read-only dialog"""
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Supplier Details (Read-Only)")
+        dialog.setFixedSize(400, 300)
+        
+        layout = QtWidgets.QVBoxLayout(dialog)
+        
+        # Header
+        header = QtWidgets.QLabel("Supplier Information")
+        header.setStyleSheet("font-size: 16px; font-weight: bold; color: #2196F3; margin-bottom: 10px;")
+        layout.addWidget(header)
+        
+        # Status warning
+        warning = QtWidgets.QLabel("⚠️ This supplier has been marked as 'Received' and cannot be edited.")
+        warning.setStyleSheet("color: #FF9800; font-weight: bold; margin-bottom: 15px;")
+        layout.addWidget(warning)
+        
+        # Supplier details
+        details_layout = QtWidgets.QFormLayout()
+        
+        details_layout.addRow("Supplier Name:", QtWidgets.QLabel(supplier.get('supplier_name', 'N/A')))
+        details_layout.addRow("Product Name:", QtWidgets.QLabel(supplier.get('product_name', 'N/A')))
+        details_layout.addRow("Category:", QtWidgets.QLabel(supplier.get('category', 'N/A')))
+        details_layout.addRow("Contact:", QtWidgets.QLabel(supplier.get('contact_number', 'N/A')))
+        details_layout.addRow("Email:", QtWidgets.QLabel(supplier.get('email', 'N/A')))
+        details_layout.addRow("Returns Policy:", QtWidgets.QLabel("Yes" if supplier.get('accepts_returns') else "No"))
+        details_layout.addRow("Products Received:", QtWidgets.QLabel(str(supplier.get('products_on_the_way', 0))))
+        details_layout.addRow("Status:", QtWidgets.QLabel(supplier.get('status', 'Unknown').capitalize()))
+        
+        layout.addLayout(details_layout)
+        
+        # Close button
+        close_button = QtWidgets.QPushButton("Close")
+        close_button.clicked.connect(dialog.accept)
+        layout.addWidget(close_button)
+        
+        dialog.exec_()
+
     def delete_supplier(self, row):
-        """Delete the selected supplier"""
+        """Delete the selected supplier - with protection for received items"""
+        # Check if the supplier is already received
+        status = self.suppliers_table.item(row, 8).text().lower()
+        
+        if status == 'received':
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Cannot Delete",
+                "This supplier has been marked as 'Received' and cannot be deleted.\n\n"
+                "Received items are locked to maintain inventory integrity and audit trail."
+            )
+            return
+        
         supplier_id = int(self.suppliers_table.item(row, 0).text())
         supplier_name = self.suppliers_table.item(row, 1).text()
         
@@ -390,7 +568,8 @@ class SuppliersTab(QtWidgets.QWidget):
             "is_active": False,
             "category": "All Categories", 
             "accepts_returns": "All",
-            "products_on_the_way": "All"
+            "products_on_the_way": "All",
+            "status": "All Statuses"  # Updated to match dialog
         }
         
         try:
@@ -405,13 +584,14 @@ class SuppliersTab(QtWidgets.QWidget):
             new_table = TableFactory.create_table()
             supplier_columns = [
                 ("ID", 0.05), 
-                ("Supplier Name", 0.15),
-                ("Product Name", 0.15),
-                ("Category", 0.10),
-                ("Contact Number", 0.12),
+                ("Supplier Name", 0.13),
+                ("Product Name", 0.13),
+                ("Category", 0.09),
+                ("Contact Number", 0.10),
                 ("Email", 0.10),
-                ("Accepts Returns", 0.10),
-                ("Products on the Way", 0.23)
+                ("Accepts Returns", 0.08),
+                ("Products on the Way", 0.14),
+                ("Status", 0.08)  # New status column
             ]
             screen_width = QtWidgets.QApplication.desktop().screenGeometry().width()
             TableFactory.configure_table_columns(new_table, supplier_columns, screen_width)
@@ -469,6 +649,32 @@ class SuppliersTab(QtWidgets.QWidget):
                     on_the_way_item.setForeground(QtGui.QColor("#2196F3"))  # Blue for in transit
                 
                 new_table.setItem(row, 7, on_the_way_item)
+                
+                # Status - new column logic with special styling for received items
+                status = supplier.get('status', 'pending')
+                status_item = QtWidgets.QTableWidgetItem(status.capitalize())
+                status_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                
+                # Set color and styling based on status
+                if status == 'received':
+                    status_item.setForeground(QtGui.QColor("#4CAF50"))  # Green for received
+                    # Make the entire row have a different background to indicate it's locked
+                    for col in range(new_table.columnCount()):
+                        if new_table.item(row, col):
+                            new_table.item(row, col).setBackground(QtGui.QColor("#E8F5E8"))  # Light green background
+                elif status == 'cancelled':
+                    status_item.setForeground(QtGui.QColor("#FF5252"))  # Red for cancelled
+                elif status == 'pending':
+                    status_item.setForeground(QtGui.QColor("#FFA726"))  # Orange for pending
+                
+                new_table.setItem(row, 8, status_item)
+                
+                # Add a lock icon or indicator for received items
+                if status == 'received':
+                    # Remove the padlock icon logic
+                    supplier_name_item = new_table.item(row, 1)
+                    if supplier_name_item:
+                        supplier_name_item.setText(supplier_name_item.text())  # Keep the original text
             
             # Replace the old table with the new one
             old_table = self.suppliers_table
@@ -489,3 +695,10 @@ class SuppliersTab(QtWidgets.QWidget):
                 self.parent.show_error_message(f"Database error: {err}")
             else:
                 QtWidgets.QMessageBox.critical(self, "Error", f"Database error: {err}")
+
+    def refresh_inventory_displays(self):
+        """Refresh inventory-related displays"""
+        if self.parent and hasattr(self.parent, "update_overview_tab"):
+            self.parent.update_overview_tab()
+        if self.parent and hasattr(self.parent, "inventory_status_tab"):
+            self.parent.inventory_status_tab.load_inventory()
