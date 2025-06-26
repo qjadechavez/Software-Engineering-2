@@ -40,7 +40,8 @@ class InvoicePage(BasePage):
             },
             "or_number": "",
             "transaction_id": None,
-            "transaction_date": None
+            "transaction_date": None,
+            "notes": ""  # Add notes field
         }
     
     def createContent(self):

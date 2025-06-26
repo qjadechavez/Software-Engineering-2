@@ -360,7 +360,7 @@ class CustomersTab(QtWidgets.QWidget):
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
             
-            # Query for transaction details
+            # Query for transaction details (updated to include notes)
             cursor.execute("""
                 SELECT t.*, s.service_name, u.username as staff_name
                 FROM transactions t
@@ -561,6 +561,27 @@ class CustomersTab(QtWidgets.QWidget):
                 
                 # Space instead of divider
                 receipt_layout.addSpacing(10)
+                
+                # NOTES SECTION - New addition
+                notes = transaction.get('notes', '')
+                if notes and notes.strip():
+                    notes_widget = QtWidgets.QWidget()
+                    notes_layout = QtWidgets.QVBoxLayout(notes_widget)
+                    notes_layout.setContentsMargins(0, 5, 0, 5)
+                    notes_layout.setSpacing(5)
+                    
+                    notes_header = QtWidgets.QLabel("Service Notes:")
+                    notes_header.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+                    notes_layout.addWidget(notes_header)
+                    
+                    notes_value = QtWidgets.QLabel(notes.strip())
+                    notes_value.setStyleSheet("color: #333333; font-size: 9px; font-style: italic;")
+                    notes_value.setWordWrap(True)
+                    notes_value.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+                    notes_layout.addWidget(notes_value)
+                    
+                    receipt_layout.addWidget(notes_widget)
+                    receipt_layout.addSpacing(10)
                 
                 # PAYMENT SUMMARY
                 summary_widget = QtWidgets.QWidget()

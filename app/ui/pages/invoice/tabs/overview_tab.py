@@ -18,22 +18,21 @@ class OverviewTab(QtWidgets.QWidget):
     def setup_ui(self):
         """Set up the UI components"""
         self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(15, 15, 15, 15)
-        self.layout.setSpacing(10)
+        self.layout.setContentsMargins(10, 10, 10, 10)  # Reduced from 15, 15, 15, 15
+        self.layout.setSpacing(6)  # Reduced from 10
         
         # Header
         header_label = QtWidgets.QLabel("Invoice Overview")
-        header_label.setStyleSheet("color: white; font-size: 22px; font-weight: bold;")
+        header_label.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")  # Reduced from 22px
         self.layout.addWidget(header_label)
         
         # Description
         desc_label = QtWidgets.QLabel("Review all invoice details before finalizing the transaction:")
-        desc_label.setStyleSheet("color: #cccccc; font-size: 14px;")
+        desc_label.setStyleSheet("color: #cccccc; font-size: 12px;")  # Reduced from 14px
         self.layout.addWidget(desc_label)
         
         # Main content container - Single unified container
         main_container = QtWidgets.QFrame()
-        # company-standard main card
         main_container.setStyleSheet(
             StyleFactory.get_main_container_style() +
             StyleFactory.get_standard_font()
@@ -41,30 +40,29 @@ class OverviewTab(QtWidgets.QWidget):
 
         # Single layout for all content
         content_layout = QtWidgets.QVBoxLayout(main_container)
-        content_layout.setContentsMargins(10, 10, 10, 10)
-        content_layout.setSpacing(8)
+        content_layout.setContentsMargins(6, 6, 6, 6)  # Reduced from 10, 10, 10, 10
+        content_layout.setSpacing(4)  # Reduced from 8
         
         # TRANSACTION HEADER - in its own box
         transaction_frame = QtWidgets.QFrame()
-        # transaction header sub-card
         transaction_frame.setStyleSheet(
             StyleFactory.get_section_frame_style() +
             StyleFactory.get_standard_font()
         )
         tx_layout = QtWidgets.QHBoxLayout(transaction_frame)
-        tx_layout.setContentsMargins(8, 8, 8, 8)
-        tx_layout.setSpacing(10)
+        tx_layout.setContentsMargins(6, 4, 6, 4)  # Reduced from 8, 8, 8, 8
+        tx_layout.setSpacing(8)  # Reduced from 10
         
         # Transaction ID / Date / Staff
         self.transaction_id_label = QtWidgets.QLabel()
-        self.transaction_id_label.setStyleSheet("color: #4FC3F7; font-size: 14px; font-weight: bold;")
+        self.transaction_id_label.setStyleSheet("color: #4FC3F7; font-size: 12px; font-weight: bold;")  # Reduced from 14px
         
         self.transaction_date_label = QtWidgets.QLabel()
-        self.transaction_date_label.setStyleSheet("color: #cccccc; font-size: 12px;")
+        self.transaction_date_label.setStyleSheet("color: #cccccc; font-size: 10px;")  # Reduced from 12px
         
         # Staff info
         self.staff_label = QtWidgets.QLabel()
-        self.staff_label.setStyleSheet("color: #cccccc; font-size: 12px;")
+        self.staff_label.setStyleSheet("color: #cccccc; font-size: 10px;")  # Reduced from 12px
         self.staff_label.setAlignment(QtCore.Qt.AlignRight)
         
         tx_layout.addWidget(self.transaction_id_label)
@@ -80,31 +78,32 @@ class OverviewTab(QtWidgets.QWidget):
             StyleFactory.get_standard_font()
         )
         cs_layout = QtWidgets.QHBoxLayout(customer_services_frame)
-        cs_layout.setContentsMargins(8, 8, 8, 8)
-        cs_layout.setSpacing(20)
+        cs_layout.setContentsMargins(6, 4, 6, 4)  # Reduced from 8, 8, 8, 8
+        cs_layout.setSpacing(15)  # Reduced from 20
         
         # LEFT SIDE - Customer Information
         customer_layout = QtWidgets.QVBoxLayout()
+        customer_layout.setSpacing(2)  # Add compact spacing
         
         customer_title = QtWidgets.QLabel("Customer Information")
-        customer_title.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
+        customer_title.setStyleSheet("color: white; font-size: 14px; font-weight: bold;")  # Reduced from 16px
         customer_layout.addWidget(customer_title)
         
         # Customer details in compact format
         self.customer_name = QtWidgets.QLabel()
-        self.customer_name.setStyleSheet("color: white; font-size: 13px;")
+        self.customer_name.setStyleSheet("color: white; font-size: 11px;")  # Reduced from 13px
         customer_layout.addWidget(self.customer_name)
         
         self.customer_phone = QtWidgets.QLabel()
-        self.customer_phone.setStyleSheet("color: #cccccc; font-size: 12px;")
+        self.customer_phone.setStyleSheet("color: #cccccc; font-size: 10px;")  # Reduced from 12px
         customer_layout.addWidget(self.customer_phone)
         
         self.customer_gender = QtWidgets.QLabel()
-        self.customer_gender.setStyleSheet("color: #cccccc; font-size: 12px;")
+        self.customer_gender.setStyleSheet("color: #cccccc; font-size: 10px;")  # Reduced from 12px
         customer_layout.addWidget(self.customer_gender)
         
         self.customer_city = QtWidgets.QLabel()
-        self.customer_city.setStyleSheet("color: #cccccc; font-size: 12px;")
+        self.customer_city.setStyleSheet("color: #cccccc; font-size: 10px;")  # Reduced from 12px
         customer_layout.addWidget(self.customer_city)
         
         customer_layout.addStretch()
@@ -112,22 +111,22 @@ class OverviewTab(QtWidgets.QWidget):
         
         # RIGHT SIDE - Services Information
         services_layout = QtWidgets.QVBoxLayout()
+        services_layout.setSpacing(2)  # Add compact spacing
         
         services_title = QtWidgets.QLabel("Selected Services")
-        services_title.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
+        services_title.setStyleSheet("color: white; font-size: 14px; font-weight: bold;")  # Reduced from 16px
         services_layout.addWidget(services_title)
         
         # Services list - more compact
         self.services_list_widget = QtWidgets.QListWidget()
-        # use unified list style
         self.services_list_widget.setStyleSheet(StyleFactory.get_selected_services_list_style())
-        self.services_list_widget.setMaximumHeight(70)
-        self.services_list_widget.setMinimumHeight(50)
+        self.services_list_widget.setMaximumHeight(60)  # Reduced from 70
+        self.services_list_widget.setMinimumHeight(40)  # Reduced from 50
         services_layout.addWidget(self.services_list_widget)
         
         # Services total
         self.services_total_label = QtWidgets.QLabel()
-        self.services_total_label.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 14px;")
+        self.services_total_label.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 12px;")  # Reduced from 14px
         self.services_total_label.setAlignment(QtCore.Qt.AlignRight)
         services_layout.addWidget(self.services_total_label)
         
@@ -138,8 +137,53 @@ class OverviewTab(QtWidgets.QWidget):
         sep1 = QtWidgets.QFrame()
         sep1.setFrameShape(QtWidgets.QFrame.HLine)
         sep1.setStyleSheet(StyleFactory.get_separator_style())
-
         content_layout.addWidget(sep1)
+        
+        # NOTES SECTION - New addition
+        notes_frame = QtWidgets.QFrame()
+        notes_frame.setStyleSheet(
+            StyleFactory.get_section_frame_style() +
+            StyleFactory.get_standard_font()
+        )
+        notes_layout = QtWidgets.QVBoxLayout(notes_frame)
+        notes_layout.setContentsMargins(6, 4, 6, 4)  # Reduced from 8, 8, 8, 8
+        notes_layout.setSpacing(6)  # Reduced from 10
+        
+        notes_title = QtWidgets.QLabel("Service Notes")
+        notes_title.setStyleSheet("color: white; font-size: 14px; font-weight: bold;")  # Reduced from 16px
+        notes_layout.addWidget(notes_title)
+        
+        notes_desc = QtWidgets.QLabel("Add notes for services with sessions or special instructions:")
+        notes_desc.setStyleSheet("color: #cccccc; font-size: 10px;")  # Reduced from 12px
+        notes_layout.addWidget(notes_desc)
+        
+        # Notes text area
+        self.notes_text_edit = QtWidgets.QTextEdit()
+        self.notes_text_edit.setStyleSheet("""
+            QTextEdit {
+                background-color: #2a2a2a;
+                color: white;
+                border: 1px solid #444444;
+                border-radius: 4px;
+                padding: 6px;
+                font-size: 11px;
+            }
+            QTextEdit:focus {
+                border: 1px solid #2196F3;
+            }
+        """)
+        self.notes_text_edit.setPlaceholderText("Enter any notes, session details, or special instructions here...")
+        self.notes_text_edit.setMaximumHeight(65)  # Reduced from 80
+        self.notes_text_edit.setMinimumHeight(45)  # Reduced from 60
+        notes_layout.addWidget(self.notes_text_edit)
+        
+        content_layout.addWidget(notes_frame)
+        
+        # separator
+        sep1_5 = QtWidgets.QFrame()
+        sep1_5.setFrameShape(QtWidgets.QFrame.HLine)
+        sep1_5.setStyleSheet(StyleFactory.get_separator_style())
+        content_layout.addWidget(sep1_5)
         
         # PAYMENT AND TOTAL - in a box
         payment_frame = QtWidgets.QFrame()
@@ -148,22 +192,23 @@ class OverviewTab(QtWidgets.QWidget):
             StyleFactory.get_standard_font()
         )
         pay_layout = QtWidgets.QHBoxLayout(payment_frame)
-        pay_layout.setContentsMargins(8, 8, 8, 8)
-        pay_layout.setSpacing(20)
+        pay_layout.setContentsMargins(6, 4, 6, 4)  # Reduced from 8, 8, 8, 8
+        pay_layout.setSpacing(15)  # Reduced from 20
         
         # LEFT SIDE - Payment Details
         payment_info_layout = QtWidgets.QVBoxLayout()
+        payment_info_layout.setSpacing(2)  # Add compact spacing
         
         payment_title = QtWidgets.QLabel("Payment Details")
-        payment_title.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
+        payment_title.setStyleSheet("color: white; font-size: 14px; font-weight: bold;")  # Reduced from 16px
         payment_info_layout.addWidget(payment_title)
         
         self.payment_method = QtWidgets.QLabel()
-        self.payment_method.setStyleSheet("color: white; font-size: 13px;")
+        self.payment_method.setStyleSheet("color: white; font-size: 11px;")  # Reduced from 13px
         payment_info_layout.addWidget(self.payment_method)
         
         self.payment_coupon = QtWidgets.QLabel()
-        self.payment_coupon.setStyleSheet("color: #cccccc; font-size: 12px;")
+        self.payment_coupon.setStyleSheet("color: #cccccc; font-size: 10px;")  # Reduced from 12px
         payment_info_layout.addWidget(self.payment_coupon)
         
         payment_info_layout.addStretch()
@@ -171,21 +216,22 @@ class OverviewTab(QtWidgets.QWidget):
         
         # RIGHT SIDE - Total Calculation
         total_layout = QtWidgets.QVBoxLayout()
+        total_layout.setSpacing(2)  # Add compact spacing
         
         total_title = QtWidgets.QLabel("Total Summary")
-        total_title.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
+        total_title.setStyleSheet("color: white; font-size: 14px; font-weight: bold;")  # Reduced from 16px
         total_layout.addWidget(total_title)
         
         # Total calculation in compact format
         total_details_layout = QtWidgets.QGridLayout()
-        total_details_layout.setVerticalSpacing(2)
-        total_details_layout.setHorizontalSpacing(8)
+        total_details_layout.setVerticalSpacing(1)  # Reduced from 2
+        total_details_layout.setHorizontalSpacing(6)  # Reduced from 8
         
         # Base price
         base_label = QtWidgets.QLabel("Base Price:")
-        base_label.setStyleSheet("color: #cccccc; font-size: 12px;")
+        base_label.setStyleSheet("color: #cccccc; font-size: 10px;")  # Reduced from 12px
         self.base_price_value = QtWidgets.QLabel()
-        self.base_price_value.setStyleSheet("color: white; font-size: 12px; font-weight: bold;")
+        self.base_price_value.setStyleSheet("color: white; font-size: 10px; font-weight: bold;")  # Reduced from 12px
         self.base_price_value.setAlignment(QtCore.Qt.AlignRight)
         
         total_details_layout.addWidget(base_label, 0, 0)
@@ -193,9 +239,9 @@ class OverviewTab(QtWidgets.QWidget):
         
         # Discount
         discount_label = QtWidgets.QLabel("Discount:")
-        discount_label.setStyleSheet("color: #cccccc; font-size: 12px;")
+        discount_label.setStyleSheet("color: #cccccc; font-size: 10px;")  # Reduced from 12px
         self.discount_value = QtWidgets.QLabel()
-        self.discount_value.setStyleSheet("color: #FF5252; font-size: 12px; font-weight: bold;")
+        self.discount_value.setStyleSheet("color: #FF5252; font-size: 10px; font-weight: bold;")  # Reduced from 12px
         self.discount_value.setAlignment(QtCore.Qt.AlignRight)
         
         total_details_layout.addWidget(discount_label, 1, 0)
@@ -206,9 +252,9 @@ class OverviewTab(QtWidgets.QWidget):
         # Final total - prominent
         final_total_layout = QtWidgets.QHBoxLayout()
         final_label = QtWidgets.QLabel("Final Total:")
-        final_label.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
+        final_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold;")  # Reduced from 16px
         self.final_value = QtWidgets.QLabel()
-        self.final_value.setStyleSheet("color: #4CAF50; font-size: 18px; font-weight: bold;")
+        self.final_value.setStyleSheet("color: #4CAF50; font-size: 16px; font-weight: bold;")  # Reduced from 18px
         self.final_value.setAlignment(QtCore.Qt.AlignRight)
         
         final_total_layout.addWidget(final_label)
@@ -224,7 +270,6 @@ class OverviewTab(QtWidgets.QWidget):
         sep2 = QtWidgets.QFrame()
         sep2.setFrameShape(QtWidgets.QFrame.HLine)
         sep2.setStyleSheet(StyleFactory.get_separator_style())
-
         self.layout.addWidget(sep2)
         
         # Buttons at the bottom
@@ -239,7 +284,6 @@ class OverviewTab(QtWidgets.QWidget):
         
         # Payment button
         self.payment_button = ControlPanelFactory.create_action_button("Payment")
-        # (primary button uses default StyleFactory.get_button_style())
         self.payment_button.clicked.connect(self.open_payment_dialog)
         button_layout.addWidget(self.payment_button)
         
@@ -334,6 +378,11 @@ class OverviewTab(QtWidgets.QWidget):
             self.base_price_value.setText(f"₱{base_price:.2f}")
             self.discount_value.setText(f"-₱{discount_amount:.2f}")
             self.final_value.setText(f"₱{final_price:.2f}")
+        
+        # Load existing notes if any
+        notes = data.get("notes", "")
+        if notes and self.notes_text_edit.toPlainText() != notes:
+            self.notes_text_edit.setPlainText(notes)
     
     def go_back(self):
         """Go back to the payment details tab"""
@@ -344,6 +393,10 @@ class OverviewTab(QtWidgets.QWidget):
         if not self.payment_completed:
             QtWidgets.QMessageBox.warning(self, "Payment Required", "Please complete the payment process first.")
             return
+        
+        # Save notes to invoice data
+        notes = self.notes_text_edit.toPlainText().strip()
+        self.parent.invoice_data["notes"] = notes
             
         # Generate a simple OR number (in a real system, this would be more sophisticated)
         now = datetime.now()
@@ -381,3 +434,4 @@ class OverviewTab(QtWidgets.QWidget):
         self.base_price_value.setText("")
         self.discount_value.setText("")
         self.final_value.setText("")
+        self.notes_text_edit.clear()

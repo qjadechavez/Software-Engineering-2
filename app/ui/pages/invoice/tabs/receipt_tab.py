@@ -14,26 +14,26 @@ class ReceiptTab(QtWidgets.QWidget):
     def setup_ui(self):
         """Set up the UI components"""
         self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setContentsMargins(20, 20, 20, 20)
-        self.layout.setSpacing(15)
+        self.layout.setContentsMargins(15, 15, 15, 15)  # Reduced from 20, 20, 20, 20
+        self.layout.setSpacing(10)  # Reduced from 15
         
         # Header
         header_label = QtWidgets.QLabel("Transaction Receipt")
-        header_label.setStyleSheet("color: white; font-size: 20px; font-weight: bold;")
+        header_label.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")  # Reduced from 20px
         self.layout.addWidget(header_label)
         
         desc_label = QtWidgets.QLabel("Transaction completed successfully:")
-        desc_label.setStyleSheet("color: #cccccc; font-size: 14px;")
+        desc_label.setStyleSheet("color: #cccccc; font-size: 12px;")  # Reduced from 14px
         self.layout.addWidget(desc_label)
         
         # Receipt content widget (fixed size for printing, no border)
         self.receipt_content = QtWidgets.QWidget()
         self.receipt_content.setStyleSheet("background-color: white;")
-        self.receipt_content.setFixedSize(400, 600)  # Standard receipt size (approx. A6)
+        self.receipt_content.setFixedSize(400, 650)  # Increased height from 600 to 650
         self.receipt_layout = QtWidgets.QVBoxLayout(self.receipt_content)
         self.receipt_layout.setAlignment(QtCore.Qt.AlignTop)
-        self.receipt_layout.setContentsMargins(20, 20, 20, 20)
-        self.receipt_layout.setSpacing(5)
+        self.receipt_layout.setContentsMargins(15, 15, 15, 15)  # Reduced from 20, 20, 20, 20
+        self.receipt_layout.setSpacing(3)  # Reduced from 5
         
         # Setup receipt template
         self.setup_receipt_template()
@@ -64,7 +64,6 @@ class ReceiptTab(QtWidgets.QWidget):
         button_layout.addWidget(new_transaction_button)
         
         # Exit button
-        # unified secondary button style
         from ..style_factory import StyleFactory
         exit_button = ControlPanelFactory.create_action_button("Exit", primary=False)
         exit_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
@@ -77,48 +76,48 @@ class ReceiptTab(QtWidgets.QWidget):
         """Set up a professional receipt template"""
         # HEADER SECTION
         company_name = QtWidgets.QLabel("Miere Beauty Lounge")
-        company_name.setStyleSheet("color: #333333; font-size: 16px; font-weight: bold;")
+        company_name.setStyleSheet("color: #333333; font-size: 14px; font-weight: bold;")  # Reduced from 16px
         company_name.setAlignment(QtCore.Qt.AlignCenter)
         self.receipt_layout.addWidget(company_name)
         
         address = QtWidgets.QLabel("Rainbow St, Marikina City")
-        address.setStyleSheet("color: #555555; font-size: 10px;")
+        address.setStyleSheet("color: #555555; font-size: 9px;")  # Reduced from 10px
         address.setAlignment(QtCore.Qt.AlignCenter)
         self.receipt_layout.addWidget(address)
         
         contact_details = QtWidgets.QLabel("0962 915 5277 | miere.beautylounge@gmail.com")
-        contact_details.setStyleSheet("color: #555555; font-size: 10px;")
+        contact_details.setStyleSheet("color: #555555; font-size: 9px;")  # Reduced from 10px
         contact_details.setAlignment(QtCore.Qt.AlignCenter)
         self.receipt_layout.addWidget(contact_details)
         
         # Space instead of divider
-        self.receipt_layout.addSpacing(10)
+        self.receipt_layout.addSpacing(6)  # Reduced from 10
         
         receipt_title = QtWidgets.QLabel("OFFICIAL RECEIPT")
-        receipt_title.setStyleSheet("color: #333333; font-size: 12px; font-weight: bold;")
+        receipt_title.setStyleSheet("color: #333333; font-size: 11px; font-weight: bold;")  # Reduced from 12px
         receipt_title.setAlignment(QtCore.Qt.AlignCenter)
         self.receipt_layout.addWidget(receipt_title)
         
         # TRANSACTION DETAILS
         transaction_widget = QtWidgets.QWidget()
         transaction_layout = QtWidgets.QGridLayout(transaction_widget)
-        transaction_layout.setContentsMargins(0, 5, 0, 5)
-        transaction_layout.setSpacing(5)
+        transaction_layout.setContentsMargins(0, 3, 0, 3)  # Reduced from 0, 5, 0, 5
+        transaction_layout.setSpacing(3)  # Reduced from 5
         
         receipt_label = QtWidgets.QLabel("Receipt No:")
-        receipt_label.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        receipt_label.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         self.or_value = QtWidgets.QLabel()
-        self.or_value.setStyleSheet("color: #333333; font-size: 10px;")
+        self.or_value.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         
         date_label = QtWidgets.QLabel("Date/Time:")
-        date_label.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        date_label.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         self.date_time_value = QtWidgets.QLabel()
-        self.date_time_value.setStyleSheet("color: #333333; font-size: 10px;")
+        self.date_time_value.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         
         txn_label = QtWidgets.QLabel("Transaction ID:")
-        txn_label.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        txn_label.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         self.transaction_value = QtWidgets.QLabel()
-        self.transaction_value.setStyleSheet("color: #333333; font-size: 10px;")
+        self.transaction_value.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         
         transaction_layout.addWidget(receipt_label, 0, 0)
         transaction_layout.addWidget(self.or_value, 0, 1)
@@ -132,18 +131,18 @@ class ReceiptTab(QtWidgets.QWidget):
         # CUSTOMER DETAILS
         customer_widget = QtWidgets.QWidget()
         customer_layout = QtWidgets.QGridLayout(customer_widget)
-        customer_layout.setContentsMargins(0, 5, 0, 5)
-        customer_layout.setSpacing(5)
+        customer_layout.setContentsMargins(0, 3, 0, 3)  # Reduced from 0, 5, 0, 5
+        customer_layout.setSpacing(3)  # Reduced from 5
         
         customer_label = QtWidgets.QLabel("Customer:")
-        customer_label.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        customer_label.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         self.customer_name_value = QtWidgets.QLabel()
-        self.customer_name_value.setStyleSheet("color: #333333; font-size: 10px;")
+        self.customer_name_value.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         
         phone_label = QtWidgets.QLabel("Phone:")
-        phone_label.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        phone_label.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         self.customer_phone_value = QtWidgets.QLabel()
-        self.customer_phone_value.setStyleSheet("color: #333333; font-size: 10px;")
+        self.customer_phone_value.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         
         customer_layout.addWidget(customer_label, 0, 0)
         customer_layout.addWidget(self.customer_name_value, 0, 1)
@@ -153,21 +152,21 @@ class ReceiptTab(QtWidgets.QWidget):
         self.receipt_layout.addWidget(customer_widget)
         
         # Space instead of divider
-        self.receipt_layout.addSpacing(10)
+        self.receipt_layout.addSpacing(6)  # Reduced from 10
         
         # ITEMS SECTION HEADER
         items_header = QtWidgets.QWidget()
         items_header_layout = QtWidgets.QHBoxLayout(items_header)
-        items_header_layout.setContentsMargins(0, 5, 0, 5)
+        items_header_layout.setContentsMargins(0, 3, 0, 3)  # Reduced from 0, 5, 0, 5
         items_header_layout.setSpacing(0)
         
         desc_header = QtWidgets.QLabel("Description")
-        desc_header.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        desc_header.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         qty_header = QtWidgets.QLabel("Qty")
-        qty_header.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        qty_header.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         qty_header.setAlignment(QtCore.Qt.AlignCenter)
         price_header = QtWidgets.QLabel("Amount")
-        price_header.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        price_header.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         price_header.setAlignment(QtCore.Qt.AlignRight)
         
         items_header_layout.addWidget(desc_header, 6)
@@ -183,11 +182,11 @@ class ReceiptTab(QtWidgets.QWidget):
             QTableWidget {
                 border: none;
                 background-color: white;
-                font-size: 10px;
+                font-size: 9px;
                 color: #333333;
             }
             QTableWidget::item {
-                padding: 2px;
+                padding: 1px;
             }
         """)
         self.service_table.horizontalHeader().setVisible(False)
@@ -203,7 +202,7 @@ class ReceiptTab(QtWidgets.QWidget):
         
         # PRODUCTS TABLE
         self.products_header_label = QtWidgets.QLabel("Products Used:")
-        self.products_header_label.setStyleSheet("color: #555555; font-size: 10px; font-weight: bold;")
+        self.products_header_label.setStyleSheet("color: #555555; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         self.receipt_layout.addWidget(self.products_header_label)
         
         self.products_table = QtWidgets.QTableWidget()
@@ -212,11 +211,11 @@ class ReceiptTab(QtWidgets.QWidget):
             QTableWidget {
                 border: none;
                 background-color: white;
-                font-size: 10px;
+                font-size: 8px;
                 color: #555555;
             }
             QTableWidget::item {
-                padding: 2px;
+                padding: 1px;
             }
         """)
         self.products_table.horizontalHeader().setVisible(False)
@@ -230,36 +229,57 @@ class ReceiptTab(QtWidgets.QWidget):
         self.receipt_layout.addWidget(self.products_table)
         
         # Space instead of divider
-        self.receipt_layout.addSpacing(10)
+        self.receipt_layout.addSpacing(4)  # Reduced from 10
+        
+        # NOTES SECTION - New addition
+        self.notes_widget = QtWidgets.QWidget()
+        notes_layout = QtWidgets.QVBoxLayout(self.notes_widget)
+        notes_layout.setContentsMargins(0, 2, 0, 2)  # Reduced from 0, 5, 0, 5
+        notes_layout.setSpacing(2)  # Reduced from 5
+        
+        notes_header = QtWidgets.QLabel("Service Notes:")
+        notes_header.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
+        notes_layout.addWidget(notes_header)
+        
+        self.notes_value = QtWidgets.QLabel()
+        self.notes_value.setStyleSheet("color: #333333; font-size: 8px; font-style: italic;")  # Reduced from 9px
+        self.notes_value.setWordWrap(True)
+        self.notes_value.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        notes_layout.addWidget(self.notes_value)
+        
+        self.receipt_layout.addWidget(self.notes_widget)
+        
+        # Space instead of divider
+        self.receipt_layout.addSpacing(4)  # Reduced from 10
         
         # PAYMENT SUMMARY
         summary_widget = QtWidgets.QWidget()
         summary_layout = QtWidgets.QGridLayout(summary_widget)
-        summary_layout.setContentsMargins(0, 5, 0, 5)
-        summary_layout.setSpacing(5)
+        summary_layout.setContentsMargins(0, 3, 0, 3)  # Reduced from 0, 5, 0, 5
+        summary_layout.setSpacing(2)  # Reduced from 5
         
         subtotal_label = QtWidgets.QLabel("Subtotal:")
-        subtotal_label.setStyleSheet("color: #333333; font-size: 10px;")
+        subtotal_label.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         self.base_price_value = QtWidgets.QLabel()
-        self.base_price_value.setStyleSheet("color: #333333; font-size: 10px;")
+        self.base_price_value.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         self.base_price_value.setAlignment(QtCore.Qt.AlignRight)
         
         discount_label = QtWidgets.QLabel("Discount:")
-        discount_label.setStyleSheet("color: #333333; font-size: 10px;")
+        discount_label.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         self.discount_value = QtWidgets.QLabel()
-        self.discount_value.setStyleSheet("color: #333333; font-size: 10px;")
+        self.discount_value.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         self.discount_value.setAlignment(QtCore.Qt.AlignRight)
         
         total_label = QtWidgets.QLabel("Total:")
-        total_label.setStyleSheet("color: #333333; font-size: 12px; font-weight: bold;")
+        total_label.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")  # Reduced from 12px
         self.total_amount_value = QtWidgets.QLabel()
-        self.total_amount_value.setStyleSheet("color: #333333; font-size: 12px; font-weight: bold;")
+        self.total_amount_value.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")  # Reduced from 12px
         self.total_amount_value.setAlignment(QtCore.Qt.AlignRight)
         
         payment_label = QtWidgets.QLabel("Payment Method:")
-        payment_label.setStyleSheet("color: #333333; font-size: 10px;")
+        payment_label.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         self.payment_method_value = QtWidgets.QLabel()
-        self.payment_method_value.setStyleSheet("color: #333333; font-size: 10px;")
+        self.payment_method_value.setStyleSheet("color: #333333; font-size: 9px;")  # Reduced from 10px
         self.payment_method_value.setAlignment(QtCore.Qt.AlignRight)
         
         summary_layout.addWidget(subtotal_label, 0, 0)
@@ -274,20 +294,20 @@ class ReceiptTab(QtWidgets.QWidget):
         self.receipt_layout.addWidget(summary_widget)
         
         # Space instead of divider
-        self.receipt_layout.addSpacing(10)
+        self.receipt_layout.addSpacing(4)  # Reduced from 10
         
         # FOOTER
         footer_widget = QtWidgets.QWidget()
         footer_layout = QtWidgets.QGridLayout(footer_widget)
-        footer_layout.setContentsMargins(0, 5, 0, 5)
-        footer_layout.setSpacing(5)
+        footer_layout.setContentsMargins(0, 2, 0, 2)  # Reduced from 0, 5, 0, 5
+        footer_layout.setSpacing(2)  # Reduced from 5
         
         thank_you = QtWidgets.QLabel("Thank you for your business!")
-        thank_you.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        thank_you.setStyleSheet("color: #333333; font-size: 9px; font-weight: bold;")  # Reduced from 10px
         staff_label = QtWidgets.QLabel("Served by:")
-        staff_label.setStyleSheet("color: #333333; font-size: 10px;")
+        staff_label.setStyleSheet("color: #333333; font-size: 8px;")  # Reduced from 10px
         self.served_by_value = QtWidgets.QLabel()
-        self.served_by_value.setStyleSheet("color: #333333; font-size: 10px; font-weight: bold;")
+        self.served_by_value.setStyleSheet("color: #333333; font-size: 8px; font-weight: bold;")  # Reduced from 10px
         
         footer_layout.addWidget(thank_you, 0, 0, 1, 2)
         footer_layout.addWidget(staff_label, 1, 0)
@@ -296,7 +316,7 @@ class ReceiptTab(QtWidgets.QWidget):
         self.receipt_layout.addWidget(footer_widget)
         
         policy = QtWidgets.QLabel("No returns or exchanges on services")
-        policy.setStyleSheet("color: #555555; font-size: 9px; font-style: italic;")
+        policy.setStyleSheet("color: #555555; font-size: 8px; font-style: italic;")  # Reduced from 9px
         policy.setAlignment(QtCore.Qt.AlignCenter)
         self.receipt_layout.addWidget(policy)
         self.receipt_layout.addStretch()
@@ -304,9 +324,10 @@ class ReceiptTab(QtWidgets.QWidget):
     def generateReceipt(self):
         """Generate the receipt with current invoice data"""
         data = self.parent.invoice_data
-        services = data.get("services", [])  # Now handle multiple services
+        services = data.get("services", [])
         customer = data.get("customer", {})
         payment = data.get("payment", {})
+        notes = data.get("notes", "")
         
         # Generate transaction ID if not present
         if not data.get("transaction_id"):
@@ -338,7 +359,14 @@ class ReceiptTab(QtWidgets.QWidget):
                 self.service_table.setItem(i, 0, service_name_item)
                 self.service_table.setItem(i, 1, quantity_item)
                 self.service_table.setItem(i, 2, price_item)
-                self.service_table.setRowHeight(i, 20)
+                self.service_table.setRowHeight(i, 16)  # Reduced from 20
+        
+        # Update notes section
+        if notes and notes.strip():
+            self.notes_value.setText(notes.strip())
+            self.notes_widget.show()
+        else:
+            self.notes_widget.hide()
         
         # Update products
         self.products_table.setRowCount(0)
@@ -354,7 +382,7 @@ class ReceiptTab(QtWidgets.QWidget):
                     FROM service_products sp
                     JOIN products p ON sp.product_id = p.product_id
                     WHERE sp.service_id IN (%s)
-                """ % ','.join(['%s'] * len(service_ids))  # Dynamic placeholder generation
+                """ % ','.join(['%s'] * len(service_ids))
                 cursor.execute(query, tuple(service_ids))
                 products = cursor.fetchall()
                 cursor.close()
@@ -366,15 +394,13 @@ class ReceiptTab(QtWidgets.QWidget):
                     for i, product in enumerate(products):
                         name_item = QtWidgets.QTableWidgetItem(f"  {product['product_name']}")
                         quantity_item = QtWidgets.QTableWidgetItem(str(product['quantity']))
-                        price_item = QtWidgets.QTableWidgetItem(f"₱{float(product['price']):.2f}")
                         
                         name_item.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
                         quantity_item.setTextAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-                        price_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
                         
                         self.products_table.setItem(i, 0, name_item)
                         self.products_table.setItem(i, 1, quantity_item)
-                        self.products_table.setRowHeight(i, 20)
+                        self.products_table.setRowHeight(i, 14)  # Reduced from 20
                 else:
                     self.products_header_label.hide()
                     self.products_table.hide()
@@ -469,6 +495,7 @@ class ReceiptTab(QtWidgets.QWidget):
             services = data.get("services", [])
             customer = data.get("customer", {})
             payment = data.get("payment", {})
+            notes = data.get("notes", "")  # Get notes
             
             if not all([services, customer, payment, data.get("or_number")]):
                 return
@@ -488,9 +515,9 @@ class ReceiptTab(QtWidgets.QWidget):
                 INSERT INTO transactions (
                     transaction_id, or_number, service_id, customer_name, customer_phone,
                     customer_gender, customer_city, payment_method, discount_percentage,
-                    discount_amount, base_amount, total_amount, coupon_code, created_by
+                    discount_amount, base_amount, total_amount, coupon_code, notes, created_by
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
             """, (
                 data["transaction_id"],
@@ -506,6 +533,7 @@ class ReceiptTab(QtWidgets.QWidget):
                 base_amount,
                 total_amount,
                 payment.get("coupon_code"),
+                notes,  # Add notes to database
                 user_id
             ))
             
@@ -632,6 +660,9 @@ class ReceiptTab(QtWidgets.QWidget):
         self.total_amount_value.setText("")
         self.payment_method_value.setText("")
         self.served_by_value.setText("")
+        self.notes_value.setText("")  # Reset notes
+        self.notes_widget.hide()  # Hide notes widget
+
     
     def showEvent(self, event):
         """Called when the tab is shown"""
