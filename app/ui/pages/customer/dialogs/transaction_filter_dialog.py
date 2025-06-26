@@ -24,24 +24,20 @@ class TransactionFilterDialog(BaseDialog):
         
         self.header_label.setText("Filter Transactions")
         
-        # Date range filter
         date_label = QtWidgets.QLabel("Date Range:")
         self.date_combo = QtWidgets.QComboBox()
         self.date_combo.addItems(["All Time", "Today", "This Week", "This Month", "This Year"])
         
-        # Set the combo box to match stored filter state
         date_index = self.date_combo.findText(self.filter_state["date_range"])
         if date_index >= 0:
             self.date_combo.setCurrentIndex(date_index)
             
         self.form_layout.addRow(date_label, self.date_combo)
         
-        # Payment method filter
         payment_label = QtWidgets.QLabel("Payment Method:")
         self.payment_combo = QtWidgets.QComboBox()
         self.payment_combo.addItem("All Methods")
         
-        # Get unique payment methods
         try:
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
@@ -51,22 +47,18 @@ class TransactionFilterDialog(BaseDialog):
                 self.payment_combo.addItem(method['payment_method'])
             cursor.close()
         except mysql.connector.Error:
-            # Add default if DB connection fails
             self.payment_combo.addItem("Cash")
         
-        # Set the combo box to match stored filter state
         payment_index = self.payment_combo.findText(self.filter_state["payment_method"])
         if payment_index >= 0:
             self.payment_combo.setCurrentIndex(payment_index)
             
         self.form_layout.addRow(payment_label, self.payment_combo)
         
-        # Gender filter
         gender_label = QtWidgets.QLabel("Gender:")
         self.gender_combo = QtWidgets.QComboBox()
         self.gender_combo.addItem("All")
         
-        # Get unique gender values
         try:
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
@@ -77,10 +69,8 @@ class TransactionFilterDialog(BaseDialog):
                     self.gender_combo.addItem(gender['customer_gender'])
             cursor.close()
         except mysql.connector.Error:
-            # Add defaults if DB connection fails
             self.gender_combo.addItems(["Male", "Female", "Other"])
         
-        # Set the combo box to match stored filter state
         gender_index = self.gender_combo.findText(self.filter_state["gender"])
         if gender_index >= 0:
             self.gender_combo.setCurrentIndex(gender_index)
@@ -95,11 +85,9 @@ class TransactionFilterDialog(BaseDialog):
         helper_text.setWordWrap(True)
         self.form_layout.addRow(helper_text)
         
-        # Update save button to "Apply Filters"
         self.save_button.setText("Apply Filters")
         self.save_button.clicked.connect(self.apply_filters)
         
-        # Add reset button next to the cancel button
         self.reset_button = QtWidgets.QPushButton("Reset Filters")
         self.reset_button.setObjectName("resetButton")
         self.reset_button.setStyleSheet("""
@@ -116,18 +104,15 @@ class TransactionFilterDialog(BaseDialog):
         """)
         self.reset_button.clicked.connect(self.reset_filters)
         
-        # Find the button layout and insert reset button
         button_layout = self.save_button.parent().layout()
         button_layout.insertWidget(button_layout.count() - 2, self.reset_button)
     
     def apply_filters(self):
         """Apply selected filters"""
-        # Save filter state
         self.result_filter_state["date_range"] = self.date_combo.currentText()
         self.result_filter_state["payment_method"] = self.payment_combo.currentText()
         self.result_filter_state["gender"] = self.gender_combo.currentText()
         
-        # Determine if any filters are active
         self.result_filter_state["is_active"] = (
             self.result_filter_state["date_range"] != "All Time" or
             self.result_filter_state["payment_method"] != "All Methods" or
