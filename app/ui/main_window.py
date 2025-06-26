@@ -50,7 +50,6 @@ class NavigationItem:
         self.button.setFont(QtGui.QFont("Segoe UI", 10))
         self.button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
-        # Apply styling
         self.button.setStyleSheet("""
             QPushButton {
                 color: white;
@@ -64,7 +63,6 @@ class NavigationItem:
             }
         """)
         
-        # Set icon if path exists
         if self.icon_path:
             icon = QtGui.QIcon(self.icon_path)
             self.button.setIcon(icon)
@@ -115,7 +113,6 @@ class SidebarSection:
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(5)
         
-        # Create buttons for each item
         for item in self.items:
             if item.name == "Logout":
                 button = item.create_button(parent, 18) 
@@ -160,17 +157,13 @@ class Sidebar:
         self.layout.setContentsMargins(20, 20, 20, 20)
         self.layout.setSpacing(0)
         
-        # Add logo
         self.setup_logo()
         
-        # Add main navigation section
         nav_container = self.navigation_section.create_container(self.widget)
         self.layout.addWidget(nav_container)
         
-        # Add stretch to push bottom buttons down
         self.layout.addStretch(1)
         
-        # Add bottom navigation section
         bottom_container = self.bottom_section.create_container(self.widget)
         self.layout.addWidget(bottom_container)
         
@@ -211,13 +204,10 @@ class PageManager:
         if not nav_item.page_class:
             return None
             
-        # Create page
         page = nav_item.create_page(self.stacked_widget, user_info)
         
-        # Add to stacked widget
         index = self.stacked_widget.addWidget(page)
         
-        # Store references
         self.pages[nav_item.name] = page
         self.page_indices[nav_item.name] = index
         nav_item.page_index = index
@@ -435,17 +425,14 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def disable_navigation(self):
         """Disable navigation during an active invoice transaction"""
-        # Disable all navigation buttons/menu items except the current one
         for action in self.navigation_actions:
             if action != self.sender():
                 action.setEnabled(False)
         
-        # You may also want to add a visual indication that navigation is disabled
         self.statusBar().showMessage("Transaction in progress - Navigation disabled")
 
     def enable_navigation(self):
         """Enable navigation after a transaction is completed or cancelled"""
-        # Re-enable all navigation actions
         for action in self.navigation_actions:
             action.setEnabled(True)
         

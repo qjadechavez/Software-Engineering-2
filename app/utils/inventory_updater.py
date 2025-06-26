@@ -74,19 +74,15 @@ class InventoryUpdater:
         try:
             print("Starting comprehensive inventory refresh...")
             
-            # Find the inventory page through the application
             app = QtWidgets.QApplication.instance()
             inventory_page = None
             
-            # Search through all widgets in the application
             for widget in app.allWidgets():
-                # Look for InventoryPage class specifically
                 if hasattr(widget, '__class__') and 'InventoryPage' in str(widget.__class__):
                     inventory_page = widget
                     print(f"Found InventoryPage: {widget}")
                     break
                     
-                # Alternative: Look for widgets with inventory tab structure
                 if (hasattr(widget, 'overview_tab') and 
                     hasattr(widget, 'products_tab') and 
                     hasattr(widget, 'inventory_status_tab')):
