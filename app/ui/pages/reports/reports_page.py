@@ -40,12 +40,12 @@ class ReportsPage(BasePage):
         self.missing_products_tab = MissingProductsTab(self)
         
         # Add tabs to the tab widget
-        self.tabs.addTab(self.delivered_products_tab, "📦 Delivered Products")
-        self.tabs.addTab(self.alert_level_tab, "⚠️ Alert Level Report")
-        self.tabs.addTab(self.sales_report_tab, "💰 Sales Report")
-        self.tabs.addTab(self.undelivered_products_tab, "🚚 Undelivered Products")
-        self.tabs.addTab(self.transaction_logs_tab, "📋 Transaction Logs")
-        self.tabs.addTab(self.missing_products_tab, "❓ Missing Products")
+        self.tabs.addTab(self.delivered_products_tab, "Delivered Products")
+        self.tabs.addTab(self.alert_level_tab, "Alert Level Report")
+        self.tabs.addTab(self.sales_report_tab, "Sales Report")
+        self.tabs.addTab(self.undelivered_products_tab, "Undelivered Products")
+        self.tabs.addTab(self.transaction_logs_tab, "Transaction Logs")
+        self.tabs.addTab(self.missing_products_tab, "Missing Products")
         
         # Connect tab changed signal
         self.tabs.currentChanged.connect(self.on_tab_changed)
