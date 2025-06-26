@@ -13,7 +13,7 @@ class ServiceProductsDialog(BaseDialog):
         
     def setup_ui(self):
         """Set up the UI components"""
-        self.setup_base_ui(450)
+        self.setup_base_ui(400)
         
         self.header_label.setText(f"Products Used in Service")
         
@@ -33,7 +33,8 @@ class ServiceProductsDialog(BaseDialog):
         self.products_table.setColumnWidth(2, 100)
         self.products_table.setColumnWidth(3, 100)
         self.products_table.setColumnWidth(4, 80)
-        self.products_table.setMinimumHeight(250)
+        self.products_table.setMaximumHeight(250)
+        self.products_table.setStyleSheet(StyleFactory.get_table_style())
         self.form_layout.addRow(self.products_table)
         
         # Counter label showing number of products

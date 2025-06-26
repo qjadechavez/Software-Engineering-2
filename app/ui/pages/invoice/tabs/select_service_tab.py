@@ -190,23 +190,70 @@ class SelectServiceTab(QtWidgets.QWidget):
             
             # Clear existing services
             for i in reversed(range(self.services_grid.count())):
-                self.services_grid.itemAt(i).widget().setParent(None)
+                child = self.services_grid.itemAt(i).widget()
+                if child:
+                    child.setParent(None)
             
             # Add services to the grid
             row, col = 0, 0
             max_cols = 3  # Number of cards per row
             
             for service in services:
-                card = ControlPanelFactory.create_service_card(service, self.select_service)
-                self.services_grid.addWidget(card, row, col)
+                service_card = self.create_service_card(service)
+                self.services_grid.addWidget(service_card, row, col)
                 
                 col += 1
                 if col >= max_cols:
-                    row += 1
                     col = 0
+                    row += 1
             
         except mysql.connector.Error as err:
             self.show_error_message(f"Database error: {err}")
+    
+    def create_service_card(self, service):
+        """Create a service card widget"""
+        card = QtWidgets.QFrame()
+        card.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        card.setStyleSheet("""
+            QFrame {
+                background-color: #1c1c1c;
+                border-radius: 8px;
+                border: 2px solid #444444;
+                padding: 10px;
+            }
+            QFrame:hover {
+                border: 2px solid #007ACC;
+                background-color: #252525;
+            }
+        """)
+        card.setFixedSize(200, 120)
+        card.setCursor(QtCore.Qt.PointingHandCursor)
+        
+        # Store service data in the widget
+        card.service_data = service
+        
+        layout = QtWidgets.QVBoxLayout(card)
+        
+        # Service name
+        name_label = QtWidgets.QLabel(service['service_name'])
+        name_label.setStyleSheet("color: white; font-weight: bold; font-size: 14px;")
+        name_label.setWordWrap(True)
+        layout.addWidget(name_label)
+        
+        # Category
+        category_label = QtWidgets.QLabel(f"Category: {service['category']}")
+        category_label.setStyleSheet("color: #cccccc; font-size: 12px;")
+        layout.addWidget(category_label)
+        
+        # Price
+        price_label = QtWidgets.QLabel(f"₱{float(service['price']):.2f}")
+        price_label.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 16px;")
+        layout.addWidget(price_label)
+        
+        # Add click event
+        card.mousePressEvent = lambda event: self.select_service(service)
+        
+        return card
     
     def select_service(self, service):
         """Handle service selection"""
@@ -308,38 +355,26 @@ class SelectServiceTab(QtWidgets.QWidget):
             item = self.services_grid.itemAt(i)
             if item and item.widget():
                 widget = item.widget()
-                # Try to find the service name in the widget (adjust this based on your card structure)
-                service_name = ""
-                for child in widget.findChildren(QtWidgets.QLabel):
-                    if child.text() and not child.text().startswith("₱"):  # Assuming price labels start with ₱
-                        service_name = child.text().lower()
-                        break
-                        
-                # Show/hide based on search text
-                widget.setVisible(search_text == "" or search_text in service_name)
+                # Check if service data exists in widget
+                if hasattr(widget, 'service_data'):
+                    service = widget.service_data
+                    # Search in service name, category, and description
+                    visible = (search_text in service['service_name'].lower() or
+                              search_text in service['category'].lower() or
+                              search_text in str(service.get('description', '')).lower())
+                    widget.setVisible(visible)
+                else:
+                    widget.setVisible(True)  # Show if no service data
     
     def show_service_filter_dialog(self):
         """Show advanced filter dialog for services"""
+        from ..dialogs.service_filter_dialog import ServiceFilterDialog
         filter_dialog = ServiceFilterDialog(self, self.filter_state)
         if filter_dialog.exec_() == QtWidgets.QDialog.Accepted:
             # Get the filter state from the dialog
             new_filter_state = filter_dialog.get_filter_state()
-            
-            # Update our filter state
             self.filter_state = new_filter_state
-            
-            # Check if filters were reset or are not active
-            if not self.filter_state["is_active"]:
-                # Filters were reset or cleared
-                self.filter_indicator.setVisible(False)
-                # Update button appearance
-                self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
-                
-                # Reload all services
-                self.load_services()
-            else:
-                # Apply filters
-                self.apply_filter()
+            self.apply_filter()
     
     def apply_filter(self):
         """Apply the filters stored in filter_state"""
@@ -357,51 +392,35 @@ class SelectServiceTab(QtWidgets.QWidget):
         if filter_text:
             self.filter_indicator.setText(f"Active filters: {', '.join(filter_text)}")
             self.filter_indicator.setVisible(True)
-            # Change filter button color to indicate active filters
-            self.filter_button.setStyleSheet(StyleFactory.get_active_filter_button_style())
         else:
             self.filter_indicator.setVisible(False)
-            self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
         
         # Apply filters to service cards
         for i in range(self.services_grid.count()):
             item = self.services_grid.itemAt(i)
             if item and item.widget():
                 widget = item.widget()
-                show_card = True
-                
-                # First try to get data from stored service_data attribute (more reliable)
-                if hasattr(widget, "service_data"):
-                    service_data = widget.service_data
-                else:
-                    # Fallback to extracting from labels
-                    service_data = {}
-                    for child in widget.findChildren(QtWidgets.QLabel):
-                        if child.text():
-                            if child.text().startswith("₱"):
-                                service_data["price"] = float(child.text().replace("₱", "").strip())
-                            elif "category" not in service_data:  # First non-price label is likely category
-                                service_data["category"] = child.text()
-                
-                # Apply category filter
-                if service_category != "All Categories" and service_data.get("category") != service_category:
-                    show_card = False
-                
-                # Apply price range filter
-                if price_range != "All Prices" and show_card:
-                    price = float(service_data.get("price", 0))
+                if hasattr(widget, 'service_data'):
+                    service = widget.service_data
+                    visible = True
                     
-                    if price_range == "Under ₱500" and price >= 500:
-                        show_card = False
-                    elif price_range == "₱500 - ₱1000" and (price < 500 or price > 1000):
-                        show_card = False
-                    elif price_range == "₱1000 - ₱2000" and (price < 1000 or price > 2000):
-                        show_card = False
-                    elif price_range == "Over ₱2000" and price <= 2000:
-                        show_card = False
-            
-            # Show/hide card based on filters
-            widget.setVisible(show_card)
+                    # Apply category filter
+                    if service_category != "All Categories" and service['category'] != service_category:
+                        visible = False
+                    
+                    # Apply price range filter
+                    if price_range != "All Prices" and visible:
+                        price = float(service['price'])
+                        if price_range == "Under ₱500" and price >= 500:
+                            visible = False
+                        elif price_range == "₱500 - ₱1000" and (price < 500 or price > 1000):
+                            visible = False
+                        elif price_range == "Over ₱1000" and price <= 1000:
+                            visible = False
+                    
+                    widget.setVisible(visible)
+                else:
+                    widget.setVisible(True)
     
     def get_service_data_from_widget(self, widget):
         """Extract service data from a card widget"""
@@ -412,10 +431,12 @@ class SelectServiceTab(QtWidgets.QWidget):
         # Fallback to extracting data from labels
         service_data = {}
         for child in widget.findChildren(QtWidgets.QLabel):
-            if child.text():
-                if child.text().startswith("₱"):
-                    service_data["price"] = float(child.text().replace("₱", "").strip())
-                elif "category" not in service_data:  # First non-price label is likely category
-                    service_data["category"] = child.text()
-            
+            text = child.text()
+            if "Category:" in text:
+                service_data['category'] = text.replace("Category: ", "")
+            elif "₱" in text and "Category" not in text:
+                service_data['price'] = text.replace("₱", "")
+            elif not any(x in text for x in ["Category:", "₱"]):
+                service_data['service_name'] = text
+                
         return service_data

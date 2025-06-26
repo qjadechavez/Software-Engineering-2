@@ -2,6 +2,8 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import mysql.connector
 from app.utils.db_manager import DBManager
 from .base_dialog import BaseDialog
+from .product_selection_dialog import ProductSelectionDialog
+from ..style_factory import StyleFactory
 
 class ServiceDialog(BaseDialog):
     """Dialog for adding or editing services"""
@@ -64,7 +66,7 @@ class ServiceDialog(BaseDialog):
         products_header.setStyleSheet("font-weight: bold; margin-top: 15px;")
         self.form_layout.addRow(products_header)
         
-        # Products table
+        # Products table with custom column widths
         self.products_table = QtWidgets.QTableWidget()
         self.products_table.setColumnCount(4)  # ID, Name, Quantity, Action
         self.products_table.setHorizontalHeaderLabels(["ID", "Product Name", "Quantity", "Action"])
@@ -72,9 +74,14 @@ class ServiceDialog(BaseDialog):
         self.products_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.products_table.setMinimumHeight(150)
         self.products_table.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        self.products_table.setColumnWidth(0, 50)
-        self.products_table.setColumnWidth(2, 70)
-        self.products_table.setColumnWidth(3, 100)
+        
+        # Custom column widths
+        self.products_table.setColumnWidth(0, 60)   # ID column - wider
+        self.products_table.setColumnWidth(1, 150)  # Product Name column - wider
+        self.products_table.setColumnWidth(2, 80)   # Quantity column - wider
+        self.products_table.setColumnWidth(3, 100)  # Action column - wider
+        
+        self.products_table.setStyleSheet(StyleFactory.get_table_style())
         self.form_layout.addRow(self.products_table)
         
         # Add product button

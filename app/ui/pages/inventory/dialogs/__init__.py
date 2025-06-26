@@ -4,7 +4,7 @@ from .service_dialog import ServiceDialog
 from .service_products_dialog import ServiceProductsDialog
 from .product_filter_dialog import ProductFilterDialog
 from .service_filter_dialog import ServiceFilterDialog
-# Other imports...
+from .product_selection_dialog import ProductSelectionDialog  # Add this line
 
 __all__ = [
     'ProductDialog', 
@@ -12,5 +12,5 @@ __all__ = [
     'ServiceProductsDialog',
     'ProductFilterDialog',
     'ServiceFilterDialog',
-    # Other classes...
+    'ProductSelectionDialog',  # Add this line
 ]

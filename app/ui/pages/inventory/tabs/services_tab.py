@@ -21,6 +21,7 @@ class ServicesTab(QtWidgets.QWidget):
             "price_sort": "No Sorting"
         }
         self.setup_ui()
+        self.load_services()  # Add this line!
         
     def setup_ui(self):
         """Set up the UI components for the services tab"""
@@ -257,6 +258,26 @@ class ServicesTab(QtWidgets.QWidget):
             # Notify parent to update overview tab if it exists
             if self.parent and hasattr(self.parent, "update_overview_tab"):
                 self.parent.update_overview_tab()
+                
+            # NEW: Refresh select service tab in invoice page
+            self.refresh_invoice_service_selection()
+
+    def refresh_invoice_service_selection(self):
+        """Refresh the service selection in invoice page"""
+        try:
+            # Find the main application window
+            app = QtWidgets.QApplication.instance()
+            
+            # Search for the invoice page and refresh its service selection
+            for widget in app.allWidgets():
+                # Look for SelectServiceTab specifically
+                if hasattr(widget, '__class__') and 'SelectServiceTab' in str(widget.__class__):
+                    if hasattr(widget, 'load_services'):
+                        widget.load_services()
+                        print("✓ Refreshed invoice service selection")
+                        
+        except Exception as e:
+            print(f"Could not refresh invoice service selection: {e}")
     
     def edit_service(self, row):
         """Edit the selected service"""
@@ -273,10 +294,12 @@ class ServicesTab(QtWidgets.QWidget):
                 dialog = ServiceDialog(self.parent or self, service)
                 if dialog.exec_() == QtWidgets.QDialog.Accepted:
                     self.load_services()
+                    # NEW: Refresh invoice service selection
+                    self.refresh_invoice_service_selection()
                 
-            # Reset row visibility
-            for row in range(self.services_table.rowCount()):
-                self.services_table.setRowHidden(row, False)
+                # Reset row visibility
+                for row in range(self.services_table.rowCount()):
+                    self.services_table.setRowHidden(row, False)
         
             cursor.close()
             

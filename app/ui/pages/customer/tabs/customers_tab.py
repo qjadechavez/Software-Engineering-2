@@ -249,39 +249,6 @@ class CustomersTab(QtWidgets.QWidget):
                     self.filter_indicator.setVisible(False)
                     self.filter_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
     
-    def apply_filters(self, dialog, date_range, payment_method, gender):
-        """Apply the selected filters"""
-        # Store filter state
-        self.filter_state = {
-            "is_active": True,
-            "date_range": date_range,
-            "payment_method": payment_method,
-            "gender": gender
-        }
-        
-        # Apply the filters
-        self.apply_stored_filters()
-        
-        # Create filter text from active filters
-        filter_parts = []
-        if date_range != "All Time":
-            filter_parts.append(f"Date: {date_range}")
-        if payment_method != "All Methods":
-            filter_parts.append(f"Payment: {payment_method}")
-        if gender != "All":
-            filter_parts.append(f"Gender: {gender}")
-        
-        # Update filter indicator
-        if filter_parts:
-            filter_text = f"Active filters: {', '.join(filter_parts)}"
-            self.filter_indicator.setText(filter_text)
-            self.filter_indicator.setVisible(True)
-        
-        # Change filter button color to indicate active filters
-        self.filter_button.setStyleSheet(StyleFactory.get_active_filter_button_style())
-        
-        dialog.accept()
-    
     def reset_filters(self, dialog=None):
         """Reset all filters"""
         self.filter_state = {
@@ -807,16 +774,16 @@ class CustomersTab(QtWidgets.QWidget):
             customer_columns = [
                 ("Transaction ID", 0.10), 
                 ("OR Number", 0.08),
-                ("Customer Name", 0.12),
-                ("Phone", 0.09),
-                ("Gender", 0.06),
-                ("City", 0.09),
+                ("Customer Name", 0.08),
+                ("Phone", 0.07),
+                ("Gender", 0.05),
+                ("City", 0.08),
                 ("Service", 0.10),
-                ("Amount", 0.07),
+                ("Amount", 0.05),
                 ("Payment Method", 0.08),
                 ("Discount", 0.05),
-                ("Date", 0.10),
-                ("Staff", 0.06)
+                ("Date", 0.09),
+                ("Staff", 0.05)
             ]
             
             screen_width = QtWidgets.QApplication.desktop().screenGeometry().width()

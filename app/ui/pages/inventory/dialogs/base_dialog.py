@@ -59,6 +59,7 @@ class BaseDialog(QtWidgets.QDialog):
             color: white;
             font-size: 18px;
             font-weight: bold;
+            background: transparent;  /* Remove background color */
         """)
         
         close_button = QtWidgets.QPushButton("×")
