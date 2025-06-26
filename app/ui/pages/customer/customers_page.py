@@ -3,12 +3,10 @@ from app.ui.pages.base_page import BasePage
 from app.utils.db_manager import DBManager
 import mysql.connector
 
-# Import the factory classes
 from .style_factory import StyleFactory
 from .table_factory import TableFactory
 from .control_panel_factory import ControlPanelFactory
 
-# Import tab components
 from .tabs.customers_tab import CustomersTab
 
 class CustomersPage(BasePage):

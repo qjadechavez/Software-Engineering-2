@@ -28,10 +28,8 @@ class CustomersTab(QtWidgets.QWidget):
         self.layout.setContentsMargins(10, 15, 10, 10)
         self.layout.setSpacing(10)
         
-        # Create search input
         self.search_input = QtWidgets.QLineEdit()
         
-        # Create control panel using factory - no add button
         self.control_layout = ControlPanelFactory.create_search_control(
             self.search_input,
             self.filter_transactions,
@@ -44,10 +42,8 @@ class CustomersTab(QtWidgets.QWidget):
         
         self.layout.addLayout(self.control_layout)
         
-        # Create customers table
         self.customers_table = TableFactory.create_table()
         
-        # Define column headers and their relative widths
         customer_columns = [
             ("Transaction ID", 0.10), 
             ("OR Number", 0.08),
@@ -63,17 +59,14 @@ class CustomersTab(QtWidgets.QWidget):
             ("Staff", 0.05)
         ]
         
-        # Configure the table columns to fit horizontally
         screen_width = QtWidgets.QApplication.desktop().screenGeometry().width()
         TableFactory.configure_table_columns(self.customers_table, customer_columns, screen_width)
         
-        # Add context menu to the table
         self.customers_table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customers_table.customContextMenuRequested.connect(self.show_context_menu)
         
         self.layout.addWidget(self.customers_table)
         
-        # Add filter indicator label
         self.filter_indicator = QtWidgets.QLabel()
         self.filter_indicator.setVisible(False)
         self.filter_indicator.setStyleSheet("""
