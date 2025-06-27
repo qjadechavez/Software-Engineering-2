@@ -195,7 +195,6 @@ class HelpPage(BasePage):
             "📊 Transaction History - Complete record of all customer transactions",
             "🔍 Advanced Search - Search by name, phone, service, or transaction ID",
             "🗓️ Date Filtering - Filter by date ranges (Today, Week, Month, Year)",
-            "💳 Payment Filters - Filter by payment method (Cash, GCash, Card)",
             "👤 Gender Filtering - Filter transactions by customer gender",
             "📄 Receipt Management - View, print, or save transaction receipts"
         ])
