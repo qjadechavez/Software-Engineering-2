@@ -19,8 +19,27 @@ class UserManagementTab(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(UserManagementTab, self).__init__()
         self.parent = parent
+        
+        # Check if parent has user info and validate access
+        if self.parent and hasattr(self.parent, 'user_info'):
+            user_role = self.parent.user_info.get("role", "").lower()
+            if user_role != "admin":
+                self.show_access_denied()
+                return
+        
         self.setup_ui()
         self.load_user_data()
+    
+    def show_access_denied(self):
+        """Show access denied message in the tab"""
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        message = QtWidgets.QLabel("Access denied. Admin privileges required.")
+        message.setStyleSheet("color: #f44336; font-size: 16px; font-weight: bold;")
+        message.setAlignment(QtCore.Qt.AlignCenter)
+        
+        layout.addWidget(message)
     
     def setup_ui(self):
         """Set up the UI components for the user management tab"""

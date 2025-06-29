@@ -287,8 +287,16 @@ class MainWindow(QtWidgets.QMainWindow):
             {"name": "Customers", "icon": "app/resources/images/main-window/Customers.png", "class": CustomersPage},
             {"name": "Suppliers", "icon": "app/resources/images/main-window/Suppliers.png", "class": SuppliersPage},
             {"name": "Sales", "icon": "app/resources/images/main-window/Sales.png", "class": InvoicePage},
-            {"name": "Maintenance", "icon": "app/resources/images/main-window/Maintenance.png", "class": MaintenancePage},
         ]
+        
+        # Only add Maintenance for admin users
+        user_role = self.user_info.get("role", "").lower() if self.user_info else ""
+        if user_role == "admin":
+            nav_config.append({
+                "name": "Maintenance", 
+                "icon": "app/resources/images/main-window/Maintenance.png", 
+                "class": MaintenancePage
+            })
         
         # Bottom navigation items
         bottom_config = [
@@ -381,7 +389,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for item in self.bottom_items:
             if item.page_class: 
                 self.page_manager.add_page(item, self.user_info)
-        
+    
     def connect_buttons(self):
         """Connect buttons to their actions"""
         # Connect main navigation buttons

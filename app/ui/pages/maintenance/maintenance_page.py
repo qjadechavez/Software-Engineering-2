@@ -15,8 +15,10 @@ class MaintenancePage(BasePage):
     def __init__(self, parent=None, user_info=None):
         super(MaintenancePage, self).__init__(parent, title="Maintenance", user_info=user_info)
         self.user_info = user_info
+
     
     def createContent(self):
+        """Create the normal maintenance page content for admin users"""
         # Content area
         self.content_area = QtWidgets.QWidget()
         self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
@@ -49,18 +51,21 @@ class MaintenancePage(BasePage):
     
     def handle_tab_change(self, index):
         """Handle changing between tabs"""
-        if index == 0:  # Database Backup tab
-            self.database_backup_tab.load_table_info()
-        elif index == 1:  # User Management tab
-            self.user_management_tab.refresh_data()
+        if hasattr(self, 'database_backup_tab') and hasattr(self, 'user_management_tab'):
+            if index == 0:  # Database Backup tab
+                self.database_backup_tab.load_table_info()
+            elif index == 1:  # User Management tab
+                self.user_management_tab.refresh_data()
     
     def load_initial_data(self):
         """Load initial data for all tabs"""
         try:
-            # Load data for the first tab (database backup)
-            self.database_backup_tab.load_table_info()
-            # Load data for user management tab
-            self.user_management_tab.load_user_data()
+            # Only load data if we have the tabs (admin user)
+            if hasattr(self, 'database_backup_tab') and hasattr(self, 'user_management_tab'):
+                # Load data for the first tab (database backup)
+                self.database_backup_tab.load_table_info()
+                # Load data for user management tab
+                self.user_management_tab.load_user_data()
         except Exception as e:
             print(f"Error loading initial maintenance data: {e}")
     

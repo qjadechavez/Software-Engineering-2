@@ -156,20 +156,6 @@ class SelectServiceTab(QtWidgets.QWidget):
         
         self.layout.addLayout(main_content_layout)
         
-        
-        # At the bottom of the page, add a cancel transaction button
-        cancel_layout = QtWidgets.QHBoxLayout()
-
-         # unified secondary button style
-        self.close_button = QtWidgets.QPushButton("Cancel Transaction")
-        self.close_button.setStyleSheet(StyleFactory.get_button_style(secondary=True))
-        self.close_button.clicked.connect(self.cancel_transaction)
-         
-        cancel_layout.addStretch()
-        cancel_layout.addWidget(self.close_button)
-        self.layout.addLayout(cancel_layout)
-        
-        # Initialize with empty state message
         self.show_empty_state()
     
     def show_empty_state(self):
@@ -490,27 +476,7 @@ class SelectServiceTab(QtWidgets.QWidget):
 
         # reload all service cards
         self.load_services()
-    
-    def cancel_transaction(self):
-        """Cancel the current transaction"""
-        # Reset selections
-        self.reset()
-        
-        # Enable navigation
-        if self.parent and hasattr(self.parent, 'cancel_transaction'):
-            self.parent.cancel_transaction()
-        else:
-            # Fallback if parent doesn't have the method
-            # Try to enable navigation in the main window
-            main_window = self.parent
-            while main_window:
-                if hasattr(main_window, 'enable_navigation'):
-                    main_window.enable_navigation()
-                    break
-                if hasattr(main_window, 'parent'):
-                    main_window = main_window.parent
-                else:
-                    break
+
     
     def filter_services(self):
         """Filter services based on search input"""
