@@ -358,6 +358,9 @@ class UserManagementTab(QtWidgets.QWidget):
         edit_action = menu.addAction("Edit User")
         edit_action.triggered.connect(lambda: self.edit_user(row))
         
+        reset_password_action = menu.addAction("Reset Password")
+        reset_password_action.triggered.connect(lambda: self.reset_user_password(row))
+        
         menu.addSeparator()
         
         delete_action = menu.addAction("Delete User")
@@ -429,6 +432,151 @@ class UserManagementTab(QtWidgets.QWidget):
                     self.parent.show_error_message(f"Database error: {err}")
                 else:
                     QtWidgets.QMessageBox.critical(self, "Error", f"Database error: {err}")
+    
+    def reset_user_password(self, row):
+        """Reset password for the selected user"""
+        user_id = int(self.users_table.item(row, 0).text())
+        username = self.users_table.item(row, 1).text()
+        
+        # Create password reset dialog
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Reset Password")
+        dialog.setFixedWidth(400)
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: #2a2a2a;
+            }
+            QLabel {
+                color: white;
+            }
+            QLineEdit {
+                padding: 8px;
+                border-radius: 4px;
+                border: 1px solid #444;
+                background-color: #333;
+                color: white;
+            }
+            QPushButton {
+                padding: 8px 16px;
+                border-radius: 4px;
+                background-color: #2196F3;
+                color: white;
+                font-weight: bold;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #1976D2;
+            }
+            QPushButton#cancelButton {
+                background-color: #555;
+            }
+            QPushButton#cancelButton:hover {
+                background-color: #666;
+            }
+        """)
+        
+        # Create layout
+        layout = QtWidgets.QVBoxLayout(dialog)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
+        
+        # Title
+        title = QtWidgets.QLabel(f"Reset Password for {username}")
+        title.setStyleSheet("font-size: 16px; font-weight: bold;")
+        layout.addWidget(title)
+        
+        # Description
+        description = QtWidgets.QLabel("Enter a new password below:")
+        layout.addWidget(description)
+        
+        # New password field
+        new_password_layout = QtWidgets.QFormLayout()
+        new_password_input = QtWidgets.QLineEdit()
+        new_password_input.setEchoMode(QtWidgets.QLineEdit.Password)
+        new_password_input.setPlaceholderText("Enter new password")
+        new_password_layout.addRow("New Password:", new_password_input)
+        
+        # Confirm password field
+        confirm_password_input = QtWidgets.QLineEdit()
+        confirm_password_input.setEchoMode(QtWidgets.QLineEdit.Password)
+        confirm_password_input.setPlaceholderText("Confirm new password")
+        new_password_layout.addRow("Confirm Password:", confirm_password_input)
+        
+        layout.addLayout(new_password_layout)
+        
+        # Error message (hidden initially)
+        error_label = QtWidgets.QLabel("")
+        error_label.setStyleSheet("color: #f44336;")
+        error_label.setVisible(False)
+        layout.addWidget(error_label)
+        
+        # Buttons
+        button_layout = QtWidgets.QHBoxLayout()
+        
+        reset_button = QtWidgets.QPushButton("Reset Password")
+        cancel_button = QtWidgets.QPushButton("Cancel")
+        cancel_button.setObjectName("cancelButton")
+        
+        button_layout.addWidget(cancel_button)
+        button_layout.addWidget(reset_button)
+        
+        layout.addLayout(button_layout)
+        
+        # Button actions
+        cancel_button.clicked.connect(dialog.reject)
+        
+        def validate_and_reset():
+            new_password = new_password_input.text()
+            confirm_password = confirm_password_input.text()
+            
+            # Validate passwords
+            if not new_password:
+                error_label.setText("Password cannot be empty")
+                error_label.setVisible(True)
+                return
+                
+            if new_password != confirm_password:
+                error_label.setText("Passwords do not match")
+                error_label.setVisible(True)
+                return
+                
+            if len(new_password) < 3:
+                error_label.setText("Password must be at least 3 characters")
+                error_label.setVisible(True)
+                return
+            
+            # Reset password
+            try:
+                conn = DBManager.get_connection()
+                cursor = conn.cursor()
+                
+                # Hash the password
+                import hashlib
+                hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
+                
+                # Update password in database
+                cursor.execute(
+                    "UPDATE users SET password = %s WHERE user_id = %s",
+                    (hashed_password, user_id)
+                )
+                conn.commit()
+                cursor.close()
+                
+                QtWidgets.QMessageBox.information(
+                    dialog,
+                    "Success",
+                    f"Password for '{username}' has been reset successfully!"
+                )
+                dialog.accept()
+                
+            except mysql.connector.Error as err:
+                error_label.setText(f"Database error: {err}")
+                error_label.setVisible(True)
+        
+        reset_button.clicked.connect(validate_and_reset)
+        
+        # Show dialog
+        dialog.exec_()
     
     def refresh_data(self):
         """Refresh user data"""
