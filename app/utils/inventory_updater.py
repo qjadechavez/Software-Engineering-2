@@ -1,6 +1,8 @@
 import mysql.connector
 from .db_manager import DBManager
 from PyQt5 import QtWidgets
+from app.utils.dashboard_updater import DashboardUpdater
+from app.utils.customer_updater import CustomerUpdater
 
 class InventoryUpdater:
     """Utility class for updating inventory when supplier deliveries are received"""
@@ -145,3 +147,31 @@ class InventoryUpdater:
                 return child
         
         return None
+    
+    @staticmethod
+    def refresh_all_displays(main_window):
+        """Refresh all displays across the application"""
+        print("Starting comprehensive application refresh...")
+        app = QtWidgets.QApplication.instance()
+        
+        try:
+            # 1. Find and refresh dashboard
+            for widget in app.allWidgets():
+                if hasattr(widget, '__class__') and 'DashboardPage' in str(widget.__class__):
+                    DashboardUpdater.refresh_metrics_and_charts(widget)
+                    print("✓ Dashboard refreshed via dashboard updater")
+                    break
+            
+            # 2. Find and refresh customers tab
+            for widget in app.allWidgets():
+                if hasattr(widget, '__class__') and 'CustomersTab' in str(widget.__class__):
+                    CustomerUpdater.refresh_customers_table(widget)
+                    print("✓ Customers tab refreshed via customer updater")
+                    break
+            
+            # 3. Refresh inventory displays
+            InventoryUpdater.refresh_all_inventory_displays(main_window)
+            print("✓ Inventory displays refreshed")
+            
+        except Exception as e:
+            print(f"Error in refresh_all_displays: {e}")

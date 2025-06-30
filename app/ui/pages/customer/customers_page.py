@@ -8,6 +8,7 @@ from .table_factory import TableFactory
 from .control_panel_factory import ControlPanelFactory
 
 from .tabs.customers_tab import CustomersTab
+from app.utils.customer_updater import CustomerUpdater
 
 class CustomersPage(BasePage):
     def __init__(self, parent=None, user_info=None):
@@ -48,3 +49,10 @@ class CustomersPage(BasePage):
     def show_error_message(self, message):
         """Show error message dialog"""
         QtWidgets.QMessageBox.critical(self, "Error", message)
+    
+    def showEvent(self, event):
+        """Called when the page is shown"""
+        super().showEvent(event)
+        # Use QTimer to ensure the refresh happens after the page is fully displayed
+        if hasattr(self, 'customers_tab'):
+            QtCore.QTimer.singleShot(100, lambda: CustomerUpdater.refresh_customers_table(self.customers_tab))

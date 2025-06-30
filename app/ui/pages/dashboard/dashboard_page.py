@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from app.ui.pages.base_page import BasePage
 from app.utils.db_manager import DBManager
+from app.utils.dashboard_updater import DashboardUpdater
 import mysql.connector
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
@@ -397,26 +398,13 @@ class DashboardPage(BasePage):
     
     def refresh_dashboard(self):
         """Refresh dashboard data - called after transactions"""
-        self.load_dashboard_data()
-        
-        # Refresh charts by recreating them
-        try:
-            # Refresh sales chart
-            new_sales_chart = self.create_sales_chart()
-            old_chart = self.sales_chart_widget.findChild(FigureCanvas)
-            if old_chart:
-                old_chart.setParent(None)
-                self.sales_chart_widget.layout().addWidget(new_sales_chart, 1)
-            
-            # Refresh inventory chart
-            new_inventory_chart = self.create_inventory_chart()
-            old_chart = self.inventory_chart_widget.findChild(FigureCanvas)
-            if old_chart:
-                old_chart.setParent(None)
-                self.inventory_chart_widget.layout().addWidget(new_inventory_chart, 1)
-                
-        except Exception as e:
-            print(f"Error refreshing charts: {e}")
+        DashboardUpdater.refresh_metrics_and_charts(self)
+
+    def showEvent(self, event):
+        """Called when the page is shown"""
+        super().showEvent(event)
+        # Use QTimer to ensure the refresh happens after the page is fully displayed
+        QtCore.QTimer.singleShot(100, lambda: DashboardUpdater.refresh_metrics_and_charts(self))
     
     def load_dashboard_data(self):
         """Load dashboard data from database"""
