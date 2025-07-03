@@ -286,7 +286,7 @@ class MainWindow(QtWidgets.QMainWindow):
             {"name": "Reports", "icon": "app/resources/images/main-window/Reports.png", "class": ReportsPage},
             {"name": "Customers", "icon": "app/resources/images/main-window/Customers.png", "class": CustomersPage},
             {"name": "Suppliers", "icon": "app/resources/images/main-window/Suppliers.png", "class": SuppliersPage},
-            {"name": "Sales", "icon": "app/resources/images/main-window/Sales.png", "class": InvoicePage},
+            {"name": "POS", "icon": "app/resources/images/main-window/Sales.png", "class": InvoicePage},
         ]
         
         # Only add Maintenance for admin users

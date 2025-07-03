@@ -75,7 +75,7 @@ class InventoryPage(BasePage):
         elif index == 3:  # Inventory Status tab
             self.inventory_status_tab.load_inventory()
             self.inventory_status_tab.update_analytics()
-
+            
     def update_overview_tab(self):
         """Update the overview dashboard with fresh data"""
         self.overview_tab.update_dashboard()

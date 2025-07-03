@@ -193,18 +193,49 @@ class SelectServiceTab(QtWidgets.QWidget):
                 if child:
                     child.setParent(None)
             
-            # Add services to the grid (5 columns for better space utilization)
-            row, col = 0, 0
-            max_cols = 6  # Increased to 5 columns to use more space
+            # Separate selected and unselected services
+            selected_services = []
+            unselected_services = []
             
             for service in services:
+                is_selected = any(s['service_id'] == service['service_id'] for s in self.selected_services)
+                if is_selected:
+                    selected_services.append(service)
+                else:
+                    unselected_services.append(service)
+            
+            # Combine lists with selected services first
+            ordered_services = selected_services + unselected_services
+            
+            # Add services to the grid (6 columns for better space utilization)
+            row, col = 0, 0
+            max_cols = 6
+            
+            # First, add selected services to the first row
+            for service in selected_services:
+                if col >= max_cols:
+                    # If we have more than 6 selected services, move to next row
+                    row += 1
+                    col = 0
+                
                 service_card = self.create_service_card(service)
                 self.services_grid.addWidget(service_card, row, col)
-                
                 col += 1
+            
+            # If we have selected services, move to next row for unselected services
+            if selected_services and col > 0:
+                row += 1
+                col = 0
+            
+            # Then add unselected services
+            for service in unselected_services:
                 if col >= max_cols:
-                    col = 0
                     row += 1
+                    col = 0
+                
+                service_card = self.create_service_card(service)
+                self.services_grid.addWidget(service_card, row, col)
+                col += 1
             
         except mysql.connector.Error as err:
             self.show_error_message(f"Database error: {err}")
@@ -217,26 +248,42 @@ class SelectServiceTab(QtWidgets.QWidget):
         # Check if service is already selected
         is_selected = any(s['service_id'] == service['service_id'] for s in self.selected_services)
         
+        # Check if service has sufficient stock
+        has_sufficient_stock = self.check_service_stock_availability(service['service_id'])
+        
         if is_selected:
             card.setStyleSheet(StyleFactory.get_service_card_selected_style())
+        elif not has_sufficient_stock:
+            card.setStyleSheet(self.get_service_card_low_stock_style())
         else:
             card.setStyleSheet(StyleFactory.get_service_card_style())
             
         card.setFixedSize(180, 140)  # Adjusted size for 5-column layout
-        card.setCursor(QtCore.Qt.PointingHandCursor)
+        
+        # Only make clickable if stock is sufficient
+        if has_sufficient_stock:
+            card.setCursor(QtCore.Qt.PointingHandCursor)
+            # Add click event
+            card.mousePressEvent = lambda event: self.toggle_service_selection(service, card)
+        else:
+            card.setCursor(QtCore.Qt.ForbiddenCursor)
+            # Add tooltip to explain why it's disabled
+            card.setToolTip("Service unavailable - insufficient product stock")
         
         # Store service data in the widget
         card.service_data = service
         card.is_selected = is_selected
+        card.has_sufficient_stock = has_sufficient_stock
         
         layout = QtWidgets.QVBoxLayout(card)
         layout.setContentsMargins(10, 10, 10, 10)  # Reduced margins
         layout.setSpacing(5)  # Reduced spacing
         
-        # Service name - no borders
+        # Service name - color changes based on stock availability
+        name_color = "white" if has_sufficient_stock else "#808080"
         name_label = QtWidgets.QLabel(service['service_name'])
-        name_label.setStyleSheet("""
-            color: white; 
+        name_label.setStyleSheet(f"""
+            color: {name_color}; 
             font-weight: bold; 
             font-size: 13px;
             border: none;
@@ -246,10 +293,11 @@ class SelectServiceTab(QtWidgets.QWidget):
         name_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(name_label)
         
-        # Category with improved styling - no borders
+        # Category with improved styling - color changes based on stock availability
+        category_color = "#B0BEC5" if has_sufficient_stock else "#666666"
         category_label = QtWidgets.QLabel(f"Category: {service['category']}")
-        category_label.setStyleSheet("""
-            color: #B0BEC5; 
+        category_label.setStyleSheet(f"""
+            color: {category_color}; 
             font-size: 10px;
             border: none;
             background: transparent;
@@ -257,10 +305,11 @@ class SelectServiceTab(QtWidgets.QWidget):
         category_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(category_label)
         
-        # Price with better prominence - no borders
+        # Price with better prominence - color changes based on stock availability
+        price_color = "#4CAF50" if has_sufficient_stock else "#666666"
         price_label = QtWidgets.QLabel(f"₱{float(service['price']):.2f}")
-        price_label.setStyleSheet("""
-            color: #4CAF50; 
+        price_label.setStyleSheet(f"""
+            color: {price_color}; 
             font-weight: bold; 
             font-size: 15px;
             border: none;
@@ -269,7 +318,7 @@ class SelectServiceTab(QtWidgets.QWidget):
         price_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(price_label)
         
-        # Selection indicator - no borders
+        # Selection indicator or stock status
         if is_selected:
             selected_indicator = QtWidgets.QLabel("✓ Selected")
             selected_indicator.setStyleSheet("""
@@ -281,17 +330,81 @@ class SelectServiceTab(QtWidgets.QWidget):
             """)
             selected_indicator.setAlignment(QtCore.Qt.AlignCenter)
             layout.addWidget(selected_indicator)
+        elif not has_sufficient_stock:
+            stock_indicator = QtWidgets.QLabel("⚠ Low Stock")
+            stock_indicator.setStyleSheet("""
+                color: #FF9800; 
+                font-weight: bold; 
+                font-size: 10px;
+                border: none;
+                background: transparent;
+            """)
+            stock_indicator.setAlignment(QtCore.Qt.AlignCenter)
+            layout.addWidget(stock_indicator)
         else:
             # Add spacer for consistent sizing
             layout.addStretch()
         
-        # Add click event
-        card.mousePressEvent = lambda event: self.toggle_service_selection(service, card)
-        
         return card
+    
+    def get_service_card_low_stock_style(self):
+        """Get style for service cards with low stock"""
+        return """
+            QFrame {
+                background-color: #2a2a2a;
+                border: 2px solid #555555;
+                border-radius: 8px;
+                margin: 2px;
+            }
+            QFrame:hover {
+                background-color: #333333;
+                border-color: #666666;
+            }
+        """
+    
+    def check_service_stock_availability(self, service_id):
+        """Check if a service has sufficient product stock"""
+        try:
+            conn = DBManager.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Get all products required for this service
+            cursor.execute("""
+                SELECT sp.product_id, sp.quantity as required_quantity, p.quantity as available_quantity
+                FROM service_products sp
+                JOIN products p ON sp.product_id = p.product_id
+                WHERE sp.service_id = %s AND p.availability = 1
+            """, (service_id,))
+            
+            service_products = cursor.fetchall()
+            cursor.close()
+            
+            # If no products required, service is available
+            if not service_products:
+                return True
+            
+            # Check if all products have sufficient stock
+            for product in service_products:
+                if product['available_quantity'] < product['required_quantity']:
+                    return False
+            
+            return True
+            
+        except mysql.connector.Error as err:
+            print(f"Error checking service stock: {err}")
+            return False  # Default to unavailable if there's an error
     
     def toggle_service_selection(self, service, card):
         """Handle service selection/deselection"""
+        # Only allow selection if stock is sufficient
+        if not card.has_sufficient_stock:
+            QtWidgets.QMessageBox.warning(
+                self, 
+                "Service Unavailable", 
+                f"Service '{service['service_name']}' is currently unavailable due to insufficient product stock.\n\nPlease check inventory and restock the required products."
+            )
+            return
+        
         service_id = service['service_id']
         
         # Check if service is already selected
@@ -324,29 +437,61 @@ class SelectServiceTab(QtWidgets.QWidget):
                 self.parent.parent.disable_navigation()
     
     def refresh_service_cards(self):
-        """Refresh all service cards to show correct selection state"""
+        """Refresh all service cards to show correct selection state and reorganize layout"""
+        # Store current services data
+        current_services = []
         for i in range(self.services_grid.count()):
             item = self.services_grid.itemAt(i)
             if item and item.widget():
                 card = item.widget()
                 if hasattr(card, 'service_data'):
-                    service = card.service_data
-                    is_selected = any(s['service_id'] == service['service_id'] for s in self.selected_services)
-                    
-                    # Update card styling
-                    if is_selected:
-                        card.setStyleSheet(StyleFactory.get_service_card_selected_style())
-                    else:
-                        card.setStyleSheet(StyleFactory.get_service_card_style())
-                    
-                    # Update selection indicator
-                    card.is_selected = is_selected
-                    # Recreate the card to update the indicator
-                    row = i // 5  # Changed to 5 columns
-                    col = i % 5
-                    new_card = self.create_service_card(service)
-                    self.services_grid.replaceWidget(card, new_card)
-                    card.deleteLater()
+                    current_services.append(card.service_data)
+        
+        # Clear the grid
+        for i in reversed(range(self.services_grid.count())):
+            child = self.services_grid.itemAt(i).widget()
+            if child:
+                child.setParent(None)
+        
+        # Separate selected and unselected services
+        selected_services = []
+        unselected_services = []
+        
+        for service in current_services:
+            is_selected = any(s['service_id'] == service['service_id'] for s in self.selected_services)
+            if is_selected:
+                selected_services.append(service)
+            else:
+                unselected_services.append(service)
+        
+        # Add services to the grid with selected services first
+        row, col = 0, 0
+        max_cols = 6
+        
+        # First, add selected services to the first row
+        for service in selected_services:
+            if col >= max_cols:
+                row += 1
+                col = 0
+            
+            service_card = self.create_service_card(service)
+            self.services_grid.addWidget(service_card, row, col)
+            col += 1
+        
+        # If we have selected services, move to next row for unselected services
+        if selected_services and col > 0:
+            row += 1
+            col = 0
+        
+        # Then add unselected services
+        for service in unselected_services:
+            if col >= max_cols:
+                row += 1
+                col = 0
+            
+            service_card = self.create_service_card(service)
+            self.services_grid.addWidget(service_card, row, col)
+            col += 1
     
     def update_selected_services_display(self):
         """Update the selected services display"""

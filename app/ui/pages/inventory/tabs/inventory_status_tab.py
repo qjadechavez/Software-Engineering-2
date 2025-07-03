@@ -10,29 +10,15 @@ class InventoryStatusTab(QtWidgets.QWidget):
         super(InventoryStatusTab, self).__init__()
         self.parent = parent
         self.setup_ui()
-        
+    
     def setup_ui(self):
         """Set up the UI components for the inventory status tab"""
         self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.setContentsMargins(10, 15, 10, 10)
         self.layout.setSpacing(15)
         
-        # Add inventory analytics section
-        analytics_layout = QtWidgets.QHBoxLayout()
-        analytics_layout.setSpacing(15)
-        
-        # Create info cards
-        self.low_stock_card = self.create_info_card("Low Stock Items", "0", "#FF5252", "warning")
-        self.expired_card = self.create_info_card("Expired Items", "0", "#FF9800", "expired")
-        self.total_card = self.create_info_card("Total Products", "0", "#4CAF50", "products")
-        self.received_card = self.create_info_card("Recently Received", "0", "#2196F3", "received")
-        
-        analytics_layout.addWidget(self.low_stock_card)
-        analytics_layout.addWidget(self.expired_card)
-        analytics_layout.addWidget(self.total_card)
-        analytics_layout.addWidget(self.received_card)
-        
-        self.layout.addLayout(analytics_layout)
+        # Add inventory analytics section - matching overview tab style
+        self.create_inventory_metrics_section()
         
         # Create inventory table
         self.inventory_table = TableFactory.create_table()
@@ -53,62 +39,109 @@ class InventoryStatusTab(QtWidgets.QWidget):
         
         self.layout.addWidget(self.inventory_table)
     
-    def create_info_card(self, title, value, color, icon_type=None, subtitle=None):
-        """Create an info card for the inventory dashboard"""
-        card = QtWidgets.QFrame()
-        card.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        card.setStyleSheet(f"""
+    def create_metric_item(self, title, value, icon_type, color):
+        """Create a smaller metric item matching overview tab style"""
+        metric = QtWidgets.QFrame()
+        metric.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        metric.setFixedHeight(80)  # Fixed smaller height
+        metric.setStyleSheet(f"""
             QFrame {{
-                background-color: #232323;
-                border-radius: 10px;
-                border-left: 5px solid {color};
-                padding: 10px;
-                min-height: 80px;
+                background-color: #2a2a2a;
+                border-radius: 6px;
+                border-left: 3px solid {color};
+                border-top: none;
+                border-right: none;
+                border-bottom: none;
             }}
         """)
         
-        card_layout = QtWidgets.QHBoxLayout(card)
-        card_layout.setContentsMargins(15, 10, 15, 10)
+        layout = QtWidgets.QHBoxLayout(metric)  # Changed to horizontal layout
+        layout.setContentsMargins(12, 8, 12, 8)  # Smaller margins
+        layout.setSpacing(8)
         
-        # Add icon based on card type
+        # Icon
         icon_label = QtWidgets.QLabel()
-        icon_label.setFixedSize(60, 60)
-        icon_label.setAlignment(QtCore.Qt.AlignCenter)
-        icon_label.setText("●")
-        icon_label.setStyleSheet(f"""
-            color: {color};
-            font-size: 40px;
-        """)
+        icon_map = {
+            "warning": "⚠️",
+            "alert": "⚠️",
+            "error": "❌",
+            "info": "ℹ️"
+        }
+        icon_label.setText(icon_map.get(icon_type, "•"))
+        icon_label.setStyleSheet(f"color: {color}; font-size: 18px; background: transparent;")  # Smaller icon
+        icon_label.setFixedSize(24, 24)
         
         # Text content
         text_layout = QtWidgets.QVBoxLayout()
-        text_layout.setSpacing(5)
+        text_layout.setSpacing(2)  # Reduced spacing
+        text_layout.setContentsMargins(0, 0, 0, 0)
         
         title_label = QtWidgets.QLabel(title)
         title_label.setStyleSheet("""
-            color: #AAAAAA;
-            font-size: 14px;
-            font-weight: bold;
+            color: #cccccc;
+            font-size: 11px;
+            font-weight: normal;
         """)
         
         value_label = QtWidgets.QLabel(value)
         value_label.setStyleSheet(f"""
-            color: {color};
-            font-size: 24px;
+            color: white;
+            font-size: 16px;
             font-weight: bold;
         """)
         
         text_layout.addWidget(title_label)
         text_layout.addWidget(value_label)
         
-        # Add icon and text to card layout
-        card_layout.addWidget(icon_label)
-        card_layout.addLayout(text_layout, 1)
+        layout.addWidget(icon_label)
+        layout.addLayout(text_layout, 1)
         
-        card.value_label = value_label
-        card.title = title
+        # Store reference to value label for updating
+        metric.value_label = value_label
+        metric.title = title
         
-        return card
+        return metric
+    
+    def create_inventory_metrics_section(self):
+        """Create compact inventory metrics section"""
+        metrics_frame = QtWidgets.QFrame()
+        metrics_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        metrics_frame.setStyleSheet("""
+            QFrame {
+                background-color: #232323;
+                border-radius: 8px;
+                border: 1px solid rgba(100, 100, 100, 0.3);
+            }
+        """)
+        
+        metrics_layout = QtWidgets.QVBoxLayout(metrics_frame)
+        metrics_layout.setContentsMargins(15, 12, 15, 12)  # Smaller margins
+        metrics_layout.setSpacing(10)  # Reduced spacing
+        
+        # Metrics header
+        metrics_header = QtWidgets.QLabel("Inventory Status Metrics")
+        metrics_header.setStyleSheet("color: white; font-size: 14px; font-weight: bold; border: none;")  # Smaller font
+        metrics_layout.addWidget(metrics_header)
+        
+        # Metrics row layout
+        metrics_grid = QtWidgets.QHBoxLayout()
+        metrics_grid.setSpacing(10)  # Reduced spacing between metrics
+        
+        # Create inventory metric items
+        self.low_stock_metric = self.create_metric_item("Low Stock Items", "0", "warning", "#FF5252")
+        self.expired_metric = self.create_metric_item("Expired Items", "0", "error", "#FF9800")
+        self.total_metric = self.create_metric_item("Total Products", "0", "info", "#4CAF50")
+        self.received_metric = self.create_metric_item("Recently Received", "0", "info", "#2196F3")
+        
+        metrics_grid.addWidget(self.low_stock_metric)
+        metrics_grid.addWidget(self.expired_metric)
+        metrics_grid.addWidget(self.total_metric)
+        metrics_grid.addWidget(self.received_metric)
+        
+        metrics_layout.addLayout(metrics_grid)
+        
+        # Add metrics section with zero stretch factor
+        self.layout.addWidget(metrics_frame, 0)
     
     def load_inventory(self):
         """Load inventory data from the new inventory_status table"""
@@ -196,7 +229,7 @@ class InventoryStatusTab(QtWidgets.QWidget):
                 QtWidgets.QMessageBox.critical(self, "Error", f"Database error: {err}")
     
     def update_analytics(self):
-        """Update inventory analytics cards"""
+        """Update inventory analytics metrics"""
         try:
             conn = DBManager.get_connection()
             cursor = conn.cursor(dictionary=True)
@@ -226,11 +259,11 @@ class InventoryStatusTab(QtWidgets.QWidget):
             """)
             received_count = cursor.fetchone()['count']
             
-            # Update the info cards
-            self.low_stock_card.value_label.setText(str(low_stock_count))
-            self.expired_card.value_label.setText(str(expired_count))
-            self.total_card.value_label.setText(str(total_count))
-            self.received_card.value_label.setText(str(received_count))
+            # Update the metrics
+            self.low_stock_metric.value_label.setText(str(low_stock_count))
+            self.expired_metric.value_label.setText(str(expired_count))
+            self.total_metric.value_label.setText(str(total_count))
+            self.received_metric.value_label.setText(str(received_count))
             
             cursor.close()
             print(f"✓ Updated analytics: Total={total_count}, Low Stock={low_stock_count}, Expired={expired_count}, Recently Received={received_count}")
