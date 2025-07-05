@@ -3,6 +3,7 @@ from app.ui.main_window import MainWindow
 from .style_factory import StyleFactory
 from .form_factory import FormFactory
 from .handlers.auth_handler import AuthHandler
+from .dialogs.forgot_password_dialog import ForgotPasswordDialog
 
 class LoginPage(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -69,7 +70,7 @@ class LoginPage(QtWidgets.QWidget):
         
         # Login container
         self.login_container = QtWidgets.QWidget(self.right_panel)
-        self.login_container.setGeometry(QtCore.QRect(120, 150, 400, 420))
+        self.login_container.setGeometry(QtCore.QRect(120, 150, 400, 470))  # Increased height
         
         # Welcome heading
         self.welcome_label = FormFactory.create_label(
@@ -113,9 +114,19 @@ class LoginPage(QtWidgets.QWidget):
         )
         self.password_field.setGeometry(QtCore.QRect(0, 250, 400, 50))
         
+        # Forgot password link
+        forgot_password_text = (
+            "<a href='#' style='color: #007ACC; text-decoration: none; font-size: 11px;'>"
+            "Forgot Password?</a>"
+        )
+        self.forgot_password_link = FormFactory.create_link_label(self.login_container, forgot_password_text)
+        self.forgot_password_link.setGeometry(QtCore.QRect(0, 305, 400, 25))
+        self.forgot_password_link.setAlignment(QtCore.Qt.AlignRight)
+        self.forgot_password_link.linkActivated.connect(self.show_forgot_password_dialog)
+        
         # Error message label (hidden initially)
         self.error_label = QtWidgets.QLabel(self.login_container)
-        self.error_label.setGeometry(QtCore.QRect(0, 305, 400, 30))
+        self.error_label.setGeometry(QtCore.QRect(0, 335, 400, 30))
         self.error_label.setFont(QtGui.QFont("Segoe UI", 10))
         self.error_label.setText("Invalid username or password")
         self.error_label.setStyleSheet(StyleFactory.get_error_style())
@@ -124,7 +135,7 @@ class LoginPage(QtWidgets.QWidget):
         
         # Login button
         self.login_button = FormFactory.create_button(self.login_container, "Login")
-        self.login_button.setGeometry(QtCore.QRect(0, 340, 400, 50))
+        self.login_button.setGeometry(QtCore.QRect(0, 370, 400, 50))
         self.login_button.clicked.connect(self.authenticate)
         
         # Register account link
@@ -134,7 +145,7 @@ class LoginPage(QtWidgets.QWidget):
             "Register Here</span></a>"
         )
         self.register_link = FormFactory.create_link_label(self.login_container, register_link_text)
-        self.register_link.setGeometry(QtCore.QRect(0, 395, 400, 30))
+        self.register_link.setGeometry(QtCore.QRect(0, 425, 400, 30))
         self.register_link.linkActivated.connect(self.show_registration_page)
         
         # Add right panel to main layout
@@ -194,3 +205,8 @@ class LoginPage(QtWidgets.QWidget):
         self.register_window = RegisterPage(parent=self)
         self.register_window.show()
         self.hide()
+
+    def show_forgot_password_dialog(self):
+        """Show the forgot password dialog"""
+        dialog = ForgotPasswordDialog(self)
+        dialog.exec_()

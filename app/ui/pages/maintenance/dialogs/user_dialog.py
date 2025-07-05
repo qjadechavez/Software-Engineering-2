@@ -17,7 +17,7 @@ class UserDialog(BaseDialog):
     
     def setup_ui(self):
         """Set up the dialog UI"""
-        self.setup_base_ui(550)
+        self.setup_base_ui(650)  # Increased height for security question
         
         # Set dialog title
         if self.user:
@@ -56,6 +56,19 @@ class UserDialog(BaseDialog):
         self.role_combo.addItems(["staff", "admin"])
         self.form_layout.addRow("Role:", self.role_combo)
         
+        # Security question field
+        self.security_question_combo = QtWidgets.QComboBox()
+        self.security_question_combo.addItems([
+            "What is your favorite color?"
+        ])
+        self.form_layout.addRow("Security Question:", self.security_question_combo)
+        
+        # Security answer field
+        self.security_answer_input = QtWidgets.QLineEdit()
+        self.security_answer_input.setMaxLength(255)
+        self.security_answer_input.setPlaceholderText("Enter your answer")
+        self.form_layout.addRow("Security Answer:", self.security_answer_input)
+        
         # Reason for creation (only for new users)
         if not self.user:
             self.reason_input = QtWidgets.QTextEdit()
@@ -68,17 +81,27 @@ class UserDialog(BaseDialog):
         
         # Set focus to first field
         self.username_input.setFocus()
+        
+        # Populate fields if editing
+        if self.user:
+            self.populate_fields()
     
     def populate_fields(self):
-        """Populate fields when editing a user"""
+        """Populate form fields with user data"""
         if self.user:
-            self.username_input.setText(self.user['username'])
-            self.full_name_input.setText(self.user['full_name'])
+            self.username_input.setText(self.user.get('username', ''))
+            self.full_name_input.setText(self.user.get('full_name', ''))
+            self.role_combo.setCurrentText(self.user.get('role', 'staff'))
             
-            # Set role
-            role_index = self.role_combo.findText(self.user['role'])
-            if role_index >= 0:
-                self.role_combo.setCurrentIndex(role_index)
+            # Set security question if exists
+            if self.user.get('security_question'):
+                index = self.security_question_combo.findText(self.user.get('security_question'))
+                if index >= 0:
+                    self.security_question_combo.setCurrentIndex(index)
+            
+            # Security answer (for editing, show placeholder)
+            if self.user.get('security_answer'):
+                self.security_answer_input.setPlaceholderText("Leave blank to keep current answer")
     
     def validate_input(self):
         """Validate user input"""
@@ -107,6 +130,12 @@ class UserDialog(BaseDialog):
             QtWidgets.QMessageBox.warning(self, "Validation Error", "Password must be at least 3 characters long!")
             return False
         
+        # Check security question and answer for new users
+        if not self.user:
+            if not self.security_answer_input.text().strip():
+                QtWidgets.QMessageBox.warning(self, "Validation Error", "Security answer is required!")
+                return False
+        
         return True
     
     def save_user(self):
@@ -121,24 +150,50 @@ class UserDialog(BaseDialog):
             username = self.username_input.text().strip()
             full_name = self.full_name_input.text().strip()
             role = self.role_combo.currentText()
+            security_question = self.security_question_combo.currentText()
+            security_answer = self.security_answer_input.text().strip()
             
             if self.user:
                 # Update existing user
                 if self.password_input.text():
                     # Update with new password
-                    password_hash = self.password_input.text()  # In production, use proper hashing
-                    cursor.execute("""
-                        UPDATE users 
-                        SET username = %s, password = %s, full_name = %s, role = %s
-                        WHERE user_id = %s
-                    """, (username, password_hash, full_name, role, self.user['user_id']))
+                    import hashlib
+                    password_hash = hashlib.sha256(self.password_input.text().encode()).hexdigest()
+                    
+                    if security_answer:
+                        # Update with security question/answer
+                        cursor.execute("""
+                            UPDATE users 
+                            SET username = %s, password = %s, full_name = %s, role = %s, 
+                                security_question = %s, security_answer = %s
+                            WHERE user_id = %s
+                        """, (username, password_hash, full_name, role, security_question, security_answer, self.user['user_id']))
+                    else:
+                        # Update without changing security answer
+                        cursor.execute("""
+                            UPDATE users 
+                            SET username = %s, password = %s, full_name = %s, role = %s, 
+                                security_question = %s
+                            WHERE user_id = %s
+                        """, (username, password_hash, full_name, role, security_question, self.user['user_id']))
                 else:
                     # Update without changing password
-                    cursor.execute("""
-                        UPDATE users 
-                        SET username = %s, full_name = %s, role = %s
-                        WHERE user_id = %s
-                    """, (username, full_name, role, self.user['user_id']))
+                    if security_answer:
+                        # Update with security question/answer
+                        cursor.execute("""
+                            UPDATE users 
+                            SET username = %s, full_name = %s, role = %s, 
+                                security_question = %s, security_answer = %s
+                            WHERE user_id = %s
+                        """, (username, full_name, role, security_question, security_answer, self.user['user_id']))
+                    else:
+                        # Update without changing security answer
+                        cursor.execute("""
+                            UPDATE users 
+                            SET username = %s, full_name = %s, role = %s, 
+                                security_question = %s
+                            WHERE user_id = %s
+                        """, (username, full_name, role, security_question, self.user['user_id']))
                 
                 action = "updated"
             else:
@@ -150,13 +205,14 @@ class UserDialog(BaseDialog):
                     return
                 
                 # Insert new user
-                password_hash = self.password_input.text()  # In production, use proper hashing
+                import hashlib
+                password_hash = hashlib.sha256(self.password_input.text().encode()).hexdigest()
                 reason = self.reason_input.toPlainText().strip() if hasattr(self, 'reason_input') else ""
                 
                 cursor.execute("""
-                    INSERT INTO users (username, password, full_name, role, reason_for_creation)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (username, password_hash, full_name, role, reason))
+                    INSERT INTO users (username, password, full_name, role, reason_for_creation, security_question, security_answer)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (username, password_hash, full_name, role, reason, security_question, security_answer))
                 
                 action = "created"
             
@@ -166,7 +222,5 @@ class UserDialog(BaseDialog):
             QtWidgets.QMessageBox.information(self, "Success", f"User {action} successfully!")
             self.accept()
             
-        except mysql.connector.Error as err:
-            QtWidgets.QMessageBox.critical(self, "Database Error", f"Error saving user: {err}")
-        except Exception as err:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Unexpected error: {err}")
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to save user: {str(e)}")

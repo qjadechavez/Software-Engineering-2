@@ -125,37 +125,11 @@ class AboutPage(BasePage):
         content_layout = QtWidgets.QVBoxLayout(content_widget)
         content_layout.setSpacing(20)
         
-        # Company overview section
+        # Company overview section (keeping this as the main content)
         overview_frame = self.create_professional_section("Company Overview", [
             "Miere Beauty Lounge is a premier beauty and wellness establishment dedicated to providing exceptional skin care and beauty services. Founded with a passion for enhancing natural beauty and promoting wellness, we have become a trusted destination for clients seeking professional beauty treatments and personalized care."
         ])
         content_layout.addWidget(overview_frame)
-        
-        # Create grid layout for main information sections
-        grid_widget = QtWidgets.QWidget()
-        grid_widget.setStyleSheet("background-color: transparent;")
-        grid_layout = QtWidgets.QGridLayout(grid_widget)
-        grid_layout.setSpacing(20)
-        
-        # Company history section
-        history_frame = self.create_professional_section("Company History", [
-            "Establishment Date: October 8, 2022 (Soft Opening)",
-            "Founder: Ms. Melisa P. Almacen",
-            "Grand Opening: December 8, 2022",
-            "Location: Premium beauty destination",
-            "Foundation: Built on quality service and customer satisfaction"
-        ])
-        grid_layout.addWidget(history_frame, 0, 0)
-        
-        # Mission and vision section
-        mission_frame = self.create_professional_section("Mission & Vision", [
-            "Mission: To provide exceptional beauty and wellness services that enhance our clients' natural beauty while promoting confidence and self-care.",
-            "Vision: To be the leading beauty lounge that sets the standard for quality, innovation, and customer satisfaction in the beauty industry.",
-            "Core Values: Excellence • Innovation • Customer Care • Professional Integrity • Beauty Enhancement"
-        ])
-        grid_layout.addWidget(mission_frame, 0, 1)
-        
-        content_layout.addWidget(grid_widget)
          
         scroll_area.setWidget(content_widget)
         main_layout.addWidget(scroll_area)
@@ -235,19 +209,9 @@ class AboutPage(BasePage):
         content_layout = QtWidgets.QVBoxLayout(content_widget)
         content_layout.setSpacing(20)
         
-        # Project information
-        project_frame = self.create_professional_section("Project Information", [
-            "Project Name: Miere Beauty Lounge Management System",
-            "Academic Course: Software Engineering 2",
-            "Institution: [University/College Name]",
-            "Development Period: Academic Year 2024-2025",
-            "Technology Stack: Python, PyQt5, MySQL Database"
-        ])
-        content_layout.addWidget(project_frame)
-        
-        # Team section header
-        team_header = QtWidgets.QLabel("Development Team Members")
-        team_header.setStyleSheet("""
+        # Project Information section
+        project_header = QtWidgets.QLabel("Project Information")
+        project_header.setStyleSheet("""
             color: #ffffff; 
             font-size: 20px; 
             font-weight: 600; 
@@ -255,93 +219,37 @@ class AboutPage(BasePage):
             border: none;
             background-color: transparent;
         """)
-        content_layout.addWidget(team_header)
+        content_layout.addWidget(project_header)
         
-        # Team grid layout (3 members in a row)
-        team_grid = QtWidgets.QWidget()
-        team_grid.setStyleSheet("background-color: transparent;")
-        team_layout = QtWidgets.QGridLayout(team_grid)
-        team_layout.setSpacing(20)
+        # Project information grid
+        project_grid = QtWidgets.QWidget()
+        project_grid.setStyleSheet("background-color: transparent;")
+        project_layout = QtWidgets.QGridLayout(project_grid)
+        project_layout.setSpacing(20)
         
-        # Team Member 1
-        member1_frame = self.create_professional_section("Project Lead", [
-            "Name: [Developer Name 1]",
-            "Role: Lead Developer & Backend Architecture",
-            "Primary Responsibilities:",
-            "• Database design and system architecture",
-            "• Core functionality implementation and optimization",
-            "• System integration and performance tuning",
-            "• Code review and quality assurance oversight"
+        # Project details
+        project_details_frame = self.create_professional_section("Project Details", [
+            "Project Name: Sales and Inventory Management System",
+            "System Type: Desktop Business Application",
+            "Target Business: Miere Beauty Lounge",
+            "Development Period: Summer 2024-2025",
+            "Deployment: Local Desktop Application"
         ])
-        team_layout.addWidget(member1_frame, 0, 0)
+        project_layout.addWidget(project_details_frame, 0, 0)
         
-        # Team Member 2
-        member2_frame = self.create_professional_section("Frontend Developer", [
-            "Name: [Developer Name 2]",
-            "Role: UI/UX Designer & Frontend Developer",
-            "Primary Responsibilities:",
-            "• User interface design and implementation",
-            "• User experience optimization and testing",
-            "• Component styling and responsive design",
-            "• Frontend architecture and design patterns"
+        # Academic information
+        academic_frame = self.create_professional_section("Academic Information", [
+            "Course: Software Engineering 2",
+            "Institution: Technological Institute of the Philippines - Quezon City",
+            "Department: Computer Science",
+            "Academic Level: BSCS Program",
+            "Semester: Summer 2024-2025",
+            "Methodology: W-Model Software Development"
         ])
-        team_layout.addWidget(member2_frame, 0, 1)
+        project_layout.addWidget(academic_frame, 0, 1)
         
-        # Team Member 3
-        member3_frame = self.create_professional_section("Systems Analyst", [
-            "Name: [Developer Name 3]",
-            "Role: Business Analysis & Quality Assurance",
-            "Primary Responsibilities:",
-            "• Requirements gathering and analysis",
-            "• Business process modeling and optimization",
-            "• System testing and quality assurance",
-            "• Documentation and user manual creation"
-        ])
-        team_layout.addWidget(member3_frame, 0, 2)
+        content_layout.addWidget(project_grid)
         
-        content_layout.addWidget(team_grid)
-        
-        # Technical specifications section
-        tech_header = QtWidgets.QLabel("Technical Specifications")
-        tech_header.setStyleSheet("""
-            color: #ffffff; 
-            font-size: 20px; 
-            font-weight: 600; 
-            margin: 15px 0px 10px 0px; 
-            border: none;
-            background-color: transparent;
-        """)
-        content_layout.addWidget(tech_header)
-        
-        # Technical specifications grid
-        tech_grid = QtWidgets.QWidget()
-        tech_grid.setStyleSheet("background-color: transparent;")
-        tech_layout = QtWidgets.QGridLayout(tech_grid)
-        tech_layout.setSpacing(20)
-        
-        # Development environment
-        tools_frame = self.create_professional_section("Development Environment", [
-            "Programming Language: Python 3.x",
-            "GUI Framework: PyQt5",
-            "Database Management: MySQL",
-            "Integrated Development Environment: Visual Studio Code",
-            "Version Control: Git & GitHub",
-            "Project Management: Agile Methodology"
-        ])
-        tech_layout.addWidget(tools_frame, 0, 0)
-        
-        # System architecture
-        arch_frame = self.create_professional_section("System Architecture", [
-            "Design Pattern: Model-View-Controller (MVC)",
-            "UI Design Patterns: Factory Pattern, Observer Pattern",
-            "Platform Compatibility: Cross-platform desktop application",
-            "Security Framework: Role-based access control",
-            "Data Management: Relational database with ACID compliance",
-            "Performance: Optimized for real-time business operations"
-        ])
-        tech_layout.addWidget(arch_frame, 0, 1)
-        
-        content_layout.addWidget(tech_grid)
         
         # System features section
         features_header = QtWidgets.QLabel("System Features")

@@ -16,9 +16,9 @@ class RegisterPage(QtWidgets.QWidget):
         # Set the main window properties
         self.setObjectName("RegisterForm")
         self.setWindowTitle("Register - Sales and Inventory Management System")
-        self.resize(1280, 720)
-        self.setMinimumSize(QtCore.QSize(1280, 720))
-        self.setMaximumSize(QtCore.QSize(1280, 720))
+        self.resize(1280, 840)
+        self.setMinimumSize(QtCore.QSize(1280, 840))
+        self.setMaximumSize(QtCore.QSize(1280, 840))
         self.setStyleSheet("background-color: #FFFFFF;")
         
         # Create main layout
@@ -70,9 +70,9 @@ class RegisterPage(QtWidgets.QWidget):
         self.right_panel = QtWidgets.QWidget()
         self.right_panel.setStyleSheet("background-color: white;")
         
-        # Registration container
+        # Registration container - Increased height to accommodate all elements
         self.register_container = QtWidgets.QWidget(self.right_panel)
-        self.register_container.setGeometry(QtCore.QRect(80, 60, 480, 600))
+        self.register_container.setGeometry(QtCore.QRect(80, 60, 480, 720))  # Increased height from 600 to 720
         
         # Registration heading
         self.register_label = QtWidgets.QLabel(self.register_container)
@@ -119,34 +119,51 @@ class RegisterPage(QtWidgets.QWidget):
         )
         self.password_field.setGeometry(QtCore.QRect(0, 330, 480, 50))
         
-        # Confirm Password
-        self.confirm_password_label = FormFactory.create_label(self.register_container, "Confirm Password")
-        self.confirm_password_label.setGeometry(QtCore.QRect(0, 390, 480, 30))
+        # Security Question Label (static)
+        self.security_question_label = FormFactory.create_label(self.register_container, "Security Question")
+        self.security_question_label.setGeometry(QtCore.QRect(0, 390, 480, 30))
         
-        self.confirm_password_field = FormFactory.create_input_field(
+        # Security Question Display (read-only)
+        self.security_question_display = QtWidgets.QLabel(self.register_container)
+        self.security_question_display.setGeometry(QtCore.QRect(0, 420, 480, 40))
+        self.security_question_display.setFont(QtGui.QFont("Segoe UI", 12))
+        self.security_question_display.setText("What is your favorite color?")
+        self.security_question_display.setStyleSheet("""
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            color: #333;
+        """)
+        self.security_question_display.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        
+        # Security Answer
+        self.security_answer_label = FormFactory.create_label(self.register_container, "Security Answer")
+        self.security_answer_label.setGeometry(QtCore.QRect(0, 470, 480, 30))
+        
+        self.security_answer_field = FormFactory.create_input_field(
             self.register_container,
-            placeholder="Confirm your password",
-            password_mode=True
+            placeholder="Enter your favorite color"
         )
-        self.confirm_password_field.setGeometry(QtCore.QRect(0, 420, 480, 50))
+        self.security_answer_field.setGeometry(QtCore.QRect(0, 500, 480, 50))
         
         # Error message label (hidden initially)
         self.error_label = QtWidgets.QLabel(self.register_container)
-        self.error_label.setGeometry(QtCore.QRect(0, 475, 480, 30))
+        self.error_label.setGeometry(QtCore.QRect(0, 560, 480, 30))
         self.error_label.setFont(QtGui.QFont("Segoe UI", 10))
         self.error_label.setText("Error message")
         self.error_label.setStyleSheet(StyleFactory.get_error_style())
         self.error_label.setAlignment(QtCore.Qt.AlignCenter)
         self.error_label.hide()
         
-        # Register button
+        # Register button - Moved up to be visible
         self.register_button = FormFactory.create_button(self.register_container, "Register")
-        self.register_button.setGeometry(QtCore.QRect(0, 510, 480, 50))
+        self.register_button.setGeometry(QtCore.QRect(0, 600, 480, 50))  # Changed from Y=595 to Y=600
         self.register_button.clicked.connect(self.register_user)
         
-        # Login link
+        # Login link - Moved up to be visible
         self.login_link = QtWidgets.QLabel(self.register_container)
-        self.login_link.setGeometry(QtCore.QRect(0, 570, 480, 30))
+        self.login_link.setGeometry(QtCore.QRect(0, 660, 480, 30))  # Changed from Y=655 to Y=660
         self.login_link.setFont(QtGui.QFont("Segoe UI", 10))
         self.login_link.setText("<a href='#' style='color: #232323; text-decoration: none;'>Already have an account? <span style='color: #232323; font-weight: bold;'>Sign In</span></a>")
         self.login_link.setAlignment(QtCore.Qt.AlignCenter)
@@ -209,10 +226,10 @@ class RegisterPage(QtWidgets.QWidget):
         full_name = self.full_name_field.text().strip()
         username = self.username_field.text().strip()
         password = self.password_field.text()
-        confirm_password = self.confirm_password_field.text()
+        security_answer = self.security_answer_field.text().strip()
         
         # Check for empty fields
-        if not all([full_name, username, password, confirm_password]):
+        if not all([full_name, username, password, security_answer]):
             return {'valid': False, 'message': "Please fill in all fields"}
         
         # Username validation
@@ -226,9 +243,10 @@ class RegisterPage(QtWidgets.QWidget):
         # Password validation
         if len(password) < 6:
             return {'valid': False, 'message': "Password must be at least 6 characters"}
-            
-        if password != confirm_password:
-            return {'valid': False, 'message': "Passwords do not match"}
+        
+        # Security answer validation
+        if len(security_answer) < 2:
+            return {'valid': False, 'message': "Security answer must be at least 2 characters"}
         
         return {'valid': True, 'message': ""}
 
@@ -301,13 +319,19 @@ class RegisterPage(QtWidgets.QWidget):
         # Hash the password
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         
+        # Get security question and answer
+        security_question = "What is your favorite color?"
+        security_answer = self.security_answer_field.text().strip()
+        
         # Insert new user
         conn = DBManager.get_connection()
         cursor = conn.cursor(dictionary=True)
         try:
             cursor.execute(
-                "INSERT INTO users (username, password, full_name, role, reason_for_creation, created_by) VALUES (%s, %s, %s, %s, %s, %s)",
-                (username, hashed_password, full_name, 'staff', reason, admin_id)
+                """INSERT INTO users (username, password, full_name, role, reason_for_creation, 
+                   created_by, security_question, security_answer) 
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                (username, hashed_password, full_name, 'staff', reason, admin_id, security_question, security_answer)
             )
             conn.commit()
             return True

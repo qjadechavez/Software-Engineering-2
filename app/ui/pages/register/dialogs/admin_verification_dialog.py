@@ -10,7 +10,7 @@ class AdminVerificationDialog(BaseDialog):
     
     def setup_ui(self):
         """Set up the admin verification dialog UI"""
-        self.setup_base_ui(450)  # Use BaseDialog's setup_base_ui method
+        self.setup_base_ui(500)  # Reduced height since we removed combo box
         
         self.header_label.setText("Admin Verification Required")
         
@@ -32,6 +32,22 @@ class AdminVerificationDialog(BaseDialog):
         self.admin_password_field.setPlaceholderText("Admin password")
         self.form_layout.addRow("Admin Password:", self.admin_password_field)
         
+        # Security Question Display (read-only)
+        security_question_display = QtWidgets.QLabel("What is your favorite color?")
+        security_question_display.setStyleSheet("""
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+            color: #333;
+        """)
+        self.form_layout.addRow("Security Question:", security_question_display)
+        
+        # Security answer for new user
+        self.security_answer_field = QtWidgets.QLineEdit()
+        self.security_answer_field.setPlaceholderText("Enter your favorite color")
+        self.form_layout.addRow("Security Answer:", self.security_answer_field)
+        
         # Reason for creation
         self.reason_field = QtWidgets.QTextEdit()
         self.reason_field.setObjectName("reason")
@@ -47,9 +63,10 @@ class AdminVerificationDialog(BaseDialog):
         """Verify admin credentials"""
         admin_username = self.admin_username_field.text().strip()
         admin_password = self.admin_password_field.text().strip()
+        security_answer = self.security_answer_field.text().strip()
         reason = self.reason_field.toPlainText().strip()
         
-        if not admin_username or not admin_password or not reason:
+        if not admin_username or not admin_password or not security_answer or not reason:
             QtWidgets.QMessageBox.warning(self, "Warning", "All fields are required.")
             return
         
@@ -60,6 +77,7 @@ class AdminVerificationDialog(BaseDialog):
         """Reset all input fields"""
         self.admin_username_field.clear()
         self.admin_password_field.clear()
+        self.security_answer_field.clear()
         self.reason_field.clear()
     
     def get_verification_data(self):
@@ -67,5 +85,7 @@ class AdminVerificationDialog(BaseDialog):
         return {
             "admin_username": self.admin_username_field.text().strip(),
             "admin_password": self.admin_password_field.text(),
+            "security_question": "What is your favorite color?",
+            "security_answer": self.security_answer_field.text().strip(),
             "reason": self.reason_field.toPlainText().strip()
         }

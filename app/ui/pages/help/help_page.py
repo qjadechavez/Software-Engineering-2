@@ -47,6 +47,7 @@ class HelpPage(BasePage):
         """)
         
         # Create tabs for each navigation page
+        self.create_user_manual_tab()  # Add this first
         self.create_dashboard_tab()
         self.create_invoice_tab()
         self.create_inventory_tab()
@@ -56,6 +57,230 @@ class HelpPage(BasePage):
         self.create_maintenance_tab()
         
         self.content_layout.addWidget(self.tabs)
+    
+    def create_user_manual_tab(self):
+        """Create User Manual tab with complete system guide"""
+        tab = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(tab)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
+        
+        # Title
+        title = QtWidgets.QLabel("User Manual")
+        title.setStyleSheet("color: white; font-size: 18px; font-weight: bold; margin-bottom: 10px; border: none;")
+        layout.addWidget(title)
+        
+        # Description
+        desc = QtWidgets.QLabel("Complete user manual for the Sales and Inventory Management System. Follow this guide for step-by-step instructions on using all system features.")
+        desc.setStyleSheet("color: #cccccc; font-size: 14px; margin-bottom: 15px; border: none;")
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
+        
+        # Create scroll area for the manual content
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background-color: #232323;
+            }
+            QScrollArea > QWidget > QWidget {
+                background-color: #232323;
+            }
+            QScrollBar:vertical {
+                background: #2a2a2a;
+                width: 8px;
+                border-radius: 4px;
+            }
+            QScrollBar::handle:vertical {
+                background: #555555;
+                border-radius: 4px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #666666;
+            }
+        """)
+        
+        # Content widget for scroll area
+        content_widget = QtWidgets.QWidget()
+        content_layout = QtWidgets.QVBoxLayout(content_widget)
+        content_layout.setSpacing(20)
+        
+        # Getting Started Section
+        getting_started_frame = self.create_feature_section("🚀 Getting Started", [
+            "1. Login to the System",
+            "   • Enter your username and password on the login screen",
+            "   • Contact your administrator if you don't have credentials",
+            "   • Click 'Login' to access the main system",
+            "",
+            "2. Understanding User Roles",
+            "   • Admin: Full system access including user management and backups",
+            "   • Staff: Access to daily operations (POS, inventory, customers)",
+            "",
+            "3. Navigation",
+            "   • Use the sidebar menu to navigate between different sections",
+            "   • Dashboard provides an overview of system status",
+            "   • Click your username in the top-right to logout"
+        ])
+        content_layout.addWidget(getting_started_frame)
+        
+        # Daily Operations Section
+        daily_ops_frame = self.create_feature_section("📋 Daily Operations", [
+            "1. Processing a Sale (Invoice/POS)",
+            "   • Navigate to Invoice/POS from the sidebar",
+            "   • Step 1: Select services (up to 3 services per transaction)",
+            "   • Step 2: Enter customer information (name, gender, phone, city)",
+            "   • Step 3: Review transaction details and add notes if needed",
+            "   • Step 4: Process payment (cash only) and apply discounts",
+            "   • Step 5: Complete transaction and print/save receipt",
+            "",
+            "2. Managing Inventory",
+            "   • Go to Inventory → Products to manage physical items",
+            "   • Go to Inventory → Services to manage beauty services",
+            "   • Use the search bar to find specific items quickly",
+            "   • Right-click items for edit/delete options",
+            "",
+            "3. Customer Management",
+            "   • Access Customers page to view transaction history",
+            "   • Use filters to search by date, name, or phone number",
+            "   • Right-click transactions to view details or print receipts"
+        ])
+        content_layout.addWidget(daily_ops_frame)
+        
+        # Advanced Features Section
+        advanced_frame = self.create_feature_section("⚙️ Advanced Features", [
+            "1. Reports and Analytics",
+            "   • Navigate to Reports for business analytics",
+            "   • Overview Report: General business performance",
+            "   • Financial Report: Revenue and profit analysis",
+            "   • Sales Report: Detailed transaction data",
+            "   • Use date filters to analyze specific time periods",
+            "",
+            "2. Supplier Management",
+            "   • Access Suppliers page to manage vendor information",
+            "   • Add new suppliers with complete contact details",
+            "   • Update supplier information as needed",
+            "   • Use search and filter functions for quick access",
+            "",
+            "3. System Maintenance (Admin Only)",
+            "   • Database Backup: Create full system backups",
+            "   • User Management: Add, edit, or remove user accounts",
+            "   • View system statistics and user activity"
+        ])
+        content_layout.addWidget(advanced_frame)
+        
+        # Troubleshooting Section
+        troubleshooting_frame = self.create_feature_section("🔧 Troubleshooting", [
+            "Common Issues and Solutions:",
+            "",
+            "1. Cannot login to the system",
+            "   • Verify username and password are correct",
+            "   • Check with administrator for account status",
+            "   • Ensure database connection is working",
+            "",
+            "2. Transaction not completing",
+            "   • Ensure all required fields are filled",
+            "   • Check that services are available",
+            "   • Verify customer information is complete",
+            "",
+            "3. Inventory items not showing",
+            "   • Check if items are marked as available",
+            "   • Clear search filters and try again",
+            "   • Refresh the page or restart the application",
+            "",
+            "4. Reports not generating",
+            "   • Verify date range selection",
+            "   • Check that there is data for the selected period",
+            "   • Try different filter combinations",
+            "",
+            "5. System running slowly",
+            "   • Close unnecessary applications",
+            "   • Contact administrator for database maintenance",
+            "   • Restart the application if performance issues persist"
+        ])
+        content_layout.addWidget(troubleshooting_frame)
+        
+        # Best Practices Section
+        best_practices_frame = self.create_feature_section("✅ Best Practices", [
+            "1. Data Entry Guidelines",
+            "   • Always enter complete customer information",
+            "   • Use consistent naming conventions for products/services",
+            "   • Add descriptive notes to transactions when necessary",
+            "   • Double-check amounts before processing payments",
+            "",
+            "2. Security Recommendations",
+            "   • Always logout when leaving your workstation",
+            "   • Don't share login credentials with others",
+            "   • Change your password regularly",
+            "   • Report any suspicious activity to administrators",
+            "",
+            "3. Maintenance Tasks",
+            "   • Regular database backups (Admin)",
+            "   • Monitor inventory levels daily",
+            "   • Review transaction reports weekly",
+            "   • Update supplier information as needed",
+            "",
+            "4. Performance Tips",
+            "   • Use search and filter functions for large datasets",
+            "   • Close the application properly when finished",
+            "   • Keep the system updated with latest versions",
+            "   • Report bugs or issues to system administrators"
+        ])
+        content_layout.addWidget(best_practices_frame)
+        
+        # FAQ Section
+        faq_frame = self.create_feature_section("❓ Frequently Asked Questions", [
+            "Q: How do I reset a customer's transaction?",
+            "A: Transactions cannot be modified after completion. Contact an administrator if changes are needed.",
+            "",
+            "Q: Can I process multiple payment methods?",
+            "A: Currently, the system only accepts cash payments.",
+            "",
+            "Q: How do I add a new service?",
+            "A: Go to Inventory → Services and click '+ Add Service' button.",
+            "",
+            "Q: What happens if I lose internet connection?",
+            "A: The system works locally, so internet is not required for daily operations.",
+            "",
+            "Q: How do I view previous receipts?",
+            "A: Go to Customers page, find the transaction, and right-click to view receipt.",
+            "",
+            "Q: Can I modify inventory quantities?",
+            "A: Yes, go to Inventory → Products and edit the item to update quantities.",
+            "",
+            "Q: How do I export reports?",
+            "A: In the Reports section, use the export buttons to save as Excel or PDF.",
+            "",
+            "Q: What should I do if the system crashes?",
+            "A: Restart the application. Contact administrator if problem persists."
+        ])
+        content_layout.addWidget(faq_frame)
+        
+        # Contact Information Section
+        contact_frame = self.create_feature_section("📞 Support Contact", [
+            "For technical support and assistance:",
+            "",
+            "System Administrator:",
+            "• Email: admin@mierebeauty.com",
+            "• Phone: +1 (555) 123-4567",
+            "• Business Hours: Monday - Friday, 9:00 AM - 5:00 PM",
+            "",
+            "Emergency Support:",
+            "• After-hours support available for critical issues",
+            "• Contact your local IT support team",
+            "",
+            "Training and User Support:",
+            "• Schedule training sessions with your administrator",
+            "• Access this help documentation anytime",
+            "• Report bugs or feature requests to the development team"
+        ])
+        content_layout.addWidget(contact_frame)
+        
+        scroll_area.setWidget(content_widget)
+        layout.addWidget(scroll_area)
+        
+        self.tabs.addTab(tab, "User Manual")
     
     def create_dashboard_tab(self):
         """Create Dashboard help tab"""
