@@ -9,10 +9,10 @@ class DBManager:
     
     # Default database configuration
     DEFAULT_CONFIG = {
-        "host": "localhost",
-        "user": "root",
-        "password": "MySQL_",
-        "database": "testdb",
+    "host": "localhost",
+    "user": "sims_user",
+    "password": "Sims@1234!",
+    "database": "testdb"
     }
     
     # Singleton connection instance
